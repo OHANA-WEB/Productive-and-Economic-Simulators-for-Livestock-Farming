@@ -14,7 +14,6 @@ Sistema web multiusuario para simulación de escenarios productivos y económico
 - ✅ **Arquitectura Escalable**: Modelo de datos común compartido entre módulos
 - ✅ **Motor de Simulación Centralizado**: Lógica única y coherente para todos los cálculos
 - ✅ **Visualización**: Tablas y gráficos básicos con Recharts
-- ✅ **Modo Demo**: Sistema completo de datos mock para funcionar sin backend (ideal para Vercel)
 
 ## Stack Tecnológico
 
@@ -27,9 +26,8 @@ Sistema web multiusuario para simulación de escenarios productivos y económico
 ## Requisitos Previos
 
 - Node.js 18+ 
+- PostgreSQL 12+
 - npm o yarn
-- PostgreSQL 12+ (solo si usas el backend completo)
-- **Nota**: El frontend puede funcionar en modo demo sin PostgreSQL
 
 ## Instalación
 
@@ -145,31 +143,12 @@ Cada escenario es completamente independiente:
 - Modificar un escenario solo afecta a ese escenario
 - Comparar escenarios ejecuta el mismo motor sobre cada uno
 
-## Modo Demo (Sin Backend)
-
-El proyecto incluye un sistema completo de datos mock que permite funcionar sin backend. Ideal para despliegues en Vercel.
-
-**Ver documentación completa**: [DEMO_MODE.md](./DEMO_MODE.md)
-
-### Características del Modo Demo:
-- ✅ Funciona completamente sin base de datos
-- ✅ Datos pre-cargados con 4 escenarios de ejemplo
-- ✅ Persistencia local en el navegador
-- ✅ Detección automática del backend
-- ✅ Todos los módulos completamente funcionales
-
-### Para usar en Vercel:
-1. Despliega solo el frontend (`client/`)
-2. El sistema detectará automáticamente modo demo
-3. O configura `VITE_USE_MOCK_API=true` en variables de entorno
-
 ## Uso
 
 ### 1. Registro/Login
 
 - Crear cuenta nueva o usar el usuario admin por defecto
 - El sistema genera un token JWT para autenticación
-- **En modo demo**: Puedes usar cualquier credencial o `demo@test.com` / `demo123`
 
 ### 2. Crear Escenarios
 

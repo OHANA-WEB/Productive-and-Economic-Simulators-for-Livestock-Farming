@@ -7,7 +7,6 @@ import Module2Transformation from './components/modules/Module2Transformation';
 import Module3Lactation from './components/modules/Module3Lactation';
 import Module4Yield from './components/modules/Module4Yield';
 import Module5Summary from './components/modules/Module5Summary';
-import DemoBanner from './components/DemoBanner';
 import { getAuthToken, setAuthToken, removeAuthToken } from './utils/auth';
 
 function App() {
@@ -39,7 +38,6 @@ function App() {
 
   return (
     <Router>
-      <DemoBanner />
       <Routes>
         <Route
           path="/login"
