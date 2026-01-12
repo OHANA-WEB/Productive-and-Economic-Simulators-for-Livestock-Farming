@@ -27,10 +27,12 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ user, token });
   } catch (error) {
+    console.error('Register error:', error);
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Email already exists' });
     }
-    res.status(500).json({ error: error.message });
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -43,7 +45,16 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.' 
+      });
+    }
+
     const result = await pool.query(
       'SELECT id, email, password_hash, name FROM users WHERE email = $1',
       [email]
@@ -67,7 +78,15 @@ router.post('/login', async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Login error:', error);
+    // Check if it's a database connection error
+    if (error.code === 'ECONNREFUSED' || error.code === '28P01' || error.message?.includes('password authentication')) {
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your database configuration.' 
+      });
+    }
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 

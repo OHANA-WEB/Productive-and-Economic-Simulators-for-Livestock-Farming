@@ -19,17 +19,50 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize database
-const pool = createPool();
-
-// Routes
+// Routes (database will be initialized lazily when needed)
 app.use('/api/auth', authRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/modules', moduleRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'MVP Web API is running' });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
+      return res.json({ 
+        status: 'ok', 
+        message: 'MVP Web API is running',
+        database: 'not configured',
+        warning: 'DATABASE_URL environment variable is not set'
+      });
+    }
+
+    // Test database connection
+    const pool = createPool();
+    if (!pool) {
+      return res.json({ 
+        status: 'ok', 
+        message: 'MVP Web API is running',
+        database: 'not configured',
+        warning: 'Database pool could not be created'
+      });
+    }
+    await pool.query('SELECT 1');
+    res.json({ 
+      status: 'ok', 
+      message: 'MVP Web API is running',
+      database: 'connected'
+    });
+  } catch (error) {
+    // Don't return 500, just indicate database is disconnected
+    res.json({ 
+      status: 'ok', 
+      message: 'MVP Web API is running',
+      database: 'disconnected',
+      error: error.message,
+      hint: 'Check your DATABASE_URL environment variable in Vercel'
+    });
+  }
 });
 
 // Catch-all for unmatched API routes (for debugging)
@@ -40,6 +73,17 @@ app.all('/api/*', (req, res) => {
     path: req.path,
     url: req.url 
   });
+});
+
+// Global error handler to prevent function crashes
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  if (!res.headersSent) {
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: err.message 
+    });
+  }
 });
 
 // Start server (only in development or when not on Vercel)
