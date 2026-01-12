@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm install && cd server && npm install && cd ../client && npm install && npx vite build",
+  "buildCommand": "npm install && cd server && npm install && cd ../client && npm install --include=dev && npm run build",
   "outputDirectory": "client/dist",
   "builds": [
     {
