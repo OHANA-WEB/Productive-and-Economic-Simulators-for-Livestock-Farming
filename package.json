@@ -1,0 +1,19 @@
+{
+  "name": "mvp-web-ganaderia",
+  "version": "1.0.0",
+  "description": "MVP Web - Simuladores Productivos y Económicos para Ganadería",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "build": "cd client && npm run build"
+  },
+  "keywords": ["simulator", "livestock", "dairy"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
