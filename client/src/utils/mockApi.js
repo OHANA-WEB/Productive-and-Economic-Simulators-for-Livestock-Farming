@@ -8,7 +8,10 @@ const MOCK_USER_KEY = 'mvp_web_mock_user';
 
 // Helper functions for localStorage
 function getMockData() {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return getInitialMockData();
+  }
+  const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored) {
     return JSON.parse(stored);
   }
@@ -19,11 +22,16 @@ function getMockData() {
 }
 
 function saveMockData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
 }
 
 function getCurrentUserId() {
-  const user = localStorage.getItem(MOCK_USER_KEY);
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return 1; // Default user ID for build time
+  }
+  const user = window.localStorage.getItem(MOCK_USER_KEY);
   return user ? JSON.parse(user).id : null;
 }
 
@@ -53,7 +61,9 @@ const mockApi = {
         saveMockData(mockData);
         
         const token = `mock_token_${newUser.id}_${Date.now()}`;
-        localStorage.setItem(MOCK_USER_KEY, JSON.stringify(newUser));
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(MOCK_USER_KEY, JSON.stringify(newUser));
+        }
         return { data: { user: newUser, token } };
       } else {
         // Login - in demo mode, accept any credentials or use demo user
@@ -67,7 +77,9 @@ const mockApi = {
         
         const token = `mock_token_${user.id}_${Date.now()}`;
         const userData = { id: user.id, email: user.email, name: user.name };
-        localStorage.setItem(MOCK_USER_KEY, JSON.stringify(userData));
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(MOCK_USER_KEY, JSON.stringify(userData));
+        }
         return { data: { user: userData, token } };
       }
     }
@@ -76,8 +88,11 @@ const mockApi = {
     if (endpoint === '/scenarios' && data && data.name) {
       const mockData = getMockData();
       const userId = getCurrentUserId();
+      const maxId = mockData.scenarios.length > 0 
+        ? Math.max(...mockData.scenarios.map(s => s.id))
+        : 0;
       const newScenario = {
-        id: Math.max(...mockData.scenarios.map(s => s.id), 0) + 1,
+        id: maxId + 1,
         user_id: userId,
         name: data.name,
         type: data.type,
@@ -99,9 +114,12 @@ const mockApi = {
         throw { response: { data: { error: 'Scenario not found' }, status: 404 } };
       }
 
+      const maxId = mockData.scenarios.length > 0
+        ? Math.max(...mockData.scenarios.map(s => s.id))
+        : 0;
       const newScenario = {
         ...scenario,
-        id: Math.max(...mockData.scenarios.map(s => s.id)) + 1,
+        id: maxId + 1,
         name: `${scenario.name} (Copy)`,
         created_at: new Date().toISOString(),
       };
@@ -111,9 +129,12 @@ const mockApi = {
       // Duplicate related data
       const production = mockData.productionData.find(p => p.scenario_id === scenarioId);
       if (production) {
+        const maxProdId = mockData.productionData.length > 0
+          ? Math.max(...mockData.productionData.map(p => p.id))
+          : 0;
         mockData.productionData.push({
           ...production,
-          id: Math.max(...mockData.productionData.map(p => p.id), 0) + 1,
+          id: maxProdId + 1,
           scenario_id: newScenario.id,
         });
       }
@@ -189,8 +210,11 @@ const mockApi = {
       const mockData = getMockData();
       
       const existing = mockData.productionData.findIndex(p => p.scenario_id === scenarioId);
+      const maxProdId = mockData.productionData.length > 0
+        ? Math.max(...mockData.productionData.map(p => p.id))
+        : 0;
       const productionData = {
-        id: existing >= 0 ? mockData.productionData[existing].id : Math.max(...mockData.productionData.map(p => p.id), 0) + 1,
+        id: existing >= 0 ? mockData.productionData[existing].id : maxProdId + 1,
         scenario_id: scenarioId,
         ...data,
         created_at: existing >= 0 ? mockData.productionData[existing].created_at : new Date().toISOString(),
@@ -207,8 +231,11 @@ const mockApi = {
       const results = calculateMockResults(scenarioId, mockData);
       if (results) {
         const resultIndex = mockData.results.findIndex(r => r.scenario_id === scenarioId);
+        const maxResultId = mockData.results.length > 0
+          ? Math.max(...mockData.results.map(r => r.id))
+          : 0;
         const resultData = {
-          id: resultIndex >= 0 ? mockData.results[resultIndex].id : Math.max(...mockData.results.map(r => r.id), 0) + 1,
+          id: resultIndex >= 0 ? mockData.results[resultIndex].id : maxResultId + 1,
           scenario_id: scenarioId,
           ...results,
           calculated_at: new Date().toISOString(),
@@ -229,8 +256,11 @@ const mockApi = {
       const mockData = getMockData();
       
       const existing = mockData.transformationData.findIndex(t => t.scenario_id === scenarioId);
+      const maxTransId = mockData.transformationData.length > 0
+        ? Math.max(...mockData.transformationData.map(t => t.id))
+        : 0;
       const transformationData = {
-        id: existing >= 0 ? mockData.transformationData[existing].id : Math.max(...mockData.transformationData.map(t => t.id), 0) + 1,
+        id: existing >= 0 ? mockData.transformationData[existing].id : maxTransId + 1,
         scenario_id: scenarioId,
         ...data,
         created_at: existing >= 0 ? mockData.transformationData[existing].created_at : new Date().toISOString(),
@@ -265,8 +295,11 @@ const mockApi = {
       const mockData = getMockData();
       
       const existing = mockData.lactationData.findIndex(l => l.scenario_id === scenarioId);
+      const maxLactId = mockData.lactationData.length > 0
+        ? Math.max(...mockData.lactationData.map(l => l.id))
+        : 0;
       const lactationData = {
-        id: existing >= 0 ? mockData.lactationData[existing].id : Math.max(...mockData.lactationData.map(l => l.id), 0) + 1,
+        id: existing >= 0 ? mockData.lactationData[existing].id : maxLactId + 1,
         scenario_id: scenarioId,
         ...data,
         created_at: existing >= 0 ? mockData.lactationData[existing].created_at : new Date().toISOString(),
@@ -288,8 +321,11 @@ const mockApi = {
       const mockData = getMockData();
       
       const existing = mockData.yieldData.findIndex(y => y.scenario_id === scenarioId);
+      const maxYieldId = mockData.yieldData.length > 0
+        ? Math.max(...mockData.yieldData.map(y => y.id))
+        : 0;
       const yieldData = {
-        id: existing >= 0 ? mockData.yieldData[existing].id : Math.max(...mockData.yieldData.map(y => y.id), 0) + 1,
+        id: existing >= 0 ? mockData.yieldData[existing].id : maxYieldId + 1,
         scenario_id: scenarioId,
         ...data,
         created_at: existing >= 0 ? mockData.yieldData[existing].created_at : new Date().toISOString(),
