@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { useI18n } from '../i18n/I18nContext';
 
 function Login({ onLogin }) {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -26,8 +28,8 @@ function Login({ onLogin }) {
       onLogin(response.data.user, response.data.token);
       navigate('/dashboard');
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || 'Error al iniciar sesión';
-      setError(typeof errorMessage === 'string' ? errorMessage : 'Error al iniciar sesión');
+      const errorMessage = err.response?.data?.error || err.message || t('loginError');
+      setError(typeof errorMessage === 'string' ? errorMessage : t('loginError'));
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -38,7 +40,7 @@ function Login({ onLogin }) {
     <div className="container" style={{ maxWidth: '400px', marginTop: '100px' }}>
       <div className="card">
         <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>
-          {isRegister ? 'Registro' : 'Iniciar Sesión'}
+          {isRegister ? t('register') : t('login')}
         </h2>
 
         {error && (
@@ -50,7 +52,7 @@ function Login({ onLogin }) {
         <form onSubmit={handleSubmit}>
           {isRegister && (
             <div className="form-group">
-              <label>Nombre</label>
+              <label>{t('name')}</label>
               <input
                 type="text"
                 value={name}
@@ -61,7 +63,7 @@ function Login({ onLogin }) {
           )}
 
           <div className="form-group">
-            <label>Email</label>
+            <label>{t('email')}</label>
             <input
               type="email"
               value={email}
@@ -71,7 +73,7 @@ function Login({ onLogin }) {
           </div>
 
           <div className="form-group">
-            <label>Contraseña</label>
+            <label>{t('password')}</label>
             <input
               type="password"
               value={password}
@@ -86,7 +88,7 @@ function Login({ onLogin }) {
             style={{ width: '100%', marginBottom: '10px' }}
             disabled={loading}
           >
-            {loading ? 'Cargando...' : isRegister ? 'Registrarse' : 'Iniciar Sesión'}
+            {loading ? (isRegister ? t('registering') : t('signingIn')) : isRegister ? t('register') : t('login')}
           </button>
         </form>
 
@@ -99,7 +101,7 @@ function Login({ onLogin }) {
             setError('');
           }}
         >
-          {isRegister ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+          {isRegister ? t('alreadyHaveAccount') : t('noAccount')}
         </button>
       </div>
     </div>

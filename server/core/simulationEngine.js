@@ -25,7 +25,7 @@ export function calculateProductionMetrics(productionData) {
   return {
     totalProductionLiters,
     dailyProductionLiters: daily_production_liters,
-    productionDays,
+    productionDays: production_days,
     animalsCount: animals_count,
   };
 }

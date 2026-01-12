@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../utils/api';
+import { useI18n } from '../../i18n/I18nContext';
 
 function Module1Production({ user }) {
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const scenarioId = location.state?.scenarioId;
@@ -71,7 +73,7 @@ function Module1Production({ user }) {
 
   const handleSave = async () => {
     if (!selectedScenario) {
-      alert('Por favor selecciona un escenario primero');
+      alert(t('pleaseSelectScenario'));
       return;
     }
 
@@ -79,9 +81,9 @@ function Module1Production({ user }) {
     try {
       await api.post(`/modules/production/${selectedScenario.id}`, formData);
       await loadScenario(selectedScenario.id);
-      alert('Datos guardados y resultados calculados');
+      alert(t('dataSaved'));
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar');
+      alert(error.response?.data?.error || t('errorSaving'));
     } finally {
       setLoading(false);
     }
@@ -129,13 +131,13 @@ function Module1Production({ user }) {
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
         <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          ← Volver al Dashboard
+          {t('backToDashboard')}
         </button>
-        <h1 style={{ marginTop: '20px' }}>Módulo 1: Producción y Venta de Leche</h1>
+        <h1 style={{ marginTop: '20px' }}>{t('module1Title')}</h1>
       </header>
 
       <div className="card">
-        <h2>Seleccionar Escenario</h2>
+        <h2>{t('selectScenario')}</h2>
         <select
           value={selectedScenario?.id || ''}
           onChange={(e) => {
@@ -147,7 +149,7 @@ function Module1Production({ user }) {
           }}
           style={{ marginBottom: '20px' }}
         >
-          <option value="">-- Selecciona un escenario --</option>
+          <option value="">{t('selectScenarioPlaceholder')}</option>
           {scenarios.map(s => (
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
@@ -157,10 +159,10 @@ function Module1Production({ user }) {
       {selectedScenario && (
         <>
           <div className="card">
-            <h2>Datos de Producción</h2>
+            <h2>{t('productionData')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
-                <label>Producción Diaria (litros)</label>
+                <label>{t('dailyProduction')}</label>
                 <input
                   type="number"
                   name="daily_production_liters"
@@ -170,7 +172,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Días de Producción</label>
+                <label>{t('productionDays')}</label>
                 <input
                   type="number"
                   name="production_days"
@@ -179,7 +181,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Número de Animales</label>
+                <label>{t('animalsCount')}</label>
                 <input
                   type="number"
                   name="animals_count"
@@ -188,7 +190,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Precio Leche (por litro)</label>
+                <label>{t('milkPrice')}</label>
                 <input
                   type="number"
                   name="milk_price_per_liter"
@@ -199,10 +201,10 @@ function Module1Production({ user }) {
               </div>
             </div>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Costos (por litro)</h3>
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('totalCosts')} (per liter)</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
-                <label>Costo Alimento</label>
+                <label>{t('feedCost')}</label>
                 <input
                   type="number"
                   name="feed_cost_per_liter"
@@ -212,7 +214,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Costo Mano de Obra</label>
+                <label>{t('laborCost')}</label>
                 <input
                   type="number"
                   name="labor_cost_per_liter"
@@ -222,7 +224,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Costo Salud</label>
+                <label>{t('healthCost')}</label>
                 <input
                   type="number"
                   name="health_cost_per_liter"
@@ -232,7 +234,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Costo Infraestructura</label>
+                <label>{t('infrastructureCost')}</label>
                 <input
                   type="number"
                   name="infrastructure_cost_per_liter"
@@ -242,7 +244,7 @@ function Module1Production({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Otros Costos</label>
+                <label>{t('otherCosts')}</label>
                 <input
                   type="number"
                   name="other_costs_per_liter"
@@ -255,10 +257,10 @@ function Module1Production({ user }) {
 
             <div style={{ marginTop: '20px' }}>
               <button className="btn btn-primary" onClick={handleCalculate} style={{ marginRight: '10px' }}>
-                Calcular
+                {t('calculate')}
               </button>
               <button className="btn btn-secondary" onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : 'Guardar y Calcular'}
+                {loading ? t('saving') : t('saveAndCalculate')}
               </button>
             </div>
           </div>
@@ -266,35 +268,35 @@ function Module1Production({ user }) {
           {results && (
             <>
               <div className="card">
-                <h2>Resultados</h2>
+                <h2>{t('results')}</h2>
                 <table className="table">
                   <tbody>
                     <tr>
-                      <td><strong>Producción Total (litros)</strong></td>
-                      <td>{results.total_production_liters?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('totalProduction')}</strong></td>
+                      <td>{results.total_production_liters?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Ingresos Totales</strong></td>
-                      <td>${results.total_revenue?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('totalRevenue')}</strong></td>
+                      <td>${results.total_revenue?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Costos Totales</strong></td>
-                      <td>${results.total_costs?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('totalCosts')}</strong></td>
+                      <td>${results.total_costs?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Margen Bruto</strong></td>
-                      <td>${results.gross_margin?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('grossMargin')}</strong></td>
+                      <td>${results.gross_margin?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Margen (%)</strong></td>
+                      <td><strong>{t('marginPercentage')}</strong></td>
                       <td>{results.margin_percentage?.toFixed(2)}%</td>
                     </tr>
                     <tr>
-                      <td><strong>Ingreso por Litro</strong></td>
+                      <td><strong>{t('revenuePerLiter')}</strong></td>
                       <td>${results.revenue_per_liter?.toFixed(2)}</td>
                     </tr>
                     <tr>
-                      <td><strong>Costo por Litro</strong></td>
+                      <td><strong>{t('costPerLiter')}</strong></td>
                       <td>${results.cost_per_liter?.toFixed(2)}</td>
                     </tr>
                   </tbody>
@@ -302,14 +304,14 @@ function Module1Production({ user }) {
               </div>
 
               <div className="card">
-                <h2>Visualización</h2>
-                <h3 style={{ marginBottom: '15px' }}>Ingresos vs Costos vs Margen</h3>
+                <h2>{t('visualization')}</h2>
+                <h3 style={{ marginBottom: '15px' }}>{t('income')} vs {t('totalCosts')} vs {t('margin')}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `$${value.toLocaleString('es-ES')}`} />
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
                     <Legend />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>

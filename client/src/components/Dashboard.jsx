@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import { useI18n } from '../i18n/I18nContext';
 
 function Dashboard({ user, onLogout }) {
+  const { t } = useI18n();
   const [scenarios, setScenarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newScenarioName, setNewScenarioName] = useState('');
@@ -35,7 +37,7 @@ function Dashboard({ user, onLogout }) {
       setShowCreateForm(false);
       loadScenarios();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al crear escenario');
+      alert(error.response?.data?.error || t('errorCreatingScenario'));
     }
   };
 
@@ -44,18 +46,18 @@ function Dashboard({ user, onLogout }) {
       await api.post(`/scenarios/${scenarioId}/duplicate`);
       loadScenarios();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al duplicar escenario');
+      alert(error.response?.data?.error || t('errorDuplicatingScenario'));
     }
   };
 
   const handleDeleteScenario = async (scenarioId) => {
-    if (!confirm('¿Estás seguro de eliminar este escenario?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
 
     try {
       await api.delete(`/scenarios/${scenarioId}`);
       loadScenarios();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar escenario');
+      alert(error.response?.data?.error || t('errorDeletingScenario'));
     }
   };
 
@@ -71,79 +73,62 @@ function Dashboard({ user, onLogout }) {
   };
 
   const getModuleName = (type) => {
-    const nameMap = {
-      milk_sale: 'Producción y Venta de Leche',
-      transformation: 'Transformación Láctea',
-      lactation: 'Lactancia y Vida Productiva',
-      yield: 'Rendimiento/Conversión',
-      summary: 'Resumen/Dashboard',
-    };
-    return nameMap[type] || type;
+    return t(`moduleTypes.${type}`) || type;
   };
 
   return (
     <div className="container">
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1>MVP Web - Simuladores Ganadería</h1>
-        <div>
-          <span style={{ marginRight: '15px' }}>Hola, {user?.name || user?.email}</span>
-          <button className="btn btn-secondary" onClick={onLogout}>
-            Cerrar Sesión
-          </button>
-        </div>
-      </header>
-
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2>Mis Escenarios</h2>
+          <h2>{t('myScenarios')}</h2>
           <button
             className="btn btn-primary"
             onClick={() => setShowCreateForm(!showCreateForm)}
           >
-            {showCreateForm ? 'Cancelar' : '+ Nuevo Escenario'}
+            {showCreateForm ? t('cancel') : `+ ${t('newScenario')}`}
           </button>
         </div>
 
         {showCreateForm && (
           <form onSubmit={handleCreateScenario} style={{ marginBottom: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '4px' }}>
             <div className="form-group">
-              <label>Nombre del Escenario</label>
+              <label>{t('scenarioName')}</label>
               <input
                 type="text"
                 value={newScenarioName}
                 onChange={(e) => setNewScenarioName(e.target.value)}
                 required
-                placeholder="Ej: Venta de Leche - Escenario 1"
+                placeholder={t('scenarioNamePlaceholder')}
               />
             </div>
             <div className="form-group">
-              <label>Tipo de Módulo</label>
+              <label>{t('moduleType')}</label>
               <select value={newScenarioType} onChange={(e) => setNewScenarioType(e.target.value)}>
-                <option value="milk_sale">Producción y Venta de Leche</option>
-                <option value="transformation">Transformación Láctea</option>
-                <option value="lactation">Lactancia y Vida Productiva</option>
-                <option value="yield">Rendimiento/Conversión</option>
-                <option value="summary">Resumen/Dashboard</option>
+                <option value="milk_sale">{t('moduleTypes.milk_sale')}</option>
+                <option value="transformation">{t('moduleTypes.transformation')}</option>
+                <option value="lactation">{t('moduleTypes.lactation')}</option>
+                <option value="yield">{t('moduleTypes.yield')}</option>
+                <option value="summary">{t('moduleTypes.summary')}</option>
               </select>
             </div>
             <button type="submit" className="btn btn-primary">
-              Crear Escenario
+              {t('createScenario')}
             </button>
           </form>
         )}
 
         {loading ? (
-          <p>Cargando escenarios...</p>
+          <p>{t('loadingScenarios')}</p>
         ) : scenarios.length === 0 ? (
-          <p>No tienes escenarios aún. Crea uno para comenzar.</p>
+          <p>{t('noScenarios')}</p>
         ) : (
           <table className="table">
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
-                <th>Fecha Creación</th>
-                <th>Acciones</th>
+                <th>{t('scenarioName')}</th>
+                <th>{t('moduleType')}</th>
+                <th>{t('creationDate')}</th>
+                <th>{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -159,20 +144,20 @@ function Dashboard({ user, onLogout }) {
                       className="btn btn-primary"
                       style={{ marginRight: '5px', textDecoration: 'none', display: 'inline-block' }}
                     >
-                      Abrir
+                      {t('open')}
                     </Link>
                     <button
                       className="btn btn-secondary"
                       onClick={() => handleDuplicateScenario(scenario.id)}
                       style={{ marginRight: '5px' }}
                     >
-                      Duplicar
+                      {t('duplicate')}
                     </button>
                     <button
                       className="btn btn-danger"
                       onClick={() => handleDeleteScenario(scenario.id)}
                     >
-                      Eliminar
+                      {t('delete')}
                     </button>
                   </td>
                 </tr>

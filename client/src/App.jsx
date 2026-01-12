@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { I18nProvider, useI18n } from './i18n/I18nContext';
+import Layout from './components/Layout';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Module1Production from './components/modules/Module1Production';
@@ -9,9 +11,10 @@ import Module4Yield from './components/modules/Module4Yield';
 import Module5Summary from './components/modules/Module5Summary';
 import { getAuthToken, setAuthToken, removeAuthToken } from './utils/auth';
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useI18n();
 
   useEffect(() => {
     const token = getAuthToken();
@@ -33,11 +36,15 @@ function App() {
   };
 
   if (loading) {
-    return <div className="container">Cargando...</div>;
+    return (
+      <Layout user={user} onLogout={handleLogout}>
+        <div className="container">{t('loading')}</div>
+      </Layout>
+    );
   }
 
   return (
-    <Router>
+    <Layout user={user} onLogout={handleLogout}>
       <Routes>
         <Route
           path="/login"
@@ -107,7 +114,17 @@ function App() {
         />
         <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
       </Routes>
-    </Router>
+    </Layout>
+  );
+}
+
+function App() {
+  return (
+    <I18nProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </I18nProvider>
   );
 }
 

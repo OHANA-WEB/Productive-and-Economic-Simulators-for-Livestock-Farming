@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api from '../../utils/api';
+import { useI18n } from '../../i18n/I18nContext';
 
 function Module2Transformation({ user }) {
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const scenarioId = location.state?.scenarioId;
@@ -84,7 +86,7 @@ function Module2Transformation({ user }) {
 
   const handleSave = async () => {
     if (!selectedScenario) {
-      alert('Por favor selecciona un escenario primero');
+      alert(t('pleaseSelectScenario'));
       return;
     }
 
@@ -95,9 +97,9 @@ function Module2Transformation({ user }) {
       // Then save transformation data
       await api.post(`/modules/transformation/${selectedScenario.id}`, transformationData);
       await loadScenario(selectedScenario.id);
-      alert('Datos guardados y resultados calculados');
+      alert(t('dataSaved'));
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar');
+      alert(error.response?.data?.error || t('errorSaving'));
     } finally {
       setLoading(false);
     }
@@ -129,21 +131,21 @@ function Module2Transformation({ user }) {
   };
 
   const comparisonData = results ? [
-    { name: 'Venta Directa', Ingresos: results.milk_revenue, Costos: results.milk_revenue - results.milk_margin, Margen: results.milk_margin },
-    { name: 'Transformación', Ingresos: results.product_revenue, Costos: results.product_revenue - results.transformation_margin, Margen: results.transformation_margin },
+    { name: t('directSale'), Ingresos: results.milk_revenue, Costos: results.milk_revenue - results.milk_margin, Margen: results.milk_margin },
+    { name: t('transformation'), Ingresos: results.product_revenue, Costos: results.product_revenue - results.transformation_margin, Margen: results.transformation_margin },
   ] : [];
 
   return (
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
         <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          ← Volver al Dashboard
+          {t('backToDashboard')}
         </button>
-        <h1 style={{ marginTop: '20px' }}>Módulo 2: Transformación Láctea</h1>
+        <h1 style={{ marginTop: '20px' }}>{t('module2Title')}</h1>
       </header>
 
       <div className="card">
-        <h2>Seleccionar Escenario</h2>
+        <h2>{t('selectScenario')}</h2>
         <select
           value={selectedScenario?.id || ''}
           onChange={(e) => {
@@ -155,7 +157,7 @@ function Module2Transformation({ user }) {
           }}
           style={{ marginBottom: '20px' }}
         >
-          <option value="">-- Selecciona un escenario --</option>
+          <option value="">{t('selectScenarioPlaceholder')}</option>
           {scenarios.map(s => (
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
@@ -165,10 +167,10 @@ function Module2Transformation({ user }) {
       {selectedScenario && (
         <>
           <div className="card">
-            <h2>Datos de Producción Base</h2>
+            <h2>{t('baseProductionData')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
-                <label>Producción Diaria (litros)</label>
+                <label>{t('dailyProduction')}</label>
                 <input
                   type="number"
                   name="daily_production_liters"
@@ -178,7 +180,7 @@ function Module2Transformation({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Días de Producción</label>
+                <label>{t('productionDays')}</label>
                 <input
                   type="number"
                   name="production_days"
@@ -187,7 +189,7 @@ function Module2Transformation({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Número de Animales</label>
+                <label>{t('animalsCount')}</label>
                 <input
                   type="number"
                   name="animals_count"
@@ -196,7 +198,7 @@ function Module2Transformation({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Precio Leche (por litro) - para comparación</label>
+                <label>{t('milkPriceForComparison')}</label>
                 <input
                   type="number"
                   name="milk_price_per_liter"
@@ -207,24 +209,24 @@ function Module2Transformation({ user }) {
               </div>
             </div>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Datos de Transformación</h3>
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('transformationData')}</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
-                <label>Tipo de Producto</label>
+                <label>{t('productType')}</label>
                 <select
                   name="product_type"
                   value={transformationData.product_type}
                   onChange={handleTransformationChange}
                 >
-                  <option value="queso_fresco">Queso Fresco</option>
-                  <option value="queso_madurado">Queso Madurado</option>
-                  <option value="yogurt">Yogurt</option>
-                  <option value="mantequilla">Mantequilla</option>
-                  <option value="otro">Otro</option>
+                  <option value="queso_fresco">{t('productTypes.queso_fresco')}</option>
+                  <option value="queso_madurado">{t('productTypes.queso_madurado')}</option>
+                  <option value="yogurt">{t('productTypes.yogurt')}</option>
+                  <option value="mantequilla">{t('productTypes.mantequilla')}</option>
+                  <option value="otro">{t('productTypes.otro')}</option>
                 </select>
               </div>
               <div className="form-group">
-                <label>Litros por Kg de Producto</label>
+                <label>{t('litersPerKg')}</label>
                 <input
                   type="number"
                   name="liters_per_kg_product"
@@ -234,7 +236,7 @@ function Module2Transformation({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Costo de Procesamiento (por litro)</label>
+                <label>{t('processingCost')}</label>
                 <input
                   type="number"
                   name="processing_cost_per_liter"
@@ -244,7 +246,7 @@ function Module2Transformation({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Precio Producto (por kg)</label>
+                <label>{t('productPrice')}</label>
                 <input
                   type="number"
                   name="product_price_per_kg"
@@ -257,10 +259,10 @@ function Module2Transformation({ user }) {
 
             <div style={{ marginTop: '20px' }}>
               <button className="btn btn-primary" onClick={handleCalculate} style={{ marginRight: '10px' }}>
-                Calcular
+                {t('calculate')}
               </button>
               <button className="btn btn-secondary" onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : 'Guardar y Calcular'}
+                {loading ? t('saving') : t('saveAndCalculate')}
               </button>
             </div>
           </div>
@@ -268,31 +270,31 @@ function Module2Transformation({ user }) {
           {results && (
             <>
               <div className="card">
-                <h2>Comparación: Venta Directa vs Transformación</h2>
+                <h2>{t('comparison')}</h2>
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Concepto</th>
-                      <th>Venta Directa</th>
-                      <th>Transformación</th>
+                      <th>{t('concept')}</th>
+                      <th>{t('directSale')}</th>
+                      <th>{t('transformation')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td><strong>Ingresos</strong></td>
-                      <td>${results.milk_revenue?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
-                      <td>${results.product_revenue?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('income')}</strong></td>
+                      <td>${results.milk_revenue?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                      <td>${results.product_revenue?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Margen</strong></td>
-                      <td>${results.milk_margin?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
-                      <td>${results.transformation_margin?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('margin')}</strong></td>
+                      <td>${results.milk_margin?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                      <td>${results.transformation_margin?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Diferencia</strong></td>
+                      <td><strong>{t('difference')}</strong></td>
                       <td colSpan="2">
-                        ${Math.abs(results.transformation_margin - results.milk_margin)?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}
-                        {' '}({results.better_option === 'transformación' ? 'Mejor transformar' : 'Mejor vender directo'})
+                        ${Math.abs(results.transformation_margin - results.milk_margin)?.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        {' '}({results.better_option === 'transformación' ? t('betterTransform') : t('betterSellDirect')})
                       </td>
                     </tr>
                   </tbody>
@@ -300,14 +302,14 @@ function Module2Transformation({ user }) {
               </div>
 
               <div className="card">
-                <h2>Visualización</h2>
-                <h3 style={{ marginBottom: '15px' }}>Comparación de Opciones</h3>
+                <h2>{t('visualization')}</h2>
+                <h3 style={{ marginBottom: '15px' }}>{t('optionsComparison')}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={comparisonData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `$${value.toLocaleString('es-ES')}`} />
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
                     <Legend />
                     <Bar dataKey="Ingresos" fill="#8884d8" />
                     <Bar dataKey="Costos" fill="#ffc658" />

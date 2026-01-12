@@ -1,0 +1,324 @@
+export const translations = {
+  en: {
+    // Common
+    loading: 'Loading...',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    create: 'Create',
+    open: 'Open',
+    duplicate: 'Duplicate',
+    confirm: 'Confirm',
+    error: 'Error',
+    success: 'Success',
+    
+    // Header
+    appTitle: 'MVP Web - Livestock Simulators',
+    hello: 'Hello',
+    logout: 'Logout',
+    language: 'Language',
+    
+    // Footer
+    footerText: '© 2026 MVP Web - Livestock Simulators. All rights reserved.',
+    about: 'About',
+    contact: 'Contact',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
+    
+    // Login
+    login: 'Login',
+    register: 'Register',
+    email: 'Email',
+    password: 'Password',
+    name: 'Name',
+    loginError: 'Login error',
+    registerError: 'Registration error',
+    alreadyHaveAccount: 'Already have an account? Login',
+    noAccount: "Don't have an account? Register",
+    signingIn: 'Signing in...',
+    registering: 'Registering...',
+    
+    // Dashboard
+    myScenarios: 'My Scenarios',
+    newScenario: 'New Scenario',
+    scenarioName: 'Scenario Name',
+    moduleType: 'Module Type',
+    creationDate: 'Creation Date',
+    actions: 'Actions',
+    noScenarios: "You don't have any scenarios yet. Create one to get started.",
+    loadingScenarios: 'Loading scenarios...',
+    createScenario: 'Create Scenario',
+    deleteScenario: 'Delete Scenario',
+    deleteConfirm: 'Are you sure you want to delete this scenario?',
+    errorCreatingScenario: 'Error creating scenario',
+    errorDuplicatingScenario: 'Error duplicating scenario',
+    errorDeletingScenario: 'Error deleting scenario',
+    scenarioNamePlaceholder: 'E.g: Milk Sale - Scenario 1',
+    
+    // Module Types
+    moduleTypes: {
+      milk_sale: 'Production and Milk Sale',
+      transformation: 'Dairy Transformation',
+      lactation: 'Lactation and Productive Life',
+      yield: 'Yield/Conversion',
+      summary: 'Summary/Dashboard'
+    },
+    
+    // Navigation
+    home: 'Home',
+    dashboard: 'Dashboard',
+    scenarios: 'Scenarios',
+    
+    // Common errors
+    errorOccurred: 'An error occurred',
+    tryAgain: 'Please try again',
+    
+    // Module Common
+    backToDashboard: '← Back to Dashboard',
+    selectScenario: 'Select Scenario',
+    selectScenarioPlaceholder: '-- Select a scenario --',
+    pleaseSelectScenario: 'Please select a scenario first',
+    calculate: 'Calculate',
+    saveAndCalculate: 'Save and Calculate',
+    saving: 'Saving...',
+    dataSaved: 'Data saved and results calculated',
+    errorSaving: 'Error saving',
+    
+    // Module 1 - Production
+    module1Title: 'Module 1: Production and Milk Sale',
+    productionData: 'Production Data',
+    dailyProduction: 'Daily Production (liters)',
+    productionDays: 'Production Days',
+    animalsCount: 'Number of Animals',
+    feedCost: 'Feed Cost (per liter)',
+    laborCost: 'Labor Cost (per liter)',
+    healthCost: 'Health Cost (per liter)',
+    infrastructureCost: 'Infrastructure Cost (per liter)',
+    otherCosts: 'Other Costs (per liter)',
+    milkPrice: 'Milk Price (per liter)',
+    results: 'Results',
+    totalProduction: 'Total Production (liters)',
+    totalRevenue: 'Total Revenue',
+    totalCosts: 'Total Costs',
+    grossMargin: 'Gross Margin',
+    marginPercentage: 'Margin %',
+    revenuePerLiter: 'Revenue per Liter',
+    costPerLiter: 'Cost per Liter',
+    
+    // Module 2 - Transformation
+    module2Title: 'Module 2: Dairy Transformation',
+    baseProductionData: 'Base Production Data',
+    milkPriceForComparison: 'Milk Price (per liter) - for comparison',
+    transformationData: 'Transformation Data',
+    productType: 'Product Type',
+    litersPerKg: 'Liters per Kg of Product',
+    processingCost: 'Processing Cost (per liter)',
+    productPrice: 'Product Price (per kg)',
+    productTypes: {
+      queso_fresco: 'Fresh Cheese',
+      queso_madurado: 'Aged Cheese',
+      yogurt: 'Yogurt',
+      mantequilla: 'Butter',
+      otro: 'Other'
+    },
+    comparison: 'Comparison: Direct Sale vs Transformation',
+    concept: 'Concept',
+    directSale: 'Direct Sale',
+    transformation: 'Transformation',
+    income: 'Income',
+    margin: 'Margin',
+    difference: 'Difference',
+    betterTransform: 'Better to transform',
+    betterSellDirect: 'Better to sell direct',
+    visualization: 'Visualization',
+    optionsComparison: 'Options Comparison',
+    
+    // Module 3 - Lactation
+    module3Title: 'Module 3: Lactation and Productive Life',
+    lactationData: 'Lactation Data',
+    lactationDays: 'Lactation Days',
+    dryDays: 'Dry Days',
+    productiveLifeYears: 'Productive Life (years)',
+    replacementRate: 'Replacement Rate (%)',
+    
+    // Module 4 - Yield
+    module4Title: 'Module 4: Yield/Conversion',
+    yieldData: 'Yield/Conversion Data',
+    conversionRate: 'Conversion Rate',
+    efficiencyPercentage: 'Efficiency Percentage (%)',
+    
+    // Module 5 - Summary
+    module5Title: 'Module 5: Summary/Dashboard',
+    compareScenarios: 'Compare Scenarios',
+    selectMultipleScenarios: 'Select multiple scenarios to compare their results side by side.',
+    comparing: 'Comparing...',
+    scenario: 'Scenario',
+    bestScenarioByIncome: 'Best Scenario by Income',
+    bestScenarioByMargin: 'Best Scenario by Margin',
+    bestScenarioByMarginPercent: 'Best Scenario by Margin %',
+    marginsByScenario: 'Margins by Scenario',
+    selectAtLeast2: 'Select at least 2 scenarios to compare'
+  },
+  es: {
+    // Common
+    loading: 'Cargando...',
+    cancel: 'Cancelar',
+    save: 'Guardar',
+    delete: 'Eliminar',
+    edit: 'Editar',
+    create: 'Crear',
+    open: 'Abrir',
+    duplicate: 'Duplicar',
+    confirm: 'Confirmar',
+    error: 'Error',
+    success: 'Éxito',
+    
+    // Header
+    appTitle: 'MVP Web - Simuladores Ganadería',
+    hello: 'Hola',
+    logout: 'Cerrar Sesión',
+    language: 'Idioma',
+    
+    // Footer
+    footerText: '© 2026 MVP Web - Simuladores Ganadería. Todos los derechos reservados.',
+    about: 'Acerca de',
+    contact: 'Contacto',
+    privacy: 'Política de Privacidad',
+    terms: 'Términos de Servicio',
+    
+    // Login
+    login: 'Iniciar Sesión',
+    register: 'Registro',
+    email: 'Email',
+    password: 'Contraseña',
+    name: 'Nombre',
+    loginError: 'Error al iniciar sesión',
+    registerError: 'Error al registrarse',
+    alreadyHaveAccount: '¿Ya tienes cuenta? Inicia sesión',
+    noAccount: '¿No tienes cuenta? Regístrate',
+    signingIn: 'Iniciando sesión...',
+    registering: 'Registrando...',
+    
+    // Dashboard
+    myScenarios: 'Mis Escenarios',
+    newScenario: 'Nuevo Escenario',
+    scenarioName: 'Nombre del Escenario',
+    moduleType: 'Tipo de Módulo',
+    creationDate: 'Fecha Creación',
+    actions: 'Acciones',
+    noScenarios: 'No tienes escenarios aún. Crea uno para comenzar.',
+    loadingScenarios: 'Cargando escenarios...',
+    createScenario: 'Crear Escenario',
+    deleteScenario: 'Eliminar Escenario',
+    deleteConfirm: '¿Estás seguro de eliminar este escenario?',
+    errorCreatingScenario: 'Error al crear escenario',
+    errorDuplicatingScenario: 'Error al duplicar escenario',
+    errorDeletingScenario: 'Error al eliminar escenario',
+    scenarioNamePlaceholder: 'Ej: Venta de Leche - Escenario 1',
+    
+    // Module Types
+    moduleTypes: {
+      milk_sale: 'Producción y Venta de Leche',
+      transformation: 'Transformación Láctea',
+      lactation: 'Lactancia y Vida Productiva',
+      yield: 'Rendimiento/Conversión',
+      summary: 'Resumen/Dashboard'
+    },
+    
+    // Navigation
+    home: 'Inicio',
+    dashboard: 'Panel de Control',
+    scenarios: 'Escenarios',
+    
+    // Common errors
+    errorOccurred: 'Ocurrió un error',
+    tryAgain: 'Por favor, intenta de nuevo',
+    
+    // Module Common
+    backToDashboard: '← Volver al Dashboard',
+    selectScenario: 'Seleccionar Escenario',
+    selectScenarioPlaceholder: '-- Selecciona un escenario --',
+    pleaseSelectScenario: 'Por favor selecciona un escenario primero',
+    calculate: 'Calcular',
+    saveAndCalculate: 'Guardar y Calcular',
+    saving: 'Guardando...',
+    dataSaved: 'Datos guardados y resultados calculados',
+    errorSaving: 'Error al guardar',
+    
+    // Module 1 - Production
+    module1Title: 'Módulo 1: Producción y Venta de Leche',
+    productionData: 'Datos de Producción',
+    dailyProduction: 'Producción Diaria (litros)',
+    productionDays: 'Días de Producción',
+    animalsCount: 'Número de Animales',
+    feedCost: 'Costo de Alimentación (por litro)',
+    laborCost: 'Costo de Mano de Obra (por litro)',
+    healthCost: 'Costo de Salud (por litro)',
+    infrastructureCost: 'Costo de Infraestructura (por litro)',
+    otherCosts: 'Otros Costos (por litro)',
+    milkPrice: 'Precio Leche (por litro)',
+    results: 'Resultados',
+    totalProduction: 'Producción Total (litros)',
+    totalRevenue: 'Ingresos Totales',
+    totalCosts: 'Costos Totales',
+    grossMargin: 'Margen Bruto',
+    marginPercentage: 'Margen %',
+    revenuePerLiter: 'Ingreso por Litro',
+    costPerLiter: 'Costo por Litro',
+    
+    // Module 2 - Transformation
+    module2Title: 'Módulo 2: Transformación Láctea',
+    baseProductionData: 'Datos de Producción Base',
+    milkPriceForComparison: 'Precio Leche (por litro) - para comparación',
+    transformationData: 'Datos de Transformación',
+    productType: 'Tipo de Producto',
+    litersPerKg: 'Litros por Kg de Producto',
+    processingCost: 'Costo de Procesamiento (por litro)',
+    productPrice: 'Precio Producto (por kg)',
+    productTypes: {
+      queso_fresco: 'Queso Fresco',
+      queso_madurado: 'Queso Madurado',
+      yogurt: 'Yogurt',
+      mantequilla: 'Mantequilla',
+      otro: 'Otro'
+    },
+    comparison: 'Comparación: Venta Directa vs Transformación',
+    concept: 'Concepto',
+    directSale: 'Venta Directa',
+    transformation: 'Transformación',
+    income: 'Ingresos',
+    margin: 'Margen',
+    difference: 'Diferencia',
+    betterTransform: 'Mejor transformar',
+    betterSellDirect: 'Mejor vender directo',
+    visualization: 'Visualización',
+    optionsComparison: 'Comparación de Opciones',
+    
+    // Module 3 - Lactation
+    module3Title: 'Módulo 3: Lactancia y Vida Productiva',
+    lactationData: 'Datos de Lactancia',
+    lactationDays: 'Días de Lactancia',
+    dryDays: 'Días Secos',
+    productiveLifeYears: 'Vida Productiva (años)',
+    replacementRate: 'Tasa de Reemplazo (%)',
+    
+    // Module 4 - Yield
+    module4Title: 'Módulo 4: Rendimiento/Conversión',
+    yieldData: 'Datos de Rendimiento/Conversión',
+    conversionRate: 'Tasa de Conversión',
+    efficiencyPercentage: 'Porcentaje de Eficiencia (%)',
+    
+    // Module 5 - Summary
+    module5Title: 'Módulo 5: Resumen/Dashboard',
+    compareScenarios: 'Comparar Escenarios',
+    selectMultipleScenarios: 'Selecciona múltiples escenarios para comparar sus resultados lado a lado.',
+    comparing: 'Comparando...',
+    scenario: 'Escenario',
+    bestScenarioByIncome: 'Mejor Escenario por Ingresos',
+    bestScenarioByMargin: 'Mejor Escenario por Margen',
+    bestScenarioByMarginPercent: 'Mejor Escenario por Margen %',
+    marginsByScenario: 'Márgenes por Escenario',
+    selectAtLeast2: 'Selecciona al menos 2 escenarios para comparar'
+  }
+};
