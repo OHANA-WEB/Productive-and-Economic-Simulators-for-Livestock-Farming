@@ -4,7 +4,7 @@
   "description": "MVP Web - Simuladores Productivos y Económicos para Ganadería",
   "main": "server/index.js",
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
