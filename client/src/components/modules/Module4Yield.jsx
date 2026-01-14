@@ -195,45 +195,50 @@ function Module4Yield({ user }) {
   };
 
   const handleCalculate = () => {
-    const totalLiters = productionData.daily_production_liters * productionData.production_days * productionData.animals_count;
-    const effectiveLiters = totalLiters * (yieldData.efficiency_percentage / 100);
-    const convertedProduct = effectiveLiters * yieldData.conversion_rate;
-    const conversionEfficiency = yieldData.efficiency_percentage;
+    const dailyProduction = Number(productionData.daily_production_liters) || 0;
+    const productionDays = Number(productionData.production_days) || 0;
+    const animalsCount = Number(productionData.animals_count) || 0;
+    const efficiency = Number(yieldData.efficiency_percentage) || 0;
+    const conversionRate = Number(yieldData.conversion_rate) || 0;
+    
+    const totalLiters = dailyProduction * productionDays * animalsCount;
+    const effectiveLiters = totalLiters * (efficiency / 100);
+    const convertedProduct = effectiveLiters * conversionRate;
     const wasteLiters = totalLiters - effectiveLiters;
 
     setResults({
       totalLiters,
       effectiveLiters,
       convertedProduct,
-      conversionRate: yieldData.conversion_rate,
-      efficiencyPercentage: conversionEfficiency,
+      conversionRate,
+      efficiencyPercentage: efficiency,
       wasteLiters,
     });
   };
 
   const conversionData = results ? [
-    { name: 'Leche Total', value: results.totalLiters },
-    { name: 'Leche Efectiva', value: results.effectiveLiters },
-    { name: 'Producto Convertido', value: results.convertedProduct },
-    { name: 'Pérdidas', value: results.wasteLiters },
-  ] : [];
+    { name: t('totalLiters'), value: Number(results.totalLiters || 0) },
+    { name: t('effectiveLiters'), value: Number(results.effectiveLiters || 0) },
+    { name: t('convertedProduct'), value: Number(results.convertedProduct || 0) },
+    { name: t('wasteLiters'), value: Number(results.wasteLiters || 0) },
+  ].filter(item => !isNaN(item.value)) : [];
 
   const efficiencyData = results ? [
-    { name: 'Eficiencia', value: results.efficiencyPercentage },
-    { name: 'Tasa Conversión', value: results.conversionRate * 100 },
-  ] : [];
+    { name: t('efficiencyPercentage'), value: Number(results.efficiencyPercentage || 0) },
+    { name: t('conversionRate'), value: Number(results.conversionRate || 0) * 100 },
+  ].filter(item => !isNaN(item.value)) : [];
 
   return (
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
         <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          ← Volver al Dashboard
+          {t('backToDashboard')}
         </button>
-        <h1 style={{ marginTop: '20px' }}>Módulo 4: Rendimiento/Conversión</h1>
+        <h1 style={{ marginTop: '20px' }}>{t('module4Title')}</h1>
       </header>
 
       <div className="card">
-        <h2>Seleccionar Escenario</h2>
+        <h2>{t('selectScenario')}</h2>
         <select
           value={selectedScenario?.id || ''}
           onChange={(e) => {
@@ -245,7 +250,7 @@ function Module4Yield({ user }) {
           }}
           style={{ marginBottom: '20px' }}
         >
-          <option value="">-- Selecciona un escenario --</option>
+          <option value="">{t('selectScenarioPlaceholder')}</option>
           {scenarios.map(s => (
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
@@ -255,10 +260,10 @@ function Module4Yield({ user }) {
       {selectedScenario && (
         <>
           <div className="card">
-            <h2>Datos de Producción Base</h2>
+            <h2>{t('baseProductionData')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
-                <label>Producción Diaria (litros)</label>
+                <label>{t('dailyProduction')}</label>
                 <input
                   type="number"
                   name="daily_production_liters"
@@ -269,7 +274,7 @@ function Module4Yield({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Días de Producción</label>
+                <label>{t('productionDays')}</label>
                 <input
                   type="number"
                   name="production_days"
@@ -279,7 +284,7 @@ function Module4Yield({ user }) {
                 />
               </div>
               <div className="form-group">
-                <label>Número de Animales</label>
+                <label>{t('animalsCount')}</label>
                 <input
                   type="number"
                   name="animals_count"
@@ -290,10 +295,10 @@ function Module4Yield({ user }) {
               </div>
             </div>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Datos de Rendimiento/Conversión</h3>
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('yieldData')}</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
-                <label>Tasa de Conversión (producto por litro)</label>
+                <label>{t('conversionRateDescription')}</label>
                 <input
                   type="number"
                   name="conversion_rate"
@@ -301,11 +306,11 @@ function Module4Yield({ user }) {
                   onChange={handleYieldChange}
                   onFocus={handleInputFocus}
                   step="0.0001"
-                  placeholder="Ej: 0.1 (kg producto por litro)"
+                  placeholder={t('conversionRate')}
                 />
               </div>
               <div className="form-group">
-                <label>Eficiencia (%)</label>
+                <label>{t('efficiencyPercentage')}</label>
                 <input
                   type="number"
                   name="efficiency_percentage"
@@ -321,10 +326,10 @@ function Module4Yield({ user }) {
 
             <div style={{ marginTop: '20px' }}>
               <button className="btn btn-primary" onClick={handleCalculate} style={{ marginRight: '10px' }}>
-                Calcular
+                {t('calculate')}
               </button>
               <button className="btn btn-secondary" onClick={handleSave} disabled={loading}>
-                {loading ? 'Guardando...' : 'Guardar y Calcular'}
+                {loading ? t('saving') : t('saveAndCalculate')}
               </button>
             </div>
           </div>
@@ -332,56 +337,56 @@ function Module4Yield({ user }) {
           {results && (
             <>
               <div className="card">
-                <h2>Resultados</h2>
+                <h2>{t('results')}</h2>
                 <table className="table">
                   <tbody>
                     <tr>
-                      <td><strong>Leche Total (litros)</strong></td>
-                      <td>{results.totalLiters?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('totalLiters')}</strong></td>
+                      <td>{Number(results.totalLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Leche Efectiva (litros)</strong></td>
-                      <td>{results.effectiveLiters?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('effectiveLiters')}</strong></td>
+                      <td>{Number(results.effectiveLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Producto Convertido</strong></td>
-                      <td>{results.convertedProduct?.toLocaleString('es-ES', { maximumFractionDigits: 2 })} unidades</td>
+                      <td><strong>{t('convertedProduct')}</strong></td>
+                      <td>{Number(results.convertedProduct || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} {t('units')}</td>
                     </tr>
                     <tr>
-                      <td><strong>Tasa de Conversión</strong></td>
-                      <td>{results.conversionRate?.toFixed(4)}</td>
+                      <td><strong>{t('conversionRate')}</strong></td>
+                      <td>{Number(results.conversionRate || 0).toFixed(4)}</td>
                     </tr>
                     <tr>
-                      <td><strong>Eficiencia (%)</strong></td>
-                      <td>{results.efficiencyPercentage?.toFixed(2)}%</td>
+                      <td><strong>{t('efficiencyPercentage')}</strong></td>
+                      <td>{Number(results.efficiencyPercentage || 0).toFixed(2)}%</td>
                     </tr>
                     <tr>
-                      <td><strong>Pérdidas (litros)</strong></td>
-                      <td>{results.wasteLiters?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
+                      <td><strong>{t('wasteLiters')}</strong></td>
+                      <td>{Number(results.wasteLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                     </tr>
                     <tr>
-                      <td><strong>Pérdidas (%)</strong></td>
-                      <td>{results.totalLiters > 0 ? ((results.wasteLiters / results.totalLiters) * 100).toFixed(2) : 0}%</td>
+                      <td><strong>{t('wastePercentage')}</strong></td>
+                      <td>{Number(results.totalLiters || 0) > 0 ? ((Number(results.wasteLiters || 0) / Number(results.totalLiters || 0)) * 100).toFixed(2) : 0}%</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
               <div className="card">
-                <h2>Visualización</h2>
-                <h3 style={{ marginBottom: '15px' }}>Conversión de Leche a Producto</h3>
+                <h2>{t('visualization')}</h2>
+                <h3 style={{ marginBottom: '15px' }}>{t('milkToProductConversion')}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={conversionData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => value.toLocaleString('es-ES', { maximumFractionDigits: 2 })} />
+                    <Tooltip formatter={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} />
                     <Legend />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>
                 </ResponsiveContainer>
 
-                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Eficiencia y Conversión</h3>
+                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('efficiencyAndConversion')}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={efficiencyData}>
                     <CartesianGrid strokeDasharray="3 3" />

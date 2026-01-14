@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../utils/api';
+import { useI18n } from '../../i18n/I18nContext';
+import AlertModal from '../AlertModal';
 
 function Module5Summary({ user }) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [scenarios, setScenarios] = useState([]);
   const [selectedScenarios, setSelectedScenarios] = useState([]);
   const [comparison, setComparison] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
 
   useEffect(() => {
     loadScenarios();
@@ -25,7 +29,11 @@ function Module5Summary({ user }) {
 
   const handleCompare = async () => {
     if (selectedScenarios.length < 2) {
-      alert('Selecciona al menos 2 escenarios para comparar');
+      setAlertModal({
+        isOpen: true,
+        message: t('selectAtLeast2'),
+        type: 'info'
+      });
       return;
     }
 
@@ -36,7 +44,11 @@ function Module5Summary({ user }) {
       });
       setComparison(response.data);
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al comparar escenarios');
+      setAlertModal({
+        isOpen: true,
+        message: error.response?.data?.error || t('errorComparing'),
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -44,30 +56,30 @@ function Module5Summary({ user }) {
 
   const comparisonData = comparison ? comparison.map(item => ({
     name: item.scenario.name,
-    Ingresos: item.results.totalRevenue,
-    Costos: item.results.totalCosts,
-    Margen: item.results.grossMargin,
-    'Margen %': item.results.marginPercentage,
+    [t('income')]: Number(item.results.totalRevenue || 0),
+    [t('totalCosts')]: Number(item.results.totalCosts || 0),
+    [t('margin')]: Number(item.results.grossMargin || 0),
+    [t('marginPercentage')]: Number(item.results.marginPercentage || 0),
   })) : [];
 
   const revenueData = comparison ? comparison.map(item => ({
     name: item.scenario.name,
-    Ingresos: item.results.totalRevenue,
+    [t('income')]: Number(item.results.totalRevenue || 0),
   })) : [];
 
   return (
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
         <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          ← Volver al Dashboard
+          {t('backToDashboard')}
         </button>
-        <h1 style={{ marginTop: '20px' }}>Módulo 5: Resumen/Dashboard</h1>
+        <h1 style={{ marginTop: '20px' }}>{t('module5Title')}</h1>
       </header>
 
       <div className="card">
-        <h2>Comparar Escenarios</h2>
+        <h2>{t('compareScenarios')}</h2>
         <p style={{ marginBottom: '15px' }}>
-          Selecciona múltiples escenarios para comparar sus resultados lado a lado.
+          {t('selectMultipleScenarios')}
         </p>
 
         <div style={{ marginBottom: '20px' }}>
@@ -95,7 +107,7 @@ function Module5Summary({ user }) {
                 }}
                 style={{ marginRight: '10px' }}
               />
-              {scenario.name} ({scenario.type})
+              {scenario.name} ({t(`moduleTypes.${scenario.type}`) || scenario.type})
             </label>
           ))}
         </div>
@@ -105,34 +117,34 @@ function Module5Summary({ user }) {
           onClick={handleCompare}
           disabled={loading || selectedScenarios.length < 2}
         >
-          {loading ? 'Comparando...' : 'Comparar Escenarios'}
+          {loading ? t('comparing') : t('compareScenarios')}
         </button>
       </div>
 
       {comparison && (
         <>
           <div className="card">
-            <h2>Comparación de Resultados</h2>
+            <h2>{t('comparisonResults')}</h2>
             <table className="table">
               <thead>
                 <tr>
-                  <th>Escenario</th>
-                  <th>Producción (L)</th>
-                  <th>Ingresos</th>
-                  <th>Costos</th>
-                  <th>Margen Bruto</th>
-                  <th>Margen %</th>
+                  <th>{t('scenario')}</th>
+                  <th>{t('productionL')}</th>
+                  <th>{t('income')}</th>
+                  <th>{t('totalCosts')}</th>
+                  <th>{t('grossMargin')}</th>
+                  <th>{t('marginPercentage')}</th>
                 </tr>
               </thead>
               <tbody>
                 {comparison.map((item, index) => (
                   <tr key={index}>
                     <td><strong>{item.scenario.name}</strong></td>
-                    <td>{item.results.totalProductionLiters?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
-                    <td>${item.results.totalRevenue?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
-                    <td>${item.results.totalCosts?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
-                    <td>${item.results.grossMargin?.toLocaleString('es-ES', { maximumFractionDigits: 2 })}</td>
-                    <td>{item.results.marginPercentage?.toFixed(2)}%</td>
+                    <td>{Number(item.results.totalProductionLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                    <td>${Number(item.results.totalRevenue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                    <td>${Number(item.results.totalCosts || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                    <td>${Number(item.results.grossMargin || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                    <td>{Number(item.results.marginPercentage || 0).toFixed(2)}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -140,63 +152,63 @@ function Module5Summary({ user }) {
           </div>
 
           <div className="card">
-            <h2>Visualización Comparativa</h2>
-            <h3 style={{ marginBottom: '15px' }}>Ingresos, Costos y Márgenes</h3>
+            <h2>{t('comparativeVisualization')}</h2>
+            <h3 style={{ marginBottom: '15px' }}>{t('incomeCostsAndMargins')}</h3>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={comparisonData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => `$${value.toLocaleString('es-ES')}`} />
+                <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
                 <Legend />
-                <Bar dataKey="Ingresos" fill="#8884d8" />
-                <Bar dataKey="Costos" fill="#ffc658" />
-                <Bar dataKey="Margen" fill="#82ca9d" />
+                <Bar dataKey={t('income')} fill="#8884d8" />
+                <Bar dataKey={t('totalCosts')} fill="#ffc658" />
+                <Bar dataKey={t('margin')} fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Comparación de Ingresos</h3>
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('incomeComparison')}</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => `$${value.toLocaleString('es-ES')}`} />
+                <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
                 <Legend />
-                <Line type="monotone" dataKey="Ingresos" stroke="#8884d8" strokeWidth={2} />
+                <Line type="monotone" dataKey={t('income')} stroke="#8884d8" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Márgenes por Escenario</h3>
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('marginsByScenario')}</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={comparisonData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => `${value.toFixed(2)}%`} />
+                <Tooltip formatter={(value) => `${Number(value || 0).toFixed(2)}%`} />
                 <Legend />
-                <Bar dataKey="Margen %" fill="#82ca9d" />
+                <Bar dataKey={t('marginPercentage')} fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="card">
-            <h2>Resumen Ejecutivo</h2>
+            <h2>{t('executiveSummary')}</h2>
             {comparison.length > 0 && (
               <div>
-                <p><strong>Mejor Escenario por Ingresos:</strong> {
+                <p><strong>{t('bestScenarioByIncome')}:</strong> {
                   comparison.reduce((best, current) => 
-                    current.results.totalRevenue > best.results.totalRevenue ? current : best
+                    Number(current.results.totalRevenue || 0) > Number(best.results.totalRevenue || 0) ? current : best
                   ).scenario.name
                 }</p>
-                <p><strong>Mejor Escenario por Margen:</strong> {
+                <p><strong>{t('bestScenarioByMargin')}:</strong> {
                   comparison.reduce((best, current) => 
-                    current.results.grossMargin > best.results.grossMargin ? current : best
+                    Number(current.results.grossMargin || 0) > Number(best.results.grossMargin || 0) ? current : best
                   ).scenario.name
                 }</p>
-                <p><strong>Mejor Escenario por Margen %:</strong> {
+                <p><strong>{t('bestScenarioByMarginPercent')}:</strong> {
                   comparison.reduce((best, current) => 
-                    current.results.marginPercentage > best.results.marginPercentage ? current : best
+                    Number(current.results.marginPercentage || 0) > Number(best.results.marginPercentage || 0) ? current : best
                   ).scenario.name
                 }</p>
               </div>
@@ -204,6 +216,13 @@ function Module5Summary({ user }) {
           </div>
         </>
       )}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.type === 'success' ? t('success') : alertModal.type === 'error' ? t('error') : t('information') || 'Information'}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   );
 }

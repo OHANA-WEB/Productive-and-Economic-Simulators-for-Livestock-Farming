@@ -101,7 +101,7 @@ function Module2Transformation({ user }) {
         // If no production data exists, show warning
         setAlertModal({
           isOpen: true,
-          message: 'Este escenario no tiene datos de producción (Módulo 1). Por favor, complete primero el Módulo 1 antes de usar la Transformación.',
+          message: t('module1DataRequired'),
           type: 'info'
         });
       }
@@ -279,17 +279,17 @@ function Module2Transformation({ user }) {
   const comparisonData = results ? [
     { 
       name: t('directSale'), 
-      Ingresos: Number(results.milk_revenue) || 0, 
-      Costos: Number(results.milk_revenue - results.milk_margin) || 0, 
-      Margen: Number(results.milk_margin) || 0 
+      [t('income')]: Number(results.milk_revenue) || 0, 
+      [t('totalCosts')]: Number(results.milk_revenue - results.milk_margin) || 0, 
+      [t('margin')]: Number(results.milk_margin) || 0 
     },
     { 
       name: t('transformation'), 
-      Ingresos: Number(results.product_revenue) || 0, 
-      Costos: Number(results.product_revenue - results.transformation_margin) || 0, 
-      Margen: Number(results.transformation_margin) || 0 
+      [t('income')]: Number(results.product_revenue) || 0, 
+      [t('totalCosts')]: Number(results.product_revenue - results.transformation_margin) || 0, 
+      [t('margin')]: Number(results.transformation_margin) || 0 
     },
-  ].filter(item => !isNaN(item.Ingresos) && !isNaN(item.Costos) && !isNaN(item.Margen)) : [];
+  ].filter(item => !isNaN(item[t('income')]) && !isNaN(item[t('totalCosts')]) && !isNaN(item[t('margin')])) : [];
 
   return (
     <div className="container">
@@ -326,7 +326,7 @@ function Module2Transformation({ user }) {
             <h2>{t('baseProductionData')}</h2>
             <div style={{ marginBottom: '20px', padding: '15px', background: '#e8f5e9', borderRadius: '8px', border: '1px solid #4caf50' }}>
               <p style={{ margin: 0, fontSize: '0.9em', color: '#2e7d32', fontWeight: '500' }}>
-                📊 <strong>{t('note')}:</strong> Estos datos se heredan automáticamente del escenario de "Producción y Venta de Leche" (Módulo 1). No son editables aquí para mantener coherencia.
+                📊 <strong>{t('note')}:</strong> {t('inheritedDataNote')}
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
@@ -342,7 +342,7 @@ function Module2Transformation({ user }) {
                   step="0.01"
                 />
                 <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                  Heredado del Módulo 1
+                  {t('inheritedFromModule1')}
                 </small>
               </div>
               <div className="form-group">
@@ -356,7 +356,7 @@ function Module2Transformation({ user }) {
                   style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
                 />
                 <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                  Heredado del Módulo 1
+                  {t('inheritedFromModule1')}
                 </small>
               </div>
               <div className="form-group">
@@ -370,11 +370,11 @@ function Module2Transformation({ user }) {
                   style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
                 />
                 <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                  Heredado del Módulo 1
+                  {t('inheritedFromModule1')}
                 </small>
               </div>
               <div className="form-group">
-                <label>Precio de Referencia de la Leche (por litro) 🔒</label>
+                <label>{t('milkPriceForComparison')} 🔒</label>
                 <input
                   type="number"
                   name="milk_price_per_liter"
@@ -385,7 +385,7 @@ function Module2Transformation({ user }) {
                   step="0.01"
                 />
                 <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                  Heredado del Módulo 1 - Solo lectura
+                  {t('inheritedFromModule1')}
                 </small>
               </div>
             </div>
@@ -440,7 +440,7 @@ function Module2Transformation({ user }) {
                   step="0.01"
                 />
                 <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                  {t('productPrice')} (legacy - used as fallback if channel prices not set)
+                  {t('legacyFallback')}
                 </small>
               </div>
             </div>
@@ -459,10 +459,10 @@ function Module2Transformation({ user }) {
               return (
                 <div style={{ marginBottom: '15px', padding: '10px', background: '#f5f5f5', borderRadius: '4px' }}>
                   <p style={{ margin: '0 0 10px 0', fontSize: '0.9em', color: '#666' }}>
-                    Configure the distribution across 3 sales channels. Percentages must sum to 100%.
+                    {t('configureChannels')}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <strong>Total:</strong>
+                    <strong>{t('total')}:</strong>
                     <span style={{ 
                       fontWeight: 'bold', 
                       color: totalPercentage === 100 ? 'green' : 'red'
@@ -536,7 +536,7 @@ function Module2Transformation({ user }) {
                   readOnly
                   style={{ background: '#f0f0f0' }}
                 />
-                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>Auto-calculated</small>
+                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>{t('autoCalculated')}</small>
               </div>
               <div className="form-group">
                 <label>{t('thirdChannelPrice')}</label>
@@ -669,13 +669,13 @@ function Module2Transformation({ user }) {
                 <h2>{t('comparison')}</h2>
                 <div style={{ marginBottom: '20px', padding: '15px', background: '#fff9e6', borderRadius: '8px', border: '1px solid #ffe066' }}>
                   <p style={{ margin: '0 0 10px 0', fontSize: '0.95em', fontWeight: 'bold', color: '#996600' }}>
-                    📊 {t('note')}: ¿Qué estamos comparando?
+                    📊 {t('note')}: {t('whatAreWeComparing')}
                   </p>
                   <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9em', color: '#666' }}>
-                    <li><strong>Venta Directa:</strong> Vender la leche tal cual (sin transformar) al precio por litro definido</li>
-                    <li><strong>Transformación:</strong> Convertir la leche en producto lácteo (queso, yogurt, etc.) y venderlo</li>
-                    <li><strong>Supuestos:</strong> Se usa la misma cantidad de leche producida en ambos escenarios</li>
-                    <li><strong>Costos incluidos:</strong> Leche + procesamiento/transformación + empaque</li>
+                    <li><strong>{t('directSale')}:</strong> {t('directSaleExplanation')}</li>
+                    <li><strong>{t('transformation')}:</strong> {t('transformationExplanation')}</li>
+                    <li><strong>{t('assumptions')}:</strong> {t('assumptionsExplanation')}</li>
+                    <li><strong>{t('costsIncluded')}:</strong> {t('costsIncludedExplanation')}</li>
                   </ul>
                 </div>
                 <table className="table">
@@ -717,16 +717,16 @@ function Module2Transformation({ user }) {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
                     <Legend />
-                    <Bar dataKey="Ingresos" fill="#8884d8" />
-                    <Bar dataKey="Costos" fill="#ffc658" />
-                    <Bar dataKey="Margen" fill="#82ca9d" />
+                    <Bar dataKey={t('income')} fill="#8884d8" />
+                    <Bar dataKey={t('totalCosts')} fill="#ffc658" />
+                    <Bar dataKey={t('margin')} fill="#82ca9d" />
                   </BarChart>
                 </ResponsiveContainer>
                 ) : (
                   <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ color: '#666', margin: 0 }}>No hay datos para mostrar. Complete los campos y presione "Calcular".</p>
+                    <p style={{ color: '#666', margin: 0 }}>{t('noDataToShow')}</p>
                   </div>
                 )}
               </div>

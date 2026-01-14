@@ -235,17 +235,17 @@ function Module1Production({ user }) {
   };
 
   const chartData = results ? [
-    { name: 'Ingresos', value: Number(results.total_revenue) || 0 },
-    { name: 'Costos', value: Number(results.total_costs) || 0 },
-    { name: 'Margen', value: Number(results.gross_margin) || 0 },
+    { name: t('income'), value: Number(results.total_revenue) || 0 },
+    { name: t('totalCosts'), value: Number(results.total_costs) || 0 },
+    { name: t('margin'), value: Number(results.gross_margin) || 0 },
   ].filter(item => !isNaN(item.value)) : [];
 
   const costBreakdown = formData ? [
-    { name: 'Alimento', value: Number(formData.feed_cost_per_liter) || 0 },
-    { name: 'Mano de Obra', value: Number(formData.labor_cost_per_liter) || 0 },
-    { name: 'Salud', value: Number(formData.health_cost_per_liter) || 0 },
-    { name: 'Infraestructura', value: Number(formData.infrastructure_cost_per_liter) || 0 },
-    { name: 'Otros', value: Number(formData.other_costs_per_liter) || 0 },
+    { name: t('feed'), value: Number(formData.feed_cost_per_liter) || 0 },
+    { name: t('labor'), value: Number(formData.labor_cost_per_liter) || 0 },
+    { name: t('health'), value: Number(formData.health_cost_per_liter) || 0 },
+    { name: t('infrastructure'), value: Number(formData.infrastructure_cost_per_liter) || 0 },
+    { name: t('other'), value: Number(formData.other_costs_per_liter) || 0 },
   ].filter(item => !isNaN(item.value)) : [];
 
   return (
@@ -461,25 +461,25 @@ function Module1Production({ user }) {
 
               <div className="card">
                 <h2>{t('visualization')}</h2>
-                <h3 style={{ marginBottom: '15px' }}>{t('income')} vs {t('totalCosts')} vs {t('margin')}</h3>
+                <h3 style={{ marginBottom: '15px' }}>{t('income')} vs {t('totalCosts')} vs {t('grossMargin')}</h3>
                 {chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
                     <Legend />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>
                 </ResponsiveContainer>
                 ) : (
                   <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ color: '#666', margin: 0 }}>No hay datos para mostrar. Complete los campos y presione "Calcular".</p>
+                    <p style={{ color: '#666', margin: 0 }}>{t('noDataToShow')}</p>
                   </div>
                 )}
 
-                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>Desglose de Costos</h3>
+                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('costBreakdown')}</h3>
                 {costBreakdown.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={costBreakdown}>
@@ -493,7 +493,7 @@ function Module1Production({ user }) {
                 </ResponsiveContainer>
                 ) : (
                   <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ color: '#666', margin: 0 }}>No hay datos de costos para mostrar.</p>
+                    <p style={{ color: '#666', margin: 0 }}>{t('noCostDataToShow')}</p>
                   </div>
                 )}
               </div>

@@ -454,7 +454,7 @@ function Module3Lactation({ user }) {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => `${value.toLocaleString('es-ES')} litros`} />
+                    <Tooltip formatter={(value) => `${Number(value || 0).toLocaleString(undefined)} ${t('liters')}`} />
                     <Legend />
                     <Bar dataKey="value" fill="#82ca9d" />
                   </BarChart>

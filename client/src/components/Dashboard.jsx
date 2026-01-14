@@ -195,7 +195,7 @@ function Dashboard({ user, onLogout }) {
       <div className="dashboard-header">
         <div>
           <h1 className="page-title">{t('myScenarios')}</h1>
-          <p className="page-subtitle">{scenarios.length} {scenarios.length === 1 ? 'scenario' : 'scenarios'}</p>
+          <p className="page-subtitle">{scenarios.length} {scenarios.length === 1 ? t('scenarioSingular') : t('scenarios')}</p>
         </div>
         <button
           className="btn btn-primary btn-icon"
@@ -338,22 +338,22 @@ function Dashboard({ user, onLogout }) {
               </div>
               <div className="scenario-meta">
                 <span className="meta-item">
-                  <span className="meta-label">📅 Creado:</span>
+                  <span className="meta-label">📅 {t('created')}:</span>
                   <span className="meta-value">{new Date(scenario.created_at).toLocaleDateString()}</span>
                 </span>
                 {scenario.updated_at && scenario.updated_at !== scenario.created_at && (
                   <span className="meta-item">
-                    <span className="meta-label">🔄 Actualizado:</span>
+                    <span className="meta-label">🔄 {t('updated')}:</span>
                     <span className="meta-value">{new Date(scenario.updated_at).toLocaleDateString()}</span>
                   </span>
                 )}
                 <span className="meta-item">
-                  <span className="meta-label">📝 Estado:</span>
+                  <span className="meta-label">📝 {t('status')}:</span>
                   <span className="meta-value" style={{ 
                     color: scenario.updated_at && scenario.updated_at !== scenario.created_at ? '#059669' : '#6b7280',
                     fontWeight: '500'
                   }}>
-                    {scenario.updated_at && scenario.updated_at !== scenario.created_at ? 'Editable (con datos)' : 'Nuevo'}
+                    {scenario.updated_at && scenario.updated_at !== scenario.created_at ? t('editableWithData') : t('new')}
                   </span>
                 </span>
               </div>
