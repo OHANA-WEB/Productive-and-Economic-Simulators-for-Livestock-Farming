@@ -96,7 +96,7 @@ function Dashboard({ user, onLogout }) {
   const getModuleColor = (type) => {
     const colorMap = {
       milk_sale: '#4CAF50',
-      transformation: '#2196F3',
+      transformation: '#4a7c2a',
       lactation: '#FF9800',
       yield: '#9C27B0',
       summary: '#F44336'

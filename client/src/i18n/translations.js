@@ -14,13 +14,16 @@ export const translations = {
     success: 'Success',
     
     // Header
-    appTitle: 'MVP Web - Livestock Simulators',
+    appTitle: 'Livestock Simulators',
     hello: 'Hello',
     logout: 'Logout',
     language: 'Language',
+    settings: 'Settings',
+    showSidebar: 'Show Sidebar',
+    showFooter: 'Show Footer',
     
     // Footer
-    footerText: '© 2026 MVP Web - Livestock Simulators. All rights reserved.',
+    footerText: '© 2026 Livestock Simulators. All rights reserved.',
     about: 'About',
     contact: 'Contact',
     privacy: 'Privacy Policy',
@@ -192,13 +195,16 @@ export const translations = {
     success: 'Éxito',
     
     // Header
-    appTitle: 'MVP Web - Simuladores Ganadería',
+    appTitle: 'Simuladores Ganadería',
     hello: 'Hola',
     logout: 'Cerrar Sesión',
     language: 'Idioma',
+    settings: 'Configuración',
+    showSidebar: 'Mostrar Barra Lateral',
+    showFooter: 'Mostrar Pie de Página',
     
     // Footer
-    footerText: '© 2026 MVP Web - Simuladores Ganadería. Todos los derechos reservados.',
+    footerText: '© 2026 Simuladores Ganadería. Todos los derechos reservados.',
     about: 'Acerca de',
     contact: 'Contacto',
     privacy: 'Política de Privacidad',

@@ -86,8 +86,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: #e8f0e0;
+  color: #2d5016;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,7 +125,7 @@
 }
 
 .modal-close-button:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #2d5016;
   outline-offset: 2px;
 }
 
@@ -191,13 +191,13 @@
 }
 
 .modal-footer .btn-primary {
-  background-color: #3b82f6;
+  background-color: #2d5016;
   color: white;
   border: none;
 }
 
 .modal-footer .btn-primary:hover {
-  background-color: #2563eb;
+  background-color: #1e3d0f;
 }
 
 /* Responsive */

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useI18n } from '../i18n/I18nContext';
 
 function Login({ onLogin }) {
-  const { t } = useI18n();
+  const { t, language, changeLanguage } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -37,72 +37,118 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="container" style={{ maxWidth: '400px', marginTop: '100px' }}>
-      <div className="card">
-        <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>
-          {isRegister ? t('register') : t('login')}
-        </h2>
-
-        {error && (
-          <div style={{ color: 'red', marginBottom: '15px', padding: '10px', background: '#ffe6e6', borderRadius: '4px' }}>
-            {error}
+    <div className="login-page-container">
+      <div className="login-header">
+        <Link to="/" className="login-logo-link">
+          <div className="login-logo-container">
+            <img src="/logo.png" alt="Livestock Simulators Logo" className="login-logo-image" />
           </div>
-        )}
+          <h1 className="login-title">{t('appTitle')}</h1>
+        </Link>
+        <div className="login-language-switcher">
+          <select
+            value={language}
+            onChange={(e) => changeLanguage(e.target.value)}
+            className="login-language-select"
+          >
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit}>
-          {isRegister && (
-            <div className="form-group">
-              <label>{t('name')}</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+      <div className="login-form-wrapper">
+        <div className="login-card">
+          <div className="login-card-header">
+            <h2 className="login-card-title">
+              {isRegister ? t('register') : t('login')}
+            </h2>
+            <p className="login-card-subtitle">
+              {isRegister 
+                ? t('noAccount')?.replace('¿No tienes cuenta? ', '') || 'Create your account'
+                : t('alreadyHaveAccount')?.replace('¿Ya tienes cuenta? ', '') || 'Welcome back'
+              }
+            </p>
+          </div>
+
+          {error && (
+            <div className="login-error-message">
+              {error}
             </div>
           )}
 
-          <div className="form-group">
-            <label>{t('email')}</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <form onSubmit={handleSubmit} className="login-form">
+            {isRegister && (
+              <div className="form-group">
+                <label>{t('name')}</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('name')}
+                  required
+                  disabled={loading}
+                />
+              </div>
+            )}
+
+            <div className="form-group">
+              <label>{t('email')}</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('email')}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>{t('password')}</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t('password')}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary login-submit-btn"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="login-loading">
+                  <span className="login-spinner"></span>
+                  {isRegister ? t('registering') : t('signingIn')}
+                </span>
+              ) : (
+                isRegister ? t('register') : t('login')
+              )}
+            </button>
+          </form>
+
+          <div className="login-card-footer">
+            <button
+              type="button"
+              className="login-toggle-btn"
+              onClick={() => {
+                setIsRegister(!isRegister);
+                setError('');
+                setEmail('');
+                setPassword('');
+                setName('');
+              }}
+              disabled={loading}
+            >
+              {isRegister ? t('alreadyHaveAccount') : t('noAccount')}
+            </button>
           </div>
-
-          <div className="form-group">
-            <label>{t('password')}</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', marginBottom: '10px' }}
-            disabled={loading}
-          >
-            {loading ? (isRegister ? t('registering') : t('signingIn')) : isRegister ? t('register') : t('login')}
-          </button>
-        </form>
-
-        <button
-          type="button"
-          className="btn btn-secondary"
-          style={{ width: '100%' }}
-          onClick={() => {
-            setIsRegister(!isRegister);
-            setError('');
-          }}
-        >
-          {isRegister ? t('alreadyHaveAccount') : t('noAccount')}
-        </button>
+        </div>
       </div>
     </div>
   );
