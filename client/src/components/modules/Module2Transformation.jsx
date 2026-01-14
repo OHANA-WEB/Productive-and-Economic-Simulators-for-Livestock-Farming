@@ -567,8 +567,12 @@ function Module2Transformation({ user }) {
               <div className="card">
                 <h2>{t('productionCostBreakdown')}</h2>
                 {(() => {
-                  const milkCostPerKg = (productionData.milk_price_per_liter || 0) * (transformationData.liters_per_kg_product || 0);
-                  const processingCostPerKg = (transformationData.processing_cost_per_liter || 0) * (transformationData.liters_per_kg_product || 0);
+                  const litersPerKg = Number(transformationData.liters_per_kg_product) || 0;
+                  const milkPrice = Number(productionData.milk_price_per_liter) || 0;
+                  const processingCost = Number(transformationData.processing_cost_per_liter) || 0;
+                  
+                  const milkCostPerKg = milkPrice * litersPerKg;
+                  const processingCostPerKg = processingCost * litersPerKg;
                   const totalCostPerKg = milkCostPerKg + processingCostPerKg;
                   
                   return (
@@ -577,11 +581,11 @@ function Module2Transformation({ user }) {
                         <tbody>
                           <tr>
                             <td><strong>{t('milkCostPerKg')}</strong></td>
-                            <td>${milkCostPerKg.toFixed(2)} ({(transformationData.liters_per_kg_product || 0).toFixed(2)} L × ${(productionData.milk_price_per_liter || 0).toFixed(2)}/L)</td>
+                            <td>${milkCostPerKg.toFixed(2)} ({litersPerKg.toFixed(2)} L × ${milkPrice.toFixed(2)}/L)</td>
                           </tr>
                           <tr>
                             <td><strong>{t('processingCostPerKg')}</strong></td>
-                            <td>${processingCostPerKg.toFixed(2)} ({(transformationData.liters_per_kg_product || 0).toFixed(2)} L × ${(transformationData.processing_cost_per_liter || 0).toFixed(2)}/L)</td>
+                            <td>${processingCostPerKg.toFixed(2)} ({litersPerKg.toFixed(2)} L × ${processingCost.toFixed(2)}/L)</td>
                           </tr>
                           <tr style={{ borderTop: '2px solid #333' }}>
                             <td><strong>{t('totalCostPerKg')}</strong></td>
@@ -598,25 +602,29 @@ function Module2Transformation({ user }) {
               <div className="card">
                 <h2>{t('channelMargins')}</h2>
                 {(() => {
-                  const milkCostPerKg = (productionData.milk_price_per_liter || 0) * (transformationData.liters_per_kg_product || 0);
-                  const processingCostPerKg = (transformationData.processing_cost_per_liter || 0) * (transformationData.liters_per_kg_product || 0);
+                  const litersPerKg = Number(transformationData.liters_per_kg_product) || 0;
+                  const milkPrice = Number(productionData.milk_price_per_liter) || 0;
+                  const processingCost = Number(transformationData.processing_cost_per_liter) || 0;
+                  
+                  const milkCostPerKg = milkPrice * litersPerKg;
+                  const processingCostPerKg = processingCost * litersPerKg;
                   const totalCostPerKg = milkCostPerKg + processingCostPerKg;
                   
                   const channels = [
                     {
                       name: t('salesChannelDirect'),
-                      percentage: transformationData.sales_channel_direct_percentage || 0,
-                      price: transformationData.direct_sale_price_per_kg || 0
+                      percentage: Number(transformationData.sales_channel_direct_percentage) || 0,
+                      price: Number(transformationData.direct_sale_price_per_kg) || 0
                     },
                     {
                       name: t('salesChannelDistributors'),
-                      percentage: transformationData.sales_channel_distributors_percentage || 0,
-                      price: transformationData.distributors_price_per_kg || 0
+                      percentage: Number(transformationData.sales_channel_distributors_percentage) || 0,
+                      price: Number(transformationData.distributors_price_per_kg) || 0
                     },
                     {
                       name: t('salesChannelThird'),
-                      percentage: transformationData.sales_channel_third_percentage || 0,
-                      price: transformationData.third_channel_price_per_kg || 0
+                      percentage: Number(transformationData.sales_channel_third_percentage) || 0,
+                      price: Number(transformationData.third_channel_price_per_kg) || 0
                     }
                   ];
                   
