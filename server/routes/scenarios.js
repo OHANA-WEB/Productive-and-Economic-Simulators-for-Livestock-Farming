@@ -36,7 +36,7 @@ router.get('/:id', async (req, res) => {
     );
 
     if (scenarioResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Scenario not found' });
+      return res.status(403).json({ error: 'Access denied: Scenario not found or you do not have permission' });
     }
 
     const scenario = scenarioResult.rows[0];
@@ -128,9 +128,15 @@ router.post('/:id/duplicate', async (req, res) => {
         [newScenario.id, scenarioId]
       ),
       pool.query(
-        `INSERT INTO transformation_data (scenario_id, product_type, liters_per_kg_product,
-         processing_cost_per_liter, product_price_per_kg)
-         SELECT $1, product_type, liters_per_kg_product, processing_cost_per_liter, product_price_per_kg
+        `INSERT INTO transformation_data (
+          scenario_id, product_type, liters_per_kg_product,
+          processing_cost_per_liter, product_price_per_kg,
+          sales_channel_direct_percentage, sales_channel_distributors_percentage, sales_channel_third_percentage,
+          direct_sale_price_per_kg, distributors_price_per_kg, third_channel_price_per_kg
+        )
+         SELECT $1, product_type, liters_per_kg_product, processing_cost_per_liter, product_price_per_kg,
+         sales_channel_direct_percentage, sales_channel_distributors_percentage, sales_channel_third_percentage,
+         direct_sale_price_per_kg, distributors_price_per_kg, third_channel_price_per_kg
          FROM transformation_data WHERE scenario_id = $2`,
         [newScenario.id, scenarioId]
       ),

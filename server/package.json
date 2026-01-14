@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "migrate:sales-channels": "node scripts/migrate-sales-channels.js"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -53,11 +53,23 @@ CREATE TABLE IF NOT EXISTS transformation_data (
   product_type VARCHAR(100), -- 'queso_fresco', 'queso_madurado', etc.
   liters_per_kg_product DECIMAL(10, 2),
   processing_cost_per_liter DECIMAL(10, 2),
-  product_price_per_kg DECIMAL(10, 2),
+  product_price_per_kg DECIMAL(10, 2), -- Legacy field, kept for backward compatibility
+  -- Sales channels (3 channels: direct, distributors, third/mixed)
+  sales_channel_direct_percentage DECIMAL(5, 2) DEFAULT 100.00,
+  sales_channel_distributors_percentage DECIMAL(5, 2) DEFAULT 0.00,
+  sales_channel_third_percentage DECIMAL(5, 2) DEFAULT 0.00,
+  direct_sale_price_per_kg DECIMAL(10, 2),
+  distributors_price_per_kg DECIMAL(10, 2),
+  third_channel_price_per_kg DECIMAL(10, 2),
   -- Metadata
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(scenario_id)
+  UNIQUE(scenario_id),
+  CONSTRAINT check_sales_channels_sum CHECK (
+    COALESCE(sales_channel_direct_percentage, 0) + 
+    COALESCE(sales_channel_distributors_percentage, 0) + 
+    COALESCE(sales_channel_third_percentage, 0) = 100.00
+  )
 );
 
 -- Lactation Data (for lactation & productive life module)

@@ -24,7 +24,7 @@ router.post('/production/:scenarioId', async (req, res) => {
     const scenarioId = parseInt(req.params.scenarioId);
 
     if (!(await verifyScenarioOwnership(pool, scenarioId, req.user.userId))) {
-      return res.status(404).json({ error: 'Scenario not found' });
+      return res.status(403).json({ error: 'Access denied: Scenario not found or you do not have permission' });
     }
 
     const {
@@ -88,29 +88,47 @@ router.post('/transformation/:scenarioId', async (req, res) => {
     const scenarioId = parseInt(req.params.scenarioId);
 
     if (!(await verifyScenarioOwnership(pool, scenarioId, req.user.userId))) {
-      return res.status(404).json({ error: 'Scenario not found' });
+      return res.status(403).json({ error: 'Access denied: Scenario not found or you do not have permission' });
     }
 
     const {
       product_type,
       liters_per_kg_product,
       processing_cost_per_liter,
-      product_price_per_kg,
+      product_price_per_kg, // Legacy field
+      sales_channel_direct_percentage,
+      sales_channel_distributors_percentage,
+      sales_channel_third_percentage,
+      direct_sale_price_per_kg,
+      distributors_price_per_kg,
+      third_channel_price_per_kg,
     } = req.body;
 
     const result = await pool.query(
       `INSERT INTO transformation_data (
         scenario_id, product_type, liters_per_kg_product,
-        processing_cost_per_liter, product_price_per_kg
-      ) VALUES ($1, $2, $3, $4, $5)
+        processing_cost_per_liter, product_price_per_kg,
+        sales_channel_direct_percentage, sales_channel_distributors_percentage, sales_channel_third_percentage,
+        direct_sale_price_per_kg, distributors_price_per_kg, third_channel_price_per_kg
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       ON CONFLICT (scenario_id) DO UPDATE SET
         product_type = EXCLUDED.product_type,
         liters_per_kg_product = EXCLUDED.liters_per_kg_product,
         processing_cost_per_liter = EXCLUDED.processing_cost_per_liter,
         product_price_per_kg = EXCLUDED.product_price_per_kg,
+        sales_channel_direct_percentage = EXCLUDED.sales_channel_direct_percentage,
+        sales_channel_distributors_percentage = EXCLUDED.sales_channel_distributors_percentage,
+        sales_channel_third_percentage = EXCLUDED.sales_channel_third_percentage,
+        direct_sale_price_per_kg = EXCLUDED.direct_sale_price_per_kg,
+        distributors_price_per_kg = EXCLUDED.distributors_price_per_kg,
+        third_channel_price_per_kg = EXCLUDED.third_channel_price_per_kg,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *`,
-      [scenarioId, product_type, liters_per_kg_product, processing_cost_per_liter, product_price_per_kg]
+      [
+        scenarioId, product_type, liters_per_kg_product, processing_cost_per_liter, product_price_per_kg,
+        sales_channel_direct_percentage || 100, sales_channel_distributors_percentage || 0, sales_channel_third_percentage || 0,
+        direct_sale_price_per_kg, distributors_price_per_kg, third_channel_price_per_kg
+      ]
     );
 
     // Recalculate and save results
@@ -129,7 +147,7 @@ router.post('/lactation/:scenarioId', async (req, res) => {
     const scenarioId = parseInt(req.params.scenarioId);
 
     if (!(await verifyScenarioOwnership(pool, scenarioId, req.user.userId))) {
-      return res.status(404).json({ error: 'Scenario not found' });
+      return res.status(403).json({ error: 'Access denied: Scenario not found or you do not have permission' });
     }
 
     const {
@@ -169,7 +187,7 @@ router.post('/yield/:scenarioId', async (req, res) => {
     const scenarioId = parseInt(req.params.scenarioId);
 
     if (!(await verifyScenarioOwnership(pool, scenarioId, req.user.userId))) {
-      return res.status(404).json({ error: 'Scenario not found' });
+      return res.status(403).json({ error: 'Access denied: Scenario not found or you do not have permission' });
     }
 
     const {

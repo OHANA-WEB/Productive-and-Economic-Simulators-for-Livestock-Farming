@@ -92,6 +92,7 @@ export function calculateRevenue(productionData) {
 
 /**
  * Calculate transformation metrics (for dairy transformation module)
+ * Supports 3 sales channels: direct, distributors, third/mixed
  */
 export function calculateTransformationMetrics(productionData, transformationData) {
   if (!productionData || !transformationData) return null;
@@ -100,20 +101,61 @@ export function calculateTransformationMetrics(productionData, transformationDat
   const {
     liters_per_kg_product = 0,
     processing_cost_per_liter = 0,
-    product_price_per_kg = 0,
+    product_price_per_kg = 0, // Legacy field for backward compatibility
+    sales_channel_direct_percentage = 100,
+    sales_channel_distributors_percentage = 0,
+    sales_channel_third_percentage = 0,
+    direct_sale_price_per_kg = null,
+    distributors_price_per_kg = null,
+    third_channel_price_per_kg = null,
   } = transformationData;
 
   const totalLiters = productionMetrics.totalProductionLiters;
-  const totalProductKg = totalLiters / liters_per_kg_product;
+  const totalProductKg = totalLiters / (liters_per_kg_product || 1);
   const processingCost = processing_cost_per_liter * totalLiters;
-  const productRevenue = product_price_per_kg * totalProductKg;
+
+  // Calculate revenue by sales channel
+  // Use channel-specific prices if available, otherwise fall back to product_price_per_kg
+  const directPrice = direct_sale_price_per_kg !== null ? direct_sale_price_per_kg : product_price_per_kg;
+  const distributorsPrice = distributors_price_per_kg !== null ? distributors_price_per_kg : product_price_per_kg;
+  const thirdPrice = third_channel_price_per_kg !== null ? third_channel_price_per_kg : product_price_per_kg;
+
+  const directKg = totalProductKg * (sales_channel_direct_percentage / 100);
+  const distributorsKg = totalProductKg * (sales_channel_distributors_percentage / 100);
+  const thirdKg = totalProductKg * (sales_channel_third_percentage / 100);
+
+  const directRevenue = directPrice * directKg;
+  const distributorsRevenue = distributorsPrice * distributorsKg;
+  const thirdRevenue = thirdPrice * thirdKg;
+  const totalProductRevenue = directRevenue + distributorsRevenue + thirdRevenue;
 
   return {
     totalProductKg,
     processingCost,
-    productRevenue,
-    revenuePerKg: product_price_per_kg,
+    productRevenue: totalProductRevenue,
+    revenuePerKg: totalProductKg > 0 ? totalProductRevenue / totalProductKg : 0,
     litersPerKg: liters_per_kg_product,
+    // Sales channel breakdown
+    salesChannels: {
+      direct: {
+        percentage: sales_channel_direct_percentage,
+        kg: directKg,
+        pricePerKg: directPrice,
+        revenue: directRevenue,
+      },
+      distributors: {
+        percentage: sales_channel_distributors_percentage,
+        kg: distributorsKg,
+        pricePerKg: distributorsPrice,
+        revenue: distributorsRevenue,
+      },
+      third: {
+        percentage: sales_channel_third_percentage,
+        kg: thirdKg,
+        pricePerKg: thirdPrice,
+        revenue: thirdRevenue,
+      },
+    },
   };
 }
 
