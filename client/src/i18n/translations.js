@@ -12,6 +12,7 @@ export const translations = {
     confirm: 'Confirm',
     error: 'Error',
     success: 'Success',
+    information: 'Information',
     
     // Header
     appTitle: 'MetaCaprine',
@@ -239,6 +240,7 @@ export const translations = {
     confirm: 'Confirmar',
     error: 'Error',
     success: 'Éxito',
+    information: 'Información',
     
     // Header
     appTitle: 'MetaCaprine',

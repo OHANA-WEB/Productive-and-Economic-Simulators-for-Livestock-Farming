@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../../utils/api';
+import { useI18n } from '../../i18n/I18nContext';
+import AlertModal from '../AlertModal';
 
 function Module4Yield({ user }) {
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const scenarioId = location.state?.scenarioId;
@@ -23,6 +26,7 @@ function Module4Yield({ user }) {
   const [scenarios, setScenarios] = useState([]);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
 
   useEffect(() => {
     loadScenarios();
@@ -115,10 +119,8 @@ function Module4Yield({ user }) {
   };
 
   const handleInputFocus = (e) => {
-    // Select all text when focused if value is 0, so user can immediately type to replace it
-    if (parseFloat(e.target.value) === 0) {
-      e.target.select();
-    }
+    // Always select all text when focused for easy replacement
+    e.target.select();
   };
 
   const handleYieldChange = (e) => {
@@ -161,7 +163,11 @@ function Module4Yield({ user }) {
 
   const handleSave = async () => {
     if (!selectedScenario) {
-      alert('Por favor selecciona un escenario primero');
+      setAlertModal({
+        isOpen: true,
+        message: t('pleaseSelectScenario'),
+        type: 'info'
+      });
       return;
     }
 
@@ -170,9 +176,19 @@ function Module4Yield({ user }) {
       await api.post(`/modules/production/${selectedScenario.id}`, productionData);
       await api.post(`/modules/yield/${selectedScenario.id}`, yieldData);
       await loadScenario(selectedScenario.id);
-      alert('Datos guardados y resultados calculados');
+      // Trigger calculation after save
+      handleCalculate();
+      setAlertModal({
+        isOpen: true,
+        message: t('dataSavedAndCalculated'),
+        type: 'success'
+      });
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar');
+      setAlertModal({
+        isOpen: true,
+        message: error.response?.data?.error || t('errorSaving'),
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -381,6 +397,13 @@ function Module4Yield({ user }) {
           )}
         </>
       )}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.type === 'success' ? t('success') : alertModal.type === 'error' ? t('error') : t('information') || 'Information'}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   );
 }
