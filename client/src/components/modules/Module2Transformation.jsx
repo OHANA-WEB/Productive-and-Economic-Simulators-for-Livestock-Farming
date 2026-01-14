@@ -14,6 +14,11 @@ function Module2Transformation({ user }) {
     daily_production_liters: 0,
     production_days: 0,
     animals_count: 0,
+    feed_cost_per_liter: 0,
+    labor_cost_per_liter: 0,
+    health_cost_per_liter: 0,
+    infrastructure_cost_per_liter: 0,
+    other_costs_per_liter: 0,
     milk_price_per_liter: 0,
   });
 
@@ -21,7 +26,14 @@ function Module2Transformation({ user }) {
     product_type: 'queso_fresco',
     liters_per_kg_product: 0,
     processing_cost_per_liter: 0,
-    product_price_per_kg: 0,
+    product_price_per_kg: 0, // Legacy field for backward compatibility
+    // Sales channels (3 channels)
+    sales_channel_direct_percentage: 100,
+    sales_channel_distributors_percentage: 0,
+    sales_channel_third_percentage: 0,
+    direct_sale_price_per_kg: 0,
+    distributors_price_per_kg: 0,
+    third_channel_price_per_kg: 0,
   });
 
   const [results, setResults] = useState(null);
@@ -56,7 +68,18 @@ function Module2Transformation({ user }) {
       setSelectedScenario(scenario);
       if (scenario.productionData) {
         // Normalize all numeric values to ensure no leading zeros
-        const normalizedData = {};
+        // Ensure all production data fields are loaded (for proper data propagation)
+        const normalizedData = {
+          daily_production_liters: 0,
+          production_days: 0,
+          animals_count: 0,
+          feed_cost_per_liter: 0,
+          labor_cost_per_liter: 0,
+          health_cost_per_liter: 0,
+          infrastructure_cost_per_liter: 0,
+          other_costs_per_liter: 0,
+          milk_price_per_liter: 0,
+        };
         Object.keys(scenario.productionData).forEach(key => {
           const value = scenario.productionData[key];
           if (typeof value === 'number') {
@@ -64,14 +87,27 @@ function Module2Transformation({ user }) {
           } else if (typeof value === 'string') {
             const numValue = parseFloat(value);
             normalizedData[key] = isNaN(numValue) ? 0 : numValue;
-          } else {
+          } else if (value !== null && value !== undefined) {
             normalizedData[key] = value;
           }
         });
         setProductionData(normalizedData);
       }
       if (scenario.transformationData) {
-        setTransformationData(scenario.transformationData);
+        // Ensure all transformation data fields are set with defaults
+        setTransformationData({
+          product_type: 'queso_fresco',
+          liters_per_kg_product: 0,
+          processing_cost_per_liter: 0,
+          product_price_per_kg: 0,
+          sales_channel_direct_percentage: 100,
+          sales_channel_distributors_percentage: 0,
+          sales_channel_third_percentage: 0,
+          direct_sale_price_per_kg: 0,
+          distributors_price_per_kg: 0,
+          third_channel_price_per_kg: 0,
+          ...scenario.transformationData,
+        });
       }
       if (scenario.results) {
         setResults(scenario.results);
@@ -128,10 +164,73 @@ function Module2Transformation({ user }) {
 
   const handleTransformationChange = (e) => {
     const { name, value } = e.target;
-    setTransformationData(prev => ({
-      ...prev,
-      [name]: name === 'product_type' ? value : (parseFloat(value) || 0),
-    }));
+    
+    // Handle product_type (string field)
+    if (name === 'product_type') {
+      setTransformationData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+      return;
+    }
+    
+    // Handle empty string
+    if (value === '' || value === null || value === undefined) {
+      setTransformationData(prev => ({
+        ...prev,
+        [name]: 0,
+      }));
+      return;
+    }
+    
+    // Get the raw input value as string
+    let stringValue = value.toString();
+    
+    // Remove leading zeros that appear before non-zero digits
+    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
+    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
+    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
+    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
+      // Remove all leading zeros
+      stringValue = stringValue.replace(/^0+/, '');
+      // If we removed everything, set back to '0'
+      if (stringValue === '') {
+        stringValue = '0';
+      }
+    }
+    
+    // Parse the cleaned value to a number
+    const numValue = parseFloat(stringValue);
+    
+    // Handle sales channel percentages - ensure they sum to 100
+    if (name.includes('_percentage')) {
+      setTransformationData(prev => {
+        const updated = { ...prev, [name]: isNaN(numValue) ? 0 : numValue };
+        
+        // Calculate the third percentage to ensure sum is 100
+        if (name === 'sales_channel_direct_percentage') {
+          const remaining = 100 - (isNaN(numValue) ? 0 : numValue) - (prev.sales_channel_distributors_percentage || 0);
+          updated.sales_channel_third_percentage = Math.max(0, Math.min(100, remaining));
+        } else if (name === 'sales_channel_distributors_percentage') {
+          const remaining = 100 - (prev.sales_channel_direct_percentage || 0) - (isNaN(numValue) ? 0 : numValue);
+          updated.sales_channel_third_percentage = Math.max(0, Math.min(100, remaining));
+        } else if (name === 'sales_channel_third_percentage') {
+          const remaining = 100 - (prev.sales_channel_direct_percentage || 0) - (prev.sales_channel_distributors_percentage || 0);
+          // If user sets third, adjust direct to maintain sum
+          if (remaining < 0) {
+            updated.sales_channel_direct_percentage = Math.max(0, (prev.sales_channel_direct_percentage || 0) + remaining);
+          }
+        }
+        
+        return updated;
+      });
+    } else {
+      // Update numeric fields
+      setTransformationData(prev => ({
+        ...prev,
+        [name]: isNaN(numValue) ? 0 : numValue,
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -286,6 +385,7 @@ function Module2Transformation({ user }) {
                   name="liters_per_kg_product"
                   value={transformationData.liters_per_kg_product}
                   onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -296,6 +396,7 @@ function Module2Transformation({ user }) {
                   name="processing_cost_per_liter"
                   value={transformationData.processing_cost_per_liter}
                   onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -306,6 +407,110 @@ function Module2Transformation({ user }) {
                   name="product_price_per_kg"
                   value={transformationData.product_price_per_kg}
                   onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
+                  step="0.01"
+                />
+                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                  {t('productPrice')} (legacy - used as fallback if channel prices not set)
+                </small>
+              </div>
+            </div>
+
+            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('salesChannels')}</h3>
+            {(() => {
+              const totalPercentage = parseFloat(transformationData.sales_channel_direct_percentage || 0) + 
+                                      parseFloat(transformationData.sales_channel_distributors_percentage || 0) + 
+                                      parseFloat(transformationData.sales_channel_third_percentage || 0);
+              return (
+                <div style={{ marginBottom: '15px', padding: '10px', background: '#f5f5f5', borderRadius: '4px' }}>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '0.9em', color: '#666' }}>
+                    Configure the distribution across 3 sales channels. Percentages must sum to 100%.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <strong>Total:</strong>
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      color: totalPercentage === 100 ? 'green' : 'red'
+                    }}>
+                      {totalPercentage.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+              <div className="form-group">
+                <label>{t('directSalePercentage')}</label>
+                <input
+                  type="number"
+                  name="sales_channel_direct_percentage"
+                  value={transformationData.sales_channel_direct_percentage}
+                  onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+              </div>
+              <div className="form-group">
+                <label>{t('directSalePrice')}</label>
+                <input
+                  type="number"
+                  name="direct_sale_price_per_kg"
+                  value={transformationData.direct_sale_price_per_kg}
+                  onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
+                  step="0.01"
+                />
+              </div>
+              <div className="form-group">
+                <label>{t('distributorsPercentage')}</label>
+                <input
+                  type="number"
+                  name="sales_channel_distributors_percentage"
+                  value={transformationData.sales_channel_distributors_percentage}
+                  onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+              </div>
+              <div className="form-group">
+                <label>{t('distributorsPrice')}</label>
+                <input
+                  type="number"
+                  name="distributors_price_per_kg"
+                  value={transformationData.distributors_price_per_kg}
+                  onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
+                  step="0.01"
+                />
+              </div>
+              <div className="form-group">
+                <label>{t('thirdChannelPercentage')}</label>
+                <input
+                  type="number"
+                  name="sales_channel_third_percentage"
+                  value={transformationData.sales_channel_third_percentage}
+                  onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  readOnly
+                  style={{ background: '#f0f0f0' }}
+                />
+                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>Auto-calculated</small>
+              </div>
+              <div className="form-group">
+                <label>{t('thirdChannelPrice')}</label>
+                <input
+                  type="number"
+                  name="third_channel_price_per_kg"
+                  value={transformationData.third_channel_price_per_kg}
+                  onChange={handleTransformationChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>

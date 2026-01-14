@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useI18n } from '../i18n/I18nContext';
+import Modal from './Modal';
 
 function Dashboard({ user, onLogout }) {
   const { t } = useI18n();
@@ -14,6 +15,7 @@ function Dashboard({ user, onLogout }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, scenarioId: null, scenarioName: '' });
   const menuRefs = useRef({});
 
   useEffect(() => {
@@ -55,15 +57,25 @@ function Dashboard({ user, onLogout }) {
     }
   };
 
-  const handleDeleteScenario = async (scenarioId) => {
-    if (!confirm(t('deleteConfirm'))) return;
+  const handleDeleteClick = (scenarioId, scenarioName) => {
+    setDeleteModal({ isOpen: true, scenarioId, scenarioName });
+    setOpenMenuId(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.scenarioId) return;
 
     try {
-      await api.delete(`/scenarios/${scenarioId}`);
+      await api.delete(`/scenarios/${deleteModal.scenarioId}`);
       loadScenarios();
+      setDeleteModal({ isOpen: false, scenarioId: null, scenarioName: '' });
     } catch (error) {
       alert(error.response?.data?.error || t('errorDeletingScenario'));
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, scenarioId: null, scenarioName: '' });
   };
 
   const getModulePath = (type) => {
@@ -159,7 +171,8 @@ function Dashboard({ user, onLogout }) {
     if (action === 'duplicate') {
       handleDuplicateScenario(scenarioId);
     } else if (action === 'delete') {
-      handleDeleteScenario(scenarioId);
+      const scenario = scenarios.find(s => s.id === scenarioId);
+      handleDeleteClick(scenarioId, scenario?.name || '');
     }
   };
 
@@ -334,6 +347,29 @@ function Dashboard({ user, onLogout }) {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title={t('deleteScenario')}
+        message={
+          <>
+            <strong>{t('deleteConfirm')}</strong>
+            {deleteModal.scenarioName && (
+              <span style={{ display: 'block', marginTop: '8px', fontWeight: '600', color: '#111827' }}>
+                "{deleteModal.scenarioName}"
+              </span>
+            )}
+            <span style={{ display: 'block', marginTop: '12px', fontSize: '14px', color: '#6b7280' }}>
+              {t('deleteConfirmMessage')}
+            </span>
+          </>
+        }
+        confirmText={t('delete')}
+        cancelText={t('cancel')}
+        type="danger"
+      />
     </div>
   );
 }

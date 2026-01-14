@@ -123,9 +123,39 @@ function Module4Yield({ user }) {
 
   const handleYieldChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle empty string
+    if (value === '' || value === null || value === undefined) {
+      setYieldData(prev => ({
+        ...prev,
+        [name]: 0,
+      }));
+      return;
+    }
+    
+    // Get the raw input value as string
+    let stringValue = value.toString();
+    
+    // Remove leading zeros that appear before non-zero digits
+    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
+    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
+    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
+    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
+      // Remove all leading zeros
+      stringValue = stringValue.replace(/^0+/, '');
+      // If we removed everything, set back to '0'
+      if (stringValue === '') {
+        stringValue = '0';
+      }
+    }
+    
+    // Parse the cleaned value to a number
+    const numValue = parseFloat(stringValue);
+    
+    // Update state with the numeric value
     setYieldData(prev => ({
       ...prev,
-      [name]: parseFloat(value) || 0,
+      [name]: isNaN(numValue) ? 0 : numValue,
     }));
   };
 
@@ -253,6 +283,7 @@ function Module4Yield({ user }) {
                   name="conversion_rate"
                   value={yieldData.conversion_rate}
                   onChange={handleYieldChange}
+                  onFocus={handleInputFocus}
                   step="0.0001"
                   placeholder="Ej: 0.1 (kg producto por litro)"
                 />
@@ -264,6 +295,7 @@ function Module4Yield({ user }) {
                   name="efficiency_percentage"
                   value={yieldData.efficiency_percentage}
                   onChange={handleYieldChange}
+                  onFocus={handleInputFocus}
                   step="0.1"
                   min="0"
                   max="100"

@@ -126,9 +126,39 @@ function Module3Lactation({ user }) {
 
   const handleLactationChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle empty string
+    if (value === '' || value === null || value === undefined) {
+      setLactationData(prev => ({
+        ...prev,
+        [name]: 0,
+      }));
+      return;
+    }
+    
+    // Get the raw input value as string
+    let stringValue = value.toString();
+    
+    // Remove leading zeros that appear before non-zero digits
+    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
+    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
+    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
+    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
+      // Remove all leading zeros
+      stringValue = stringValue.replace(/^0+/, '');
+      // If we removed everything, set back to '0'
+      if (stringValue === '') {
+        stringValue = '0';
+      }
+    }
+    
+    // Parse the cleaned value to a number
+    const numValue = parseFloat(stringValue);
+    
+    // Update state with the numeric value
     setLactationData(prev => ({
       ...prev,
-      [name]: parseFloat(value) || 0,
+      [name]: isNaN(numValue) ? 0 : numValue,
     }));
   };
 
@@ -278,6 +308,7 @@ function Module3Lactation({ user }) {
                   name="lactation_days"
                   value={lactationData.lactation_days}
                   onChange={handleLactationChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
               <div className="form-group">
@@ -287,6 +318,7 @@ function Module3Lactation({ user }) {
                   name="dry_days"
                   value={lactationData.dry_days}
                   onChange={handleLactationChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
               <div className="form-group">
@@ -296,6 +328,7 @@ function Module3Lactation({ user }) {
                   name="productive_life_years"
                   value={lactationData.productive_life_years}
                   onChange={handleLactationChange}
+                  onFocus={handleInputFocus}
                   step="0.1"
                 />
               </div>
@@ -306,6 +339,7 @@ function Module3Lactation({ user }) {
                   name="replacement_rate"
                   value={lactationData.replacement_rate}
                   onChange={handleLactationChange}
+                  onFocus={handleInputFocus}
                   step="0.1"
                 />
               </div>
