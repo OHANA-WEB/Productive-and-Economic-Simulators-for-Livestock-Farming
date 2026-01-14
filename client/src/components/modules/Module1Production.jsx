@@ -53,7 +53,20 @@ function Module1Production({ user }) {
       const scenario = response.data;
       setSelectedScenario(scenario);
       if (scenario.productionData) {
-        setFormData(scenario.productionData);
+        // Normalize all numeric values to ensure no leading zeros
+        const normalizedData = {};
+        Object.keys(scenario.productionData).forEach(key => {
+          const value = scenario.productionData[key];
+          if (typeof value === 'number') {
+            normalizedData[key] = value;
+          } else if (typeof value === 'string') {
+            const numValue = parseFloat(value);
+            normalizedData[key] = isNaN(numValue) ? 0 : numValue;
+          } else {
+            normalizedData[key] = value;
+          }
+        });
+        setFormData(normalizedData);
       }
       if (scenario.results) {
         setResults(scenario.results);
@@ -65,10 +78,47 @@ function Module1Production({ user }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle empty string
+    if (value === '' || value === null || value === undefined) {
+      setFormData(prev => ({
+        ...prev,
+        [name]: 0,
+      }));
+      return;
+    }
+    
+    // Get the raw input value as string
+    let stringValue = value.toString();
+    
+    // Remove leading zeros that appear before non-zero digits
+    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
+    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
+    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
+    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
+      // Remove all leading zeros
+      stringValue = stringValue.replace(/^0+/, '');
+      // If we removed everything, set back to '0'
+      if (stringValue === '') {
+        stringValue = '0';
+      }
+    }
+    
+    // Parse the cleaned value to a number
+    const numValue = parseFloat(stringValue);
+    
+    // Update state with the numeric value
     setFormData(prev => ({
       ...prev,
-      [name]: parseFloat(value) || 0,
+      [name]: isNaN(numValue) ? 0 : numValue,
     }));
+  };
+
+  const handleInputFocus = (e) => {
+    // Select all text when focused if value is 0, so user can immediately type to replace it
+    if (parseFloat(e.target.value) === 0) {
+      e.target.select();
+    }
   };
 
   const handleSave = async () => {
@@ -168,6 +218,7 @@ function Module1Production({ user }) {
                   name="daily_production_liters"
                   value={formData.daily_production_liters}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -178,6 +229,7 @@ function Module1Production({ user }) {
                   name="production_days"
                   value={formData.production_days}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
               <div className="form-group">
@@ -187,6 +239,7 @@ function Module1Production({ user }) {
                   name="animals_count"
                   value={formData.animals_count}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
               <div className="form-group">
@@ -196,6 +249,7 @@ function Module1Production({ user }) {
                   name="milk_price_per_liter"
                   value={formData.milk_price_per_liter}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -210,6 +264,7 @@ function Module1Production({ user }) {
                   name="feed_cost_per_liter"
                   value={formData.feed_cost_per_liter}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -220,6 +275,7 @@ function Module1Production({ user }) {
                   name="labor_cost_per_liter"
                   value={formData.labor_cost_per_liter}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -230,6 +286,7 @@ function Module1Production({ user }) {
                   name="health_cost_per_liter"
                   value={formData.health_cost_per_liter}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -240,6 +297,7 @@ function Module1Production({ user }) {
                   name="infrastructure_cost_per_liter"
                   value={formData.infrastructure_cost_per_liter}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -250,6 +308,7 @@ function Module1Production({ user }) {
                   name="other_costs_per_liter"
                   value={formData.other_costs_per_liter}
                   onChange={handleInputChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>

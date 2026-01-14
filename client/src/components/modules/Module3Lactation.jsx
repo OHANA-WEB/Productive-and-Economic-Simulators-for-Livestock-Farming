@@ -53,7 +53,20 @@ function Module3Lactation({ user }) {
       const scenario = response.data;
       setSelectedScenario(scenario);
       if (scenario.productionData) {
-        setProductionData(scenario.productionData);
+        // Normalize all numeric values to ensure no leading zeros
+        const normalizedData = {};
+        Object.keys(scenario.productionData).forEach(key => {
+          const value = scenario.productionData[key];
+          if (typeof value === 'number') {
+            normalizedData[key] = value;
+          } else if (typeof value === 'string') {
+            const numValue = parseFloat(value);
+            normalizedData[key] = isNaN(numValue) ? 0 : numValue;
+          } else {
+            normalizedData[key] = value;
+          }
+        });
+        setProductionData(normalizedData);
       }
       if (scenario.lactationData) {
         setLactationData(scenario.lactationData);
@@ -68,10 +81,47 @@ function Module3Lactation({ user }) {
 
   const handleProductionChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle empty string
+    if (value === '' || value === null || value === undefined) {
+      setProductionData(prev => ({
+        ...prev,
+        [name]: 0,
+      }));
+      return;
+    }
+    
+    // Get the raw input value as string
+    let stringValue = value.toString();
+    
+    // Remove leading zeros that appear before non-zero digits
+    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
+    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
+    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
+    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
+      // Remove all leading zeros
+      stringValue = stringValue.replace(/^0+/, '');
+      // If we removed everything, set back to '0'
+      if (stringValue === '') {
+        stringValue = '0';
+      }
+    }
+    
+    // Parse the cleaned value to a number
+    const numValue = parseFloat(stringValue);
+    
+    // Update state with the numeric value
     setProductionData(prev => ({
       ...prev,
-      [name]: parseFloat(value) || 0,
+      [name]: isNaN(numValue) ? 0 : numValue,
     }));
+  };
+
+  const handleInputFocus = (e) => {
+    // Select all text when focused if value is 0, so user can immediately type to replace it
+    if (parseFloat(e.target.value) === 0) {
+      e.target.select();
+    }
   };
 
   const handleLactationChange = (e) => {
@@ -182,6 +232,7 @@ function Module3Lactation({ user }) {
                   name="daily_production_liters"
                   value={productionData.daily_production_liters}
                   onChange={handleProductionChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
@@ -192,6 +243,7 @@ function Module3Lactation({ user }) {
                   name="production_days"
                   value={productionData.production_days}
                   onChange={handleProductionChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
               <div className="form-group">
@@ -201,6 +253,7 @@ function Module3Lactation({ user }) {
                   name="animals_count"
                   value={productionData.animals_count}
                   onChange={handleProductionChange}
+                  onFocus={handleInputFocus}
                 />
               </div>
               <div className="form-group">
@@ -210,6 +263,7 @@ function Module3Lactation({ user }) {
                   name="milk_price_per_liter"
                   value={productionData.milk_price_per_liter}
                   onChange={handleProductionChange}
+                  onFocus={handleInputFocus}
                   step="0.01"
                 />
               </div>
