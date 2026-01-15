@@ -2,6 +2,7 @@ import express from 'express';
 import { getPool } from '../db/pool.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { runSimulation } from '../core/simulationEngine.js';
+import { runLactationSimulation } from '../core/lactationEngine.js';
 
 const router = express.Router();
 
@@ -242,6 +243,7 @@ router.post('/transformation/:scenarioId', async (req, res) => {
 });
 
 // Module 3: Lactation - Save/Update lactation data
+// Module 3: Scientific Lactation - Save/Update lactation simulation
 router.post('/lactation/:scenarioId', async (req, res) => {
   try {
     const pool = getPool();
@@ -252,31 +254,92 @@ router.post('/lactation/:scenarioId', async (req, res) => {
     }
 
     const {
-      lactation_days,
-      dry_days,
-      productive_life_years,
-      replacement_rate,
+      selected_breed,
+      management_level,
+      target_lactation_days,
     } = req.body;
 
-    const result = await pool.query(
-      `INSERT INTO lactation_data (
-        scenario_id, lactation_days, dry_days, productive_life_years, replacement_rate
-      ) VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT (scenario_id) DO UPDATE SET
-        lactation_days = EXCLUDED.lactation_days,
-        dry_days = EXCLUDED.dry_days,
-        productive_life_years = EXCLUDED.productive_life_years,
-        replacement_rate = EXCLUDED.replacement_rate,
-        updated_at = CURRENT_TIMESTAMP
-      RETURNING *`,
-      [scenarioId, lactation_days, dry_days, productive_life_years, replacement_rate]
+    // Validate inputs
+    if (!selected_breed || !management_level) {
+      return res.status(400).json({ error: 'Breed and management level are required' });
+    }
+
+    if (!['low', 'medium', 'high', 'optimal'].includes(management_level)) {
+      return res.status(400).json({ error: 'Invalid management level' });
+    }
+
+    // Get breed profile from database
+    const breedResult = await pool.query(
+      'SELECT * FROM breed_profiles WHERE breed_name = $1',
+      [selected_breed]
     );
 
-    // Recalculate and save results
-    await calculateAndSaveResults(pool, scenarioId);
+    if (breedResult.rows.length === 0) {
+      return res.status(404).json({ error: `Breed profile not found: ${selected_breed}` });
+    }
 
-    res.json(result.rows[0]);
+    const breedProfile = breedResult.rows[0];
+
+    // Get production data to know animals count
+    const productionResult = await pool.query(
+      'SELECT animals_count FROM production_data WHERE scenario_id = $1',
+      [scenarioId]
+    );
+    const animalsCount = productionResult.rows[0]?.animals_count || 1;
+
+    // Run scientific lactation simulation
+    const simulation = runLactationSimulation(
+      breedProfile,
+      management_level,
+      target_lactation_days,
+      animalsCount
+    );
+
+    // Save simulation results to database
+    const result = await pool.query(
+      `INSERT INTO lactation_simulations (
+        scenario_id, selected_breed, management_level, target_lactation_days,
+        calculated_daily_peak, calculated_lactation_total, calculated_persistence,
+        calculated_fat_kg, calculated_protein_kg, calculated_solids_kg, calculated_lactose_kg,
+        optimization_potential
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      ON CONFLICT (scenario_id) DO UPDATE SET
+        selected_breed = EXCLUDED.selected_breed,
+        management_level = EXCLUDED.management_level,
+        target_lactation_days = EXCLUDED.target_lactation_days,
+        calculated_daily_peak = EXCLUDED.calculated_daily_peak,
+        calculated_lactation_total = EXCLUDED.calculated_lactation_total,
+        calculated_persistence = EXCLUDED.calculated_persistence,
+        calculated_fat_kg = EXCLUDED.calculated_fat_kg,
+        calculated_protein_kg = EXCLUDED.calculated_protein_kg,
+        calculated_solids_kg = EXCLUDED.calculated_solids_kg,
+        calculated_lactose_kg = EXCLUDED.calculated_lactose_kg,
+        optimization_potential = EXCLUDED.optimization_potential,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *`,
+      [
+        scenarioId,
+        selected_breed,
+        management_level,
+        target_lactation_days || null,
+        simulation.peak_yield,
+        simulation.total_lactation_liters,
+        simulation.persistence_rate,
+        simulation.fat_kg,
+        simulation.protein_kg,
+        simulation.solids_kg,
+        simulation.lactose_kg,
+        JSON.stringify(simulation.optimization_potential)
+      ]
+    );
+
+    // Return full simulation results (including lactation curve for charting)
+    res.json({
+      saved: result.rows[0],
+      simulation: simulation
+    });
   } catch (error) {
+    console.error('Lactation simulation error:', error);
     res.status(500).json({ error: error.message });
   }
 });

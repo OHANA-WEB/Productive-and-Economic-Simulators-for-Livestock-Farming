@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
 import AlertModal from '../AlertModal';
@@ -11,21 +11,19 @@ function Module3Lactation({ user }) {
   const navigate = useNavigate();
   const scenarioId = location.state?.scenarioId;
 
-  const [productionData, setProductionData] = useState({
-    daily_production_liters: 0,
-    production_days: 0,
-    animals_count: 0,
-    milk_price_per_liter: 0,
-  });
-
-  const [lactationData, setLactationData] = useState({
-    lactation_days: 0,
-    dry_days: 0,
-    productive_life_years: 0,
-    replacement_rate: 0,
-  });
-
-  const [results, setResults] = useState(null);
+  // Scientific inputs (minimal)
+  const [selectedBreed, setSelectedBreed] = useState('');
+  const [managementLevel, setManagementLevel] = useState('medium');
+  const [targetLactationDays, setTargetLactationDays] = useState('');
+  
+  // Available breeds from database
+  const [breeds, setBreeds] = useState([]);
+  const [breedDetails, setBreedDetails] = useState(null);
+  
+  // Simulation results
+  const [simulation, setSimulation] = useState(null);
+  const [comparisonBreeds, setComparisonBreeds] = useState([]);
+  
   const [scenarios, setScenarios] = useState([]);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -33,10 +31,20 @@ function Module3Lactation({ user }) {
 
   useEffect(() => {
     loadScenarios();
+    loadBreeds();
     if (scenarioId) {
       loadScenario(scenarioId);
     }
   }, [scenarioId]);
+
+  const loadBreeds = async () => {
+    try {
+      const response = await api.get('/breeds');
+      setBreeds(response.data);
+    } catch (error) {
+      console.error('Error loading breeds:', error);
+    }
+  };
 
   const loadScenarios = async () => {
     try {
@@ -56,112 +64,66 @@ function Module3Lactation({ user }) {
       const response = await api.get(`/scenarios/${id}`);
       const scenario = response.data;
       setSelectedScenario(scenario);
-      if (scenario.productionData) {
-        // Normalize all numeric values to ensure no leading zeros
-        const normalizedData = {};
-        Object.keys(scenario.productionData).forEach(key => {
-          const value = scenario.productionData[key];
-          if (typeof value === 'number') {
-            normalizedData[key] = value;
-          } else if (typeof value === 'string') {
-            const numValue = parseFloat(value);
-            normalizedData[key] = isNaN(numValue) ? 0 : numValue;
-          } else {
-            normalizedData[key] = value;
-          }
-        });
-        setProductionData(normalizedData);
-      }
-      if (scenario.lactationData) {
-        setLactationData(scenario.lactationData);
-      }
-      if (scenario.results) {
-        setResults(scenario.results);
+      
+      // Load saved lactation simulation if exists
+      if (scenario.lactationSimulation) {
+        const sim = scenario.lactationSimulation;
+        setSelectedBreed(sim.selected_breed);
+        setManagementLevel(sim.management_level);
+        setTargetLactationDays(sim.target_lactation_days || '');
+        
+        // Load full simulation results
+        if (sim.selected_breed) {
+          await runSimulation(sim.selected_breed, sim.management_level, sim.target_lactation_days);
+        }
       }
     } catch (error) {
       console.error('Error loading scenario:', error);
     }
   };
 
-  const handleProductionChange = (e) => {
-    const { name, value } = e.target;
+  const handleBreedChange = async (breedName) => {
+    setSelectedBreed(breedName);
     
-    // Handle empty string
-    if (value === '' || value === null || value === undefined) {
-      setProductionData(prev => ({
-        ...prev,
-        [name]: 0,
-      }));
-      return;
-    }
-    
-    // Get the raw input value as string
-    let stringValue = value.toString();
-    
-    // Remove leading zeros that appear before non-zero digits
-    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
-    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
-    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
-    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
-      // Remove all leading zeros
-      stringValue = stringValue.replace(/^0+/, '');
-      // If we removed everything, set back to '0'
-      if (stringValue === '') {
-        stringValue = '0';
+    if (breedName) {
+      // Load detailed breed information
+      try {
+        const response = await api.get(`/breeds/${breedName}`);
+        setBreedDetails(response.data);
+      } catch (error) {
+        console.error('Error loading breed details:', error);
       }
+    } else {
+      setBreedDetails(null);
     }
-    
-    // Parse the cleaned value to a number
-    const numValue = parseFloat(stringValue);
-    
-    // Update state with the numeric value
-    setProductionData(prev => ({
-      ...prev,
-      [name]: isNaN(numValue) ? 0 : numValue,
-    }));
   };
 
-  const handleInputFocus = (e) => {
-    // Always select all text when focused for easy replacement
-    e.target.select();
-  };
-
-  const handleLactationChange = (e) => {
-    const { name, value } = e.target;
+  const runSimulation = async (breed, management, targetDays) => {
+    if (!breed || !management) return;
     
-    // Handle empty string
-    if (value === '' || value === null || value === undefined) {
-      setLactationData(prev => ({
-        ...prev,
-        [name]: 0,
-      }));
-      return;
+    try {
+      setLoading(true);
+      const response = await api.post(`/modules/lactation/${selectedScenario.id}`, {
+        selected_breed: breed,
+        management_level: management,
+        target_lactation_days: targetDays || null
+      });
+      
+      setSimulation(response.data.simulation);
+      
+      // Load comparison breeds
+      await loadComparisonBreeds(breed);
+      
+    } catch (error) {
+      console.error('Simulation error:', error);
+      setAlertModal({
+        isOpen: true,
+        message: error.response?.data?.error || t('errorSaving'),
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    // Get the raw input value as string
-    let stringValue = value.toString();
-    
-    // Remove leading zeros that appear before non-zero digits
-    // Pattern: one or more zeros at the start, followed by a digit 1-9 (not 0, not decimal point)
-    // This will convert "01234" -> "1234", "056" -> "56", "012" -> "12"
-    // But will preserve "0", "0.5", "0.123" (since they have decimal point after the zero)
-    if (stringValue.length > 1 && stringValue[0] === '0' && stringValue[1] !== '.' && stringValue[1] !== ',') {
-      // Remove all leading zeros
-      stringValue = stringValue.replace(/^0+/, '');
-      // If we removed everything, set back to '0'
-      if (stringValue === '') {
-        stringValue = '0';
-      }
-    }
-    
-    // Parse the cleaned value to a number
-    const numValue = parseFloat(stringValue);
-    
-    // Update state with the numeric value
-    setLactationData(prev => ({
-      ...prev,
-      [name]: isNaN(numValue) ? 0 : numValue,
-    }));
   };
 
   const handleSave = async () => {
@@ -174,302 +136,487 @@ function Module3Lactation({ user }) {
       return;
     }
 
-    setLoading(true);
-    try {
-      await api.post(`/modules/production/${selectedScenario.id}`, productionData);
-      await api.post(`/modules/lactation/${selectedScenario.id}`, lactationData);
-      await loadScenario(selectedScenario.id);
-      // Trigger calculation after save
-      handleCalculate();
+    if (!selectedBreed) {
       setAlertModal({
         isOpen: true,
-        message: t('dataSavedAndCalculated'),
-        type: 'success'
+        message: t('pleaseSelectBreed'),
+        type: 'info'
       });
-    } catch (error) {
-      setAlertModal({
-        isOpen: true,
-        message: error.response?.data?.error || t('errorSaving'),
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
 
-  const handleCalculate = () => {
-    const lactationDays = Number(lactationData.lactation_days) || 0;
-    const dryDays = Number(lactationData.dry_days) || 0;
-    const productiveLifeYears = Number(lactationData.productive_life_years) || 0;
-    const replacementRate = Number(lactationData.replacement_rate) || 0;
+    await runSimulation(selectedBreed, managementLevel, targetLactationDays);
     
-    const dailyProduction = Number(productionData.daily_production_liters) || 0;
-    const animalsCount = Number(productionData.animals_count) || 0;
-    const productionDays = Number(productionData.production_days) || 0;
-    const milkPrice = Number(productionData.milk_price_per_liter) || 0;
-    
-    const cycleDays = lactationDays + dryDays;
-    const cyclesPerYear = cycleDays > 0 ? 365 / cycleDays : 0;
-    const productiveDays = productiveLifeYears * 365;
-    const effectiveProductionDays = productiveDays * (lactationDays / (cycleDays || 1));
-    
-    const baseProduction = dailyProduction * animalsCount;
-    const adjustedProduction = baseProduction * (effectiveProductionDays / (productiveDays || 1));
-    const totalProductionLiters = adjustedProduction * productionDays;
-    
-    const totalRevenue = milkPrice * totalProductionLiters;
-    const costPerLiter = 0.5; // Simplified
-    const totalCosts = costPerLiter * totalProductionLiters;
-    const grossMargin = totalRevenue - totalCosts;
-    const marginPercentage = totalRevenue > 0 ? (grossMargin / totalRevenue) * 100 : 0;
-
-    setResults({
-      cycleDays,
-      cyclesPerYear,
-      productiveDays,
-      effectiveProductionDays,
-      totalProductionLiters,
-      totalRevenue,
-      totalCosts,
-      grossMargin,
-      marginPercentage,
-      replacementRate,
+    setAlertModal({
+      isOpen: true,
+      message: t('simulationCompleted'),
+      type: 'success'
     });
   };
 
-  const cycleData = results ? [
-    { name: t('lactationDays'), value: Number(lactationData.lactation_days) || 0 },
-    { name: t('dryDays'), value: Number(lactationData.dry_days) || 0 },
-  ].filter(item => !isNaN(item.value)) : [];
+  const loadComparisonBreeds = async (currentBreed) => {
+    try {
+      // Get top 4 breeds for comparison (excluding current breed)
+      const otherBreeds = breeds
+        .filter(b => b.breed_name !== currentBreed)
+        .slice(0, 3);
+      
+      const comparisons = [];
+      for (const breed of otherBreeds) {
+        const response = await api.post(`/modules/lactation/${selectedScenario.id}`, {
+          selected_breed: breed.breed_name,
+          management_level: managementLevel,
+          target_lactation_days: targetLactationDays || null
+        });
+        comparisons.push({
+          breed_name: breed.breed_name,
+          simulation: response.data.simulation
+        });
+      }
+      
+      setComparisonBreeds(comparisons);
+    } catch (error) {
+      console.error('Error loading comparisons:', error);
+    }
+  };
 
-  const productionImpact = results ? [
-    { 
-      name: t('baseProduction'), 
-      value: Number(productionData.daily_production_liters || 0) * Number(productionData.animals_count || 0) * Number(productionData.production_days || 0) 
+  const handleScenarioChange = (e) => {
+    const id = parseInt(e.target.value);
+    if (id) {
+      loadScenario(id);
+      navigate('/module3', { state: { scenarioId: id } });
+    }
+  };
+
+  // Group breeds by category
+  const breedsByCategory = {
+    dairy: breeds.filter(b => b.breed_category === 'dairy'),
+    dual_purpose: breeds.filter(b => b.breed_category === 'dual_purpose'),
+    native: breeds.filter(b => b.breed_category === 'native')
+  };
+
+  // Prepare chart data for lactation curve
+  const lactationCurveData = simulation?.lactation_curve 
+    ? simulation.lactation_curve.filter((_, index) => index % 10 === 0) // Sample every 10 days
+    : [];
+
+  // Prepare comparison chart data
+  const comparisonData = simulation ? [
+    {
+      breed: simulation.breed_name,
+      [t('totalProduction')]: Number(simulation.total_lactation_liters || 0),
+      [t('fat')]: Number(simulation.fat_percentage || 0),
+      [t('protein')]: Number(simulation.protein_percentage || 0),
+      [t('solids')]: Number(simulation.solids_percentage || 0),
+      current: true
     },
-    { name: t('adjustedProduction'), value: Number(results.totalProductionLiters) || 0 },
-  ].filter(item => !isNaN(item.value)) : [];
+    ...comparisonBreeds.map(c => ({
+      breed: c.breed_name,
+      [t('totalProduction')]: Number(c.simulation?.total_lactation_liters || 0),
+      [t('fat')]: Number(c.simulation?.fat_percentage || 0),
+      [t('protein')]: Number(c.simulation?.protein_percentage || 0),
+      [t('solids')]: Number(c.simulation?.solids_percentage || 0),
+      current: false
+    }))
+  ] : [];
+
+  // Radar chart data for breed profile
+  const radarData = simulation ? [
+    { metric: t('volume'), value: (Number(simulation.total_lactation_liters || 0) / 100), fullMark: 100 },
+    { metric: t('fat'), value: Number(simulation.fat_percentage || 0) * 10, fullMark: 60 },
+    { metric: t('protein'), value: Number(simulation.protein_percentage || 0) * 10, fullMark: 45 },
+    { metric: t('solids'), value: Number(simulation.solids_percentage || 0) * 4, fullMark: 60 },
+    { metric: t('persistence'), value: 100 - (Number(simulation.persistence_rate || 0) * 5), fullMark: 100 }
+  ] : [];
 
   return (
-    <div className="container">
-      <header style={{ marginBottom: '20px' }}>
-        <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          {t('backToDashboard')}
-        </button>
-        <h1 style={{ marginTop: '20px' }}>{t('module3Title')}</h1>
-      </header>
-
-      <div className="card">
-        <h2>{t('selectScenario')}</h2>
-        <select
-          value={selectedScenario?.id || ''}
-          onChange={(e) => {
-            const id = parseInt(e.target.value);
-            if (id) {
-              navigate(`/module3`, { state: { scenarioId: id }, replace: true });
-              loadScenario(id);
-            }
-          }}
-          style={{ marginBottom: '20px' }}
-        >
-          <option value="">{t('selectScenarioPlaceholder')}</option>
-          {scenarios.map(s => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
+    <div className="module-container">
+      <div className="module-header">
+        <div className="module-title-section">
+          <h1 className="module-title">🔬 {t('module3Title')}</h1>
+          <p className="module-subtitle">{t('module3ScientificSubtitle')}</p>
+        </div>
+        
+        <div className="module-actions">
+          <select 
+            className="form-select scenario-select" 
+            value={selectedScenario?.id || ''} 
+            onChange={handleScenarioChange}
+          >
+            <option value="">{t('selectScenario')}</option>
+            {scenarios.map(scenario => (
+              <option key={scenario.id} value={scenario.id}>
+                {scenario.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {selectedScenario && (
+      {!selectedScenario ? (
+        <div className="empty-state">
+          <div className="empty-icon">📊</div>
+          <h3>{t('noScenarioSelected')}</h3>
+          <p>{t('selectScenarioToStart')}</p>
+        </div>
+      ) : (
         <>
+          {/* Scientific Input Section */}
           <div className="card">
-            <h2>{t('baseProductionData')}</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
-              <div className="form-group">
-                <label>{t('dailyProduction')}</label>
-                <input
-                  type="number"
-                  name="daily_production_liters"
-                  value={productionData.daily_production_liters}
-                  onChange={handleProductionChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('productionDays')}</label>
-                <input
-                  type="number"
-                  name="production_days"
-                  value={productionData.production_days}
-                  onChange={handleProductionChange}
-                  onFocus={handleInputFocus}
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('animalsCount')}</label>
-                <input
-                  type="number"
-                  name="animals_count"
-                  value={productionData.animals_count}
-                  onChange={handleProductionChange}
-                  onFocus={handleInputFocus}
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('milkPrice')}</label>
-                <input
-                  type="number"
-                  name="milk_price_per_liter"
-                  value={productionData.milk_price_per_liter}
-                  onChange={handleProductionChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
-              </div>
+            <div className="card-header">
+              <h2 className="card-title">🐄 {t('selectBreedAndManagement')}</h2>
+              <p className="card-subtitle">{t('scientificEngineDescription')}</p>
             </div>
+            <div className="card-content">
+              {/* Breed Selection */}
+              <div className="form-section">
+                <label className="form-label">{t('selectBreed')}</label>
+                <select
+                  className="form-select"
+                  value={selectedBreed}
+                  onChange={(e) => handleBreedChange(e.target.value)}
+                >
+                  <option value="">{t('chooseBreed')}</option>
+                  
+                  {breedsByCategory.dairy.length > 0 && (
+                    <optgroup label={`🥛 ${t('dairyBreeds')}`}>
+                      {breedsByCategory.dairy.map(breed => (
+                        <option key={breed.id} value={breed.breed_name}>
+                          {breed.breed_name} - {breed.total_lactation_liters}L / {breed.fat_percentage}% {t('fat')}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  
+                  {breedsByCategory.dual_purpose.length > 0 && (
+                    <optgroup label={`🌾 ${t('dualPurposeBreeds')}`}>
+                      {breedsByCategory.dual_purpose.map(breed => (
+                        <option key={breed.id} value={breed.breed_name}>
+                          {breed.breed_name} - {breed.total_lactation_liters}L / {breed.fat_percentage}% {t('fat')}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  
+                  {breedsByCategory.native.length > 0 && (
+                    <optgroup label={`🌍 ${t('nativeBreeds')}`}>
+                      {breedsByCategory.native.map(breed => (
+                        <option key={breed.id} value={breed.breed_name}>
+                          {breed.breed_name} - {breed.total_lactation_liters}L / {breed.fat_percentage}% {t('fat')}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('lactationData')}</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
-              <div className="form-group">
-                <label>{t('lactationDays')}</label>
-                <input
-                  type="number"
-                  name="lactation_days"
-                  value={lactationData.lactation_days}
-                  onChange={handleLactationChange}
-                  onFocus={handleInputFocus}
-                />
+              {/* Management Level Selection */}
+              <div className="form-section">
+                <label className="form-label">{t('managementLevel')}</label>
+                <div className="radio-group">
+                  <label className={`radio-card ${managementLevel === 'low' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="management"
+                      value="low"
+                      checked={managementLevel === 'low'}
+                      onChange={(e) => setManagementLevel(e.target.value)}
+                    />
+                    <div className="radio-content">
+                      <div className="radio-title">⭐ {t('lowManagement')}</div>
+                      <div className="radio-description">{t('lowManagementDesc')}</div>
+                    </div>
+                  </label>
+                  
+                  <label className={`radio-card ${managementLevel === 'medium' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="management"
+                      value="medium"
+                      checked={managementLevel === 'medium'}
+                      onChange={(e) => setManagementLevel(e.target.value)}
+                    />
+                    <div className="radio-content">
+                      <div className="radio-title">⭐⭐ {t('mediumManagement')}</div>
+                      <div className="radio-description">{t('mediumManagementDesc')}</div>
+                    </div>
+                  </label>
+                  
+                  <label className={`radio-card ${managementLevel === 'high' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="management"
+                      value="high"
+                      checked={managementLevel === 'high'}
+                      onChange={(e) => setManagementLevel(e.target.value)}
+                    />
+                    <div className="radio-content">
+                      <div className="radio-title">⭐⭐⭐ {t('highManagement')}</div>
+                      <div className="radio-description">{t('highManagementDesc')}</div>
+                    </div>
+                  </label>
+                  
+                  <label className={`radio-card ${managementLevel === 'optimal' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="management"
+                      value="optimal"
+                      checked={managementLevel === 'optimal'}
+                      onChange={(e) => setManagementLevel(e.target.value)}
+                    />
+                    <div className="radio-content">
+                      <div className="radio-title">⭐⭐⭐⭐ {t('optimalManagement')}</div>
+                      <div className="radio-description">{t('optimalManagementDesc')}</div>
+                    </div>
+                  </label>
+                </div>
               </div>
-              <div className="form-group">
-                <label>{t('dryDays')}</label>
-                <input
-                  type="number"
-                  name="dry_days"
-                  value={lactationData.dry_days}
-                  onChange={handleLactationChange}
-                  onFocus={handleInputFocus}
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('productiveLifeYears')}</label>
-                <input
-                  type="number"
-                  name="productive_life_years"
-                  value={lactationData.productive_life_years}
-                  onChange={handleLactationChange}
-                  onFocus={handleInputFocus}
-                  step="0.1"
-                />
-              </div>
-              <div className="form-group">
-                <label>{t('replacementRate')}</label>
-                <input
-                  type="number"
-                  name="replacement_rate"
-                  value={lactationData.replacement_rate}
-                  onChange={handleLactationChange}
-                  onFocus={handleInputFocus}
-                  step="0.1"
-                />
-              </div>
-            </div>
 
-            <div style={{ marginTop: '20px' }}>
-              <button className="btn btn-primary" onClick={handleCalculate} style={{ marginRight: '10px' }}>
-                {t('calculate')}
-              </button>
-              <button className="btn btn-secondary" onClick={handleSave} disabled={loading}>
-                {loading ? t('saving') : t('saveAndCalculate')}
+              {/* Optional: Custom lactation days */}
+              <div className="form-section">
+                <label className="form-label">
+                  {t('customLactationDays')} <span className="optional-label">({t('optional')})</span>
+                </label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={targetLactationDays}
+                  onChange={(e) => setTargetLactationDays(e.target.value)}
+                  placeholder={t('useBreedDefault')}
+                  min="150"
+                  max="450"
+                />
+                <small className="input-hint">{t('lactationDaysHint')}</small>
+              </div>
+
+              <button 
+                className="btn btn-primary btn-large" 
+                onClick={handleSave}
+                disabled={loading || !selectedBreed}
+              >
+                {loading ? t('calculating') : t('runSimulation')}
               </button>
             </div>
           </div>
 
-          {results && (
+          {/* Simulation Results */}
+          {simulation && (
             <>
-              <div className="card">
-                <h2>{t('results')}</h2>
-                <table className="table">
-                  <tbody>
-                    <tr>
-                      <td><strong>{t('cycleDays')}</strong></td>
-                      <td>{Number(results.cycleDays || 0).toFixed(0)} {t('days')}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('cyclesPerYear')}</strong></td>
-                      <td>{Number(results.cyclesPerYear || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('totalProductiveDays')}</strong></td>
-                      <td>{Number(results.productiveDays || 0).toFixed(0)} {t('days')}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('effectiveProductionDays')}</strong></td>
-                      <td>{Number(results.effectiveProductionDays || 0).toFixed(0)} {t('days')}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('totalAdjustedProduction')}</strong></td>
-                      <td>{Number(results.totalProductionLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('totalRevenue')}</strong></td>
-                      <td>${Number(results.totalRevenue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('totalCosts')}</strong></td>
-                      <td>${Number(results.totalCosts || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('grossMargin')}</strong></td>
-                      <td>${Number(results.grossMargin || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('marginPercentage')}</strong></td>
-                      <td>{Number(results.marginPercentage || 0).toFixed(2)}%</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('replacementRate')}</strong></td>
-                      <td>{Number(results.replacementRate || 0).toFixed(2)}%</td>
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Breed Profile Panel */}
+              <div className="card card-highlight">
+                <div className="card-header">
+                  <h2 className="card-title">📊 {simulation.breed_name} - {t('scientificProfile')}</h2>
+                  <span className="badge badge-success">{t(managementLevel + 'Management')}</span>
+                </div>
+                <div className="card-content">
+                  <div className="metrics-grid">
+                    {/* Production Metrics */}
+                    <div className="metric-card">
+                      <div className="metric-icon">🥛</div>
+                      <div className="metric-content">
+                        <div className="metric-label">{t('expectedProduction')}</div>
+                        <div className="metric-value">{Number(simulation.total_lactation_liters || 0).toLocaleString()} L</div>
+                        <div className="metric-sub">
+                          {t('lactationDays')}: {simulation.lactation_days} | 
+                          {t('peak')}: {Number(simulation.peak_yield || 0).toFixed(1)} L/día ({t('day')} {simulation.peak_day})
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Composition */}
+                    <div className="metric-card">
+                      <div className="metric-icon">🧈</div>
+                      <div className="metric-content">
+                        <div className="metric-label">{t('milkComposition')}</div>
+                        <div className="metric-value">{Number(simulation.solids_percentage || 0).toFixed(2)}% {t('solids')}</div>
+                        <div className="metric-sub">
+                          {t('fat')}: {Number(simulation.fat_percentage || 0).toFixed(2)}% ({Number(simulation.fat_kg || 0).toFixed(1)} kg) | 
+                          {t('protein')}: {Number(simulation.protein_percentage || 0).toFixed(2)}% ({Number(simulation.protein_kg || 0).toFixed(1)} kg)
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Persistence */}
+                    <div className="metric-card">
+                      <div className="metric-icon">📉</div>
+                      <div className="metric-content">
+                        <div className="metric-label">{t('lactationPersistence')}</div>
+                        <div className="metric-value">{Number(simulation.persistence_rate || 0).toFixed(2)}%</div>
+                        <div className="metric-sub">{t('monthlyDecline')}</div>
+                      </div>
+                    </div>
+
+                    {/* Reproductive Cycle */}
+                    <div className="metric-card">
+                      <div className="metric-icon">🔄</div>
+                      <div className="metric-content">
+                        <div className="metric-label">{t('reproductiveCycle')}</div>
+                        <div className="metric-value">{Number(simulation.cycles_per_year || 0).toFixed(2)}</div>
+                        <div className="metric-sub">
+                          {t('calvingInterval')}: {simulation.calving_interval_days} días | 
+                          {t('dryPeriod')}: {simulation.dry_period_days} días
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lactation Curve Chart */}
+                  <div className="chart-section">
+                    <h3 className="chart-title">{t('lactationCurve')}</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={lactationCurveData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="day" 
+                          label={{ value: t('daysInMilk'), position: 'insideBottom', offset: -5 }}
+                        />
+                        <YAxis 
+                          label={{ value: t('dailyProduction') + ' (L)', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip 
+                          formatter={(value) => [Number(value).toFixed(2) + ' L', t('production')]}
+                          labelFormatter={(label) => t('day') + ' ' + label}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="yield" 
+                          stroke="#10b981" 
+                          strokeWidth={3}
+                          dot={false}
+                          name={t('production')}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Radar Chart for Breed Profile */}
+                  <div className="chart-section">
+                    <h3 className="chart-title">{t('breedProfile')}</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RadarChart data={radarData}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="metric" />
+                        <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                        <Radar 
+                          name={simulation.breed_name}
+                          dataKey="value" 
+                          stroke="#10b981" 
+                          fill="#10b981" 
+                          fillOpacity={0.6} 
+                        />
+                        <Tooltip />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
 
-              <div className="card">
-                <h2>{t('visualization')}</h2>
-                <h3 style={{ marginBottom: '15px' }}>{t('lactationCycleChart')}</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={cycleData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Optimization Potential */}
+              {simulation.optimization_potential?.has_potential && (
+                <div className="card card-info">
+                  <div className="card-header">
+                    <h2 className="card-title">💡 {t('optimizationOpportunities')}</h2>
+                  </div>
+                  <div className="card-content">
+                    <div className="alert alert-info">
+                      <strong>{t('improvementPotential')}:</strong> +{Number(simulation.optimization_potential?.improvement_percentage || 0).toFixed(1)}% 
+                      ({Number(simulation.optimization_potential?.improvement_liters || 0).toLocaleString()} L)
+                    </div>
+                    
+                    <p>
+                      {t('currentLevel')}: <strong>{t(managementLevel + 'Management')}</strong> → 
+                      {t('nextLevel')}: <strong>{t(simulation.optimization_potential.next_level + 'Management')}</strong>
+                    </p>
 
-                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('productionImpact')}</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={productionImpact}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `${Number(value || 0).toLocaleString(undefined)} ${t('liters')}`} />
-                    <Legend />
-                    <Bar dataKey="value" fill="#82ca9d" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                    {simulation.optimization_potential.recommendations?.length > 0 && (
+                      <div className="recommendations-list">
+                        <h4>{t('recommendations')}:</h4>
+                        <ul>
+                          {simulation.optimization_potential.recommendations.map((rec, index) => (
+                            <li key={index}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Breed Comparison */}
+              {comparisonBreeds.length > 0 && (
+                <div className="card">
+                  <div className="card-header">
+                    <h2 className="card-title">🔬 {t('breedComparison')}</h2>
+                    <p className="card-subtitle">{t('compareAlternatives')}</p>
+                  </div>
+                  <div className="card-content">
+                    {/* Comparison Table */}
+                    <div className="table-container">
+                      <table className="comparison-table">
+                        <thead>
+                          <tr>
+                            <th>{t('breed')}</th>
+                            <th>{t('totalProduction')} (L)</th>
+                            <th>{t('fat')} (%)</th>
+                            <th>{t('protein')} (%)</th>
+                            <th>{t('solids')} (kg)</th>
+                            <th>{t('persistence')} (%)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="current-breed">
+                            <td><strong>{simulation.breed_name}</strong> ⭐</td>
+                            <td><strong>{Number(simulation.total_lactation_liters || 0).toLocaleString()}</strong></td>
+                            <td><strong>{Number(simulation.fat_percentage || 0).toFixed(2)}</strong></td>
+                            <td><strong>{Number(simulation.protein_percentage || 0).toFixed(2)}</strong></td>
+                            <td><strong>{Number(simulation.solids_kg || 0).toFixed(1)}</strong></td>
+                            <td><strong>{Number(simulation.persistence_rate || 0).toFixed(2)}</strong></td>
+                          </tr>
+                          {comparisonBreeds.map((comp, index) => (
+                            <tr key={index}>
+                              <td>{comp.breed_name}</td>
+                              <td>{Number(comp.simulation?.total_lactation_liters || 0).toLocaleString()}</td>
+                              <td>{Number(comp.simulation?.fat_percentage || 0).toFixed(2)}</td>
+                              <td>{Number(comp.simulation?.protein_percentage || 0).toFixed(2)}</td>
+                              <td>{Number(comp.simulation?.solids_kg || 0).toFixed(1)}</td>
+                              <td>{Number(comp.simulation?.persistence_rate || 0).toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Comparison Bar Chart */}
+                    <div className="chart-section">
+                      <h3 className="chart-title">{t('productionComparison')}</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={comparisonData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="breed" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar 
+                            dataKey={t('totalProduction')} 
+                            fill="#10b981" 
+                            name={t('production') + ' (L)'}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </>
       )}
+
       <AlertModal
         isOpen={alertModal.isOpen}
-        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
-        title={alertModal.type === 'success' ? t('success') : alertModal.type === 'error' ? t('error') : t('information') || 'Information'}
         message={alertModal.message}
         type={alertModal.type}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
       />
     </div>
   );

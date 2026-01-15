@@ -2009,3 +2009,304 @@ label {
     width: 100%;
   }
 }
+
+/* ============================================
+   Module 3 - Scientific Lactation Styles
+   ============================================ */
+
+/* Radio Card Group */
+.radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.radio-card {
+  position: relative;
+  display: flex;
+  padding: 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+}
+
+.radio-card:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.radio-card.selected {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+}
+
+.radio-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.radio-content {
+  flex: 1;
+}
+
+.radio-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.radio-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Metric Cards Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.metric-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #10b981;
+}
+
+.metric-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #10b981;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.metric-sub {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Chart Section */
+.chart-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.chart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Comparison Table */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-table thead {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.comparison-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.comparison-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.9375rem;
+}
+
+.comparison-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.comparison-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.comparison-table tbody tr.current-breed {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  font-weight: 600;
+}
+
+.comparison-table tbody tr.current-breed td {
+  color: #065f46;
+  border-bottom: 2px solid #10b981;
+}
+
+/* Card Variants */
+.card-highlight {
+  border: 2px solid #10b981;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+}
+
+.card-info {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #93c5fd;
+}
+
+/* Alert Box */
+.alert {
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.alert-info {
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+
+/* Recommendations List */
+.recommendations-list {
+  margin-top: 1.5rem;
+}
+
+.recommendations-list h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.recommendations-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendations-list li {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: white;
+  border-left: 4px solid #10b981;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.recommendations-list li:hover {
+  transform: translateX(4px);
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Optional Label */
+.optional-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Input Hint */
+.input-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments for Module 3 */
+@media (max-width: 768px) {
+  .radio-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .comparison-table {
+    font-size: 0.875rem;
+  }
+  
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0.75rem 0.5rem;
+  }
+}

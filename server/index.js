@@ -5,6 +5,7 @@ import { createPool } from './db/pool.js';
 import authRoutes from './routes/auth.js';
 import scenarioRoutes from './routes/scenarios.js';
 import moduleRoutes from './routes/modules.js';
+import breedRoutes from './routes/breeds.js';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/modules', moduleRoutes);
+app.use('/api/breeds', breedRoutes);
 
 // Health check
 app.get('/api/health', async (req, res) => {

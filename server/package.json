@@ -12,6 +12,8 @@
     "migrate:sales-channels": "node scripts/migrate-sales-channels.js",
     "migrate:packaging-cost": "node scripts/migrate-packaging-cost.js",
     "migrate:product-mix": "node scripts/migrate-product-mix.js",
+    "migrate:scientific-lactation": "node scripts/migrate-scientific-lactation.js",
+    "seed:breeds": "node scripts/seed-breed-profiles.js",
     "verify:product-mix": "node scripts/verify-product-mix-migration.js"
   },
   "dependencies": {
