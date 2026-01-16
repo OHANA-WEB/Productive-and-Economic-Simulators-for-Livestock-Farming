@@ -33,19 +33,28 @@ function Dashboard({ user, onLogout }) {
     }
   };
 
-  const handleCreateScenario = async (e) => {
-    e.preventDefault();
+  const handleCreateScenario = async () => {
+    if (!newScenarioName.trim()) {
+      return;
+    }
     try {
       await api.post('/scenarios', {
         name: newScenarioName,
         type: newScenarioType,
       });
       setNewScenarioName('');
+      setNewScenarioType('milk_sale');
       setShowCreateForm(false);
       loadScenarios();
     } catch (error) {
       alert(error.response?.data?.error || t('errorCreatingScenario'));
     }
+  };
+
+  const handleCreateModalClose = () => {
+    setShowCreateForm(false);
+    setNewScenarioName('');
+    setNewScenarioType('milk_sale');
   };
 
   const handleDuplicateScenario = async (scenarioId) => {
@@ -199,55 +208,14 @@ function Dashboard({ user, onLogout }) {
         </div>
         <button
           className="btn btn-primary btn-icon"
-          onClick={() => setShowCreateForm(!showCreateForm)}
+          onClick={() => setShowCreateForm(true)}
         >
           <span className="btn-icon-text">+</span>
-          {showCreateForm ? t('cancel') : t('newScenario')}
+          {t('newScenario')}
         </button>
       </div>
 
-      {showCreateForm && (
-        <div className="card card-form">
-          <h3 className="form-title">{t('createScenario')}</h3>
-          <form onSubmit={handleCreateScenario}>
-            <div className="form-group">
-              <label>{t('scenarioName')}</label>
-              <input
-                type="text"
-                value={newScenarioName}
-                onChange={(e) => setNewScenarioName(e.target.value)}
-                required
-                placeholder={t('scenarioNamePlaceholder')}
-                className="form-input"
-              />
-            </div>
-            <div className="form-group">
-              <label>{t('moduleType')}</label>
-              <select 
-                value={newScenarioType} 
-                onChange={(e) => setNewScenarioType(e.target.value)}
-                className="form-select"
-              >
-                <option value="milk_sale">{t('moduleTypes.milk_sale')}</option>
-                <option value="transformation">{t('moduleTypes.transformation')}</option>
-                <option value="lactation">{t('moduleTypes.lactation')}</option>
-                <option value="yield">{t('moduleTypes.yield')}</option>
-                <option value="summary">{t('moduleTypes.summary')}</option>
-              </select>
-            </div>
-            <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowCreateForm(false)}>
-                {t('cancel')}
-              </button>
-              <button type="submit" className="btn btn-primary">
-                {t('createScenario')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {!showCreateForm && scenarios.length > 0 && (
+      {scenarios.length > 0 && (
         <div className="card card-filters">
           <div className="filters-container">
             <div className="search-box">
@@ -289,6 +257,7 @@ function Dashboard({ user, onLogout }) {
             <p>{scenarios.length === 0 ? t('getStarted') : t('tryAdjustingSearch')}</p>
             {scenarios.length === 0 && (
               <button className="btn btn-primary" onClick={() => setShowCreateForm(true)}>
+                <span className="btn-icon-text">+</span>
                 {t('createScenario')}
               </button>
             )}
@@ -361,6 +330,52 @@ function Dashboard({ user, onLogout }) {
           ))}
         </div>
       )}
+
+      {/* Create Scenario Modal */}
+      <Modal
+        isOpen={showCreateForm}
+        onClose={handleCreateModalClose}
+        onConfirm={newScenarioName.trim() ? handleCreateScenario : null}
+        title={t('createScenario')}
+        confirmText={t('createScenario')}
+        cancelText={t('cancel')}
+        type="info"
+        showIcon={true}
+      >
+        <form onSubmit={(e) => { 
+          e.preventDefault(); 
+          if (newScenarioName.trim()) {
+            handleCreateScenario();
+          }
+        }}>
+          <div className="form-group">
+            <label>{t('scenarioName')}</label>
+            <input
+              type="text"
+              value={newScenarioName}
+              onChange={(e) => setNewScenarioName(e.target.value)}
+              required
+              placeholder={t('scenarioNamePlaceholder')}
+              className="form-input"
+              autoFocus
+            />
+          </div>
+          <div className="form-group">
+            <label>{t('moduleType')}</label>
+            <select 
+              value={newScenarioType} 
+              onChange={(e) => setNewScenarioType(e.target.value)}
+              className="form-select"
+            >
+              <option value="milk_sale">{t('moduleTypes.milk_sale')}</option>
+              <option value="transformation">{t('moduleTypes.transformation')}</option>
+              <option value="lactation">{t('moduleTypes.lactation')}</option>
+              <option value="yield">{t('moduleTypes.yield')}</option>
+              <option value="summary">{t('moduleTypes.summary')}</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal

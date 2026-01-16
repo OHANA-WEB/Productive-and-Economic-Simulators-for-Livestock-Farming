@@ -2804,3 +2804,309 @@ label {
 .dark-mode .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
+
+/* Modal dark mode */
+.dark-mode .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.dark-mode .modal-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(74, 124, 42, 0.1);
+}
+
+.dark-mode .modal-header {
+  border-bottom-color: var(--border-color);
+  background: linear-gradient(to bottom, var(--card-bg) 0%, var(--bg-tertiary) 100%);
+}
+
+.dark-mode .modal-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.dark-mode .modal-close-button {
+  color: var(--text-tertiary);
+  transition: all 0.2s ease;
+}
+
+.dark-mode .modal-close-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.dark-mode .modal-close-button:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+  background-color: var(--bg-tertiary);
+}
+
+.dark-mode .modal-body {
+  background: var(--card-bg);
+}
+
+.dark-mode .modal-body label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .modal-body .form-input,
+.dark-mode .modal-body .form-select {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-body .form-input:focus,
+.dark-mode .modal-body .form-select:focus {
+  background-color: var(--input-bg);
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-message {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.dark-mode .modal-message strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.dark-mode .modal-footer {
+  border-top-color: var(--border-color);
+  background: linear-gradient(to top, var(--card-bg) 0%, var(--bg-tertiary) 100%);
+}
+
+.dark-mode .modal-footer .btn-secondary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.dark-mode .modal-footer .btn-secondary:hover {
+  background-color: var(--input-bg);
+  border-color: var(--border-light);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .modal-footer .btn-primary {
+  background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(74, 124, 42, 0.3);
+  transition: all 0.2s ease;
+}
+
+.dark-mode .modal-footer .btn-primary:hover {
+  background: linear-gradient(135deg, #1e3d0f 0%, #2d5016 100%);
+  box-shadow: 0 4px 12px rgba(74, 124, 42, 0.4);
+  transform: translateY(-1px);
+}
+
+.dark-mode .modal-footer .btn-primary:focus {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+}
+
+.dark-mode .modal-footer .btn-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  transition: all 0.2s ease;
+}
+
+.dark-mode .modal-footer .btn-danger:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  transform: translateY(-1px);
+}
+
+.dark-mode .modal-footer .btn-danger:focus {
+  outline: 2px solid #fca5a5;
+  outline-offset: 2px;
+}
+
+/* Modal icons with improved contrast */
+.dark-mode .modal-icon-danger {
+  background: linear-gradient(135deg, #4a1a1a 0%, #5a2a2a 100%);
+  color: #ff6b6b;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+}
+
+.dark-mode .modal-icon-warning {
+  background: linear-gradient(135deg, #4a3a1a 0%, #5a4a2a 100%);
+  color: #ffb84d;
+  box-shadow: 0 2px 8px rgba(255, 184, 77, 0.2);
+}
+
+.dark-mode .modal-icon-info {
+  background: linear-gradient(135deg, #1a2a3a 0%, #2a3a4a 100%);
+  color: var(--accent-light);
+  box-shadow: 0 2px 8px rgba(74, 124, 42, 0.2);
+}
+
+.dark-mode .modal-icon-success {
+  background: linear-gradient(135deg, #1a4a2a 0%, #2a5a3a 100%);
+  color: #6bff8b;
+  box-shadow: 0 2px 8px rgba(107, 255, 139, 0.2);
+}
+
+/* Scenario badge dark mode */
+.dark-mode .scenario-badge {
+  opacity: 0.9;
+}
+
+/* Scenario icon dark mode */
+.dark-mode .scenario-icon {
+  opacity: 0.9;
+}
+
+/* Loading spinner dark mode */
+.dark-mode .spinner {
+  border-color: var(--border-color);
+  border-top-color: var(--accent-color);
+}
+
+.dark-mode .loading-container p {
+  color: var(--text-tertiary);
+}
+
+/* Radio cards dark mode */
+.dark-mode .radio-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .radio-card:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.dark-mode .radio-card.selected {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--card-bg) 100%);
+  border-color: var(--accent-color);
+}
+
+.dark-mode .radio-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .radio-description {
+  color: var(--text-tertiary);
+}
+
+/* Metric cards dark mode */
+.dark-mode .metric-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .metric-card:hover {
+  border-color: var(--accent-color);
+}
+
+.dark-mode .metric-label {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .metric-value {
+  color: var(--accent-light);
+}
+
+.dark-mode .metric-sub {
+  color: var(--text-tertiary);
+}
+
+/* Comparison table dark mode */
+.dark-mode .comparison-table {
+  background: var(--card-bg);
+}
+
+.dark-mode .comparison-table thead {
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+}
+
+.dark-mode .comparison-table tbody tr {
+  background: var(--card-bg);
+}
+
+.dark-mode .comparison-table tbody tr:hover {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .comparison-table tbody tr.current-breed {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--card-bg) 100%);
+}
+
+.dark-mode .comparison-table tbody tr.current-breed td {
+  color: var(--accent-light);
+  border-bottom-color: var(--accent-color);
+}
+
+.dark-mode .comparison-table td {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-color);
+}
+
+/* Chart section dark mode */
+.dark-mode .chart-section {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .chart-title {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-color);
+}
+
+/* Alert info dark mode */
+.dark-mode .alert-info {
+  background: #1a2a3a;
+  border-color: var(--accent-color);
+  color: var(--accent-light);
+}
+
+/* Recommendations list dark mode */
+.dark-mode .recommendations-list h4 {
+  color: var(--text-primary);
+}
+
+.dark-mode .recommendations-list li {
+  background: var(--card-bg);
+  border-left-color: var(--accent-color);
+}
+
+/* Badge dark mode */
+.dark-mode .badge-success {
+  background: #1a4a2a;
+  color: #6bff8b;
+}
+
+/* Optional label dark mode */
+.dark-mode .optional-label {
+  color: var(--text-tertiary);
+}
+
+/* Input hint dark mode */
+.dark-mode .input-hint {
+  color: var(--text-tertiary);
+}
+
+/* Table container dark mode */
+.dark-mode .table-container {
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+/* Card info dark mode */
+.dark-mode .card-info {
+  background: linear-gradient(135deg, #1a2a3a 0%, #252b33 100%);
+  border-color: var(--accent-color);
+}
