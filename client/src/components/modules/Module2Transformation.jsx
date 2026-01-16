@@ -799,13 +799,13 @@ function Module2Transformation({ user }) {
                         onFocus={handleInputFocus}
                         step="0.01"
                         style={{ flex: 1 }}
-                        placeholder={product.processing_cost_unit === 'liter' ? 'Ej: 0.50' : 'Ej: 1.20'}
+                        placeholder={product.processing_cost_unit === 'liter' ? t('processingCostPlaceholderLiter') : t('processingCostPlaceholderKg')}
                       />
                     </div>
                     <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
                       {product.processing_cost_unit === 'liter' 
-                        ? 'Costo de procesamiento por litro de leche usado' 
-                        : 'Costo de procesamiento por kilogramo de producto producido'}
+                        ? t('processingCostHelpLiter') 
+                        : t('processingCostHelpKg')}
                     </small>
                   </div>
 
@@ -842,13 +842,13 @@ function Module2Transformation({ user }) {
                         onFocus={handleInputFocus}
                         step="0.01"
                         style={{ flex: 1 }}
-                        placeholder={product.packaging_cost_unit === 'liter' ? 'Ej: 0.15' : 'Ej: 0.30'}
+                        placeholder={product.packaging_cost_unit === 'liter' ? t('packagingCostPlaceholderLiter') : t('packagingCostPlaceholderKg')}
                       />
                     </div>
                     <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
                       {product.packaging_cost_unit === 'liter' 
-                        ? 'Costo de empaque por litro de producto producido' 
-                        : 'Costo de empaque por kilogramo de producto producido'}
+                        ? t('packagingCostHelpLiter') 
+                        : t('packagingCostHelpKg')}
                     </small>
                   </div>
                 </div>
@@ -858,9 +858,7 @@ function Module2Transformation({ user }) {
                   {t('salesChannels')}
                 </h4>
                 <div style={{ marginBottom: '15px', padding: '10px', background: '#fff9e6', borderRadius: '6px', border: '1px solid #ffe066', fontSize: '0.9em' }}>
-                  <strong>📌 Nota:</strong> Estos canales aplican <strong>solo al producto transformado</strong> (queso, yogurt, etc.). 
-                  "Venta Directa" aquí significa venta directa del producto transformado al consumidor final (tienda/local propio/online), 
-                  <strong>NO</strong> venta de leche cruda (que se maneja en Módulo 1).
+                  <strong>📌 {t('note')}:</strong> {t('salesChannelsNote')}
                 </div>
                 {(() => {
                   const totalChannelPct = parseFloat(product.sales_channel_direct_percentage || 0) + 
@@ -1043,7 +1041,7 @@ function Module2Transformation({ user }) {
                   
                   return (
                     <div style={{ marginBottom: '20px' }}>
-                      <h3 style={{ fontSize: '1.1em', marginBottom: '15px' }}>Resumen Consolidado</h3>
+                      <h3 style={{ fontSize: '1.1em', marginBottom: '15px' }}>{t('consolidatedSummary')}</h3>
                       <table className="table">
                         <tbody>
                           <tr>
@@ -1051,31 +1049,31 @@ function Module2Transformation({ user }) {
                             <td>${totalMilkProductionCostPerLiter.toFixed(2)} ({t('inheritedFromModule1')})</td>
                           </tr>
                           <tr>
-                            <td><strong>Total litros transformados:</strong></td>
+                            <td><strong>{t('totalLitersTransformed')}</strong></td>
                             <td>{totalProductLiters.toLocaleString(undefined, { maximumFractionDigits: 2 })} L</td>
                           </tr>
                           <tr>
-                            <td><strong>Total kg producidos:</strong></td>
+                            <td><strong>{t('totalKgProduced')}</strong></td>
                             <td>{totalProductKg.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg</td>
                           </tr>
                           <tr>
-                            <td><strong>Costo total de leche:</strong></td>
+                            <td><strong>{t('totalMilkCost')}</strong></td>
                             <td>${totalMilkCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                           </tr>
                           <tr>
-                            <td><strong>Costo total de procesamiento:</strong></td>
+                            <td><strong>{t('totalProcessingCost')}</strong></td>
                             <td>${totalProcessingCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                           </tr>
                           <tr>
-                            <td><strong>Costo total de empaque:</strong></td>
+                            <td><strong>{t('totalPackagingCost')}</strong></td>
                             <td>${totalPackagingCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                           </tr>
                           <tr style={{ borderTop: '2px solid #333' }}>
-                            <td><strong>Costo total producción:</strong></td>
+                            <td><strong>{t('totalProductionCost')}</strong></td>
                             <td><strong>${totalCosts.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong></td>
                           </tr>
                           <tr>
-                            <td><strong>Costo promedio por kg:</strong></td>
+                            <td><strong>{t('averageCostPerKg')}</strong></td>
                             <td><strong>${averageCostPerKg.toFixed(2)} / kg</strong></td>
                           </tr>
                         </tbody>
@@ -1083,18 +1081,18 @@ function Module2Transformation({ user }) {
                       
                       {products.length > 1 && (
                         <>
-                          <h3 style={{ fontSize: '1.1em', marginTop: '25px', marginBottom: '15px' }}>Desglose por Producto</h3>
+                          <h3 style={{ fontSize: '1.1em', marginTop: '25px', marginBottom: '15px' }}>{t('breakdownByProduct')}</h3>
                           <table className="table">
                             <thead>
                               <tr>
-                                <th>Producto</th>
-                                <th>Litros</th>
-                                <th>Kg</th>
-                                <th>Costo Leche</th>
-                                <th>Costo Proc.</th>
-                                <th>Costo Emp.</th>
-                                <th>Total</th>
-                                <th>Costo/kg</th>
+                                <th>{t('product')}</th>
+                                <th>{t('productTableLiters')}</th>
+                                <th>{t('productTableKg')}</th>
+                                <th>{t('productTableMilkCost')}</th>
+                                <th>{t('productTableProcCost')}</th>
+                                <th>{t('productTablePackCost')}</th>
+                                <th>{t('productTableTotal')}</th>
+                                <th>{t('productTableCostPerKg')}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1235,12 +1233,12 @@ function Module2Transformation({ user }) {
                         <tr>
                           <th>{t('concept')}</th>
                           <th>% {t('salesChannels')}</th>
-                          <th>Kg/L</th>
-                          <th>{t('salesPrice')} (promedio)</th>
-                          <th>Costo (promedio)</th>
+                          <th>{t('kgL')}</th>
+                          <th>{t('salesPrice')} ({t('average')})</th>
+                          <th>{t('costAverage')}</th>
                           <th>{t('marginPerKg')}</th>
                           <th>{t('marginPercent')}</th>
-                          <th>Ingreso Total</th>
+                          <th>{t('totalIncome')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1266,7 +1264,7 @@ function Module2Transformation({ user }) {
                           );
                         })}
                         <tr style={{ borderTop: '2px solid #333', fontWeight: 'bold' }}>
-                          <td colSpan="2"><strong>Total</strong></td>
+                          <td colSpan="2"><strong>{t('total')}</strong></td>
                           <td>{totalProductKg.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                           <td>-</td>
                           <td>${averageCostPerKg.toFixed(2)}</td>
@@ -1287,9 +1285,9 @@ function Module2Transformation({ user }) {
                     📊 {t('note')}: {t('whatAreWeComparing')}
                   </p>
                   <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9em', color: '#666' }}>
-                    <li><strong>Venta de Leche Cruda (Módulo 1):</strong> Leche vendida directamente sin transformar (puerta de corral o a industria/acopiador).</li>
-                    <li><strong>Transformación (Módulo 2):</strong> Leche convertida en productos (queso, yogurt, etc.) y vendida a través de canales (venta directa al consumidor, distribuidores, tercer canal).</li>
-                    <li><strong>Nota importante:</strong> "Venta Directa" dentro del Módulo 2 se refiere a venta directa del <strong>producto transformado</strong> al consumidor final, NO a venta de leche cruda.</li>
+                    <li><strong>{t('rawMilkSaleModule1')}</strong> {t('directSaleExplanation')}</li>
+                    <li><strong>{t('transformationModule2')}</strong> {t('transformationExplanation')}</li>
+                    <li><strong>{t('importantNote')}:</strong> {t('salesChannelsNote')}</li>
                     <li><strong>{t('assumptions')}:</strong> {t('assumptionsExplanation')}</li>
                     <li><strong>{t('costsIncluded')}:</strong> {t('costsIncludedExplanation')}</li>
                   </ul>
