@@ -576,7 +576,7 @@ function Module2Transformation({ user }) {
                 📊 <strong>{t('note')}:</strong> {t('inheritedDataNote')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
               <div className="form-group">
                 <label>{t('dailyProduction')} 🔒</label>
                 <input
@@ -626,6 +626,28 @@ function Module2Transformation({ user }) {
                   type="number"
                   name="milk_price_per_liter"
                   value={productionData.milk_price_per_liter}
+                  readOnly
+                  disabled
+                  style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+                  step="0.01"
+                />
+                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                  {t('inheritedFromModule1')}
+                </small>
+              </div>
+              <div className="form-group">
+                <label>{t('milkProductionCostPerLiter')} 🔒</label>
+                <input
+                  type="number"
+                  name="milk_production_cost_per_liter"
+                  value={(() => {
+                    const feedCost = Number(productionData.feed_cost_per_liter) || 0;
+                    const laborCost = Number(productionData.labor_cost_per_liter) || 0;
+                    const healthCost = Number(productionData.health_cost_per_liter) || 0;
+                    const infrastructureCost = Number(productionData.infrastructure_cost_per_liter) || 0;
+                    const otherCost = Number(productionData.other_costs_per_liter) || 0;
+                    return feedCost + laborCost + healthCost + infrastructureCost + otherCost;
+                  })()}
                   readOnly
                   disabled
                   style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
