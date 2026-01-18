@@ -529,7 +529,7 @@ export const translations = {
     // Module 1 - Production
     module1Title: 'Módulo 1: Producción y Venta de Leche Cruda',
     productionData: 'Datos de Producción (promedio del rebaño)',
-    dailyProduction: 'Producción Diaria por Cabra (litros)',
+    dailyProduction: 'Producción Diaria promedio por cabra (litros)',
     productionDays: 'Días de Producción (promedio del rebaño en lactancia)',
     animalsCount: 'Número de Cabras en Lactancia',
     feedCost: 'Costo de Alimentación (por litro)',
@@ -714,7 +714,7 @@ export const translations = {
     dryPeriod: 'Periodo Seco',
     lactationCurve: 'Curva de Lactancia',
     daysInMilk: 'Días en Leche',
-    dailyProduction: 'Producción Diaria',
+    dailyProduction: 'Producción Diaria promedio por cabra',
     production: 'Producción',
     breedProfile: 'Perfil de Raza',
     volume: 'Volumen',
