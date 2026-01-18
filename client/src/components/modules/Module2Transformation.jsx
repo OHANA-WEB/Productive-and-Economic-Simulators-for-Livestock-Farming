@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Area } from 'recharts';
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
 import AlertModal from '../AlertModal';
@@ -67,6 +67,7 @@ function Module2Transformation({ user }) {
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
+  const [chartViewType, setChartViewType] = useState('grouped'); // 'grouped', 'donut', 'stacked', 'waterfall'
 
   useEffect(() => {
     const initialize = async () => {
@@ -767,89 +768,131 @@ function Module2Transformation({ user }) {
                   </div>
 
                   <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>
-                      {t('processingCost')} 
-                      <span style={{ 
-                        marginLeft: '8px', 
-                        padding: '2px 8px', 
-                        background: '#e3f2fd', 
-                        borderRadius: '4px', 
-                        fontSize: '0.85em',
-                        fontWeight: 'normal'
-                      }}>
-                        {product.processing_cost_unit === 'liter' ? '($/L)' : '($/kg)'}
-                      </span>
+                    <label style={{ marginBottom: '8px', display: 'block', fontWeight: '600' }}>
+                      {t('processingCost')}
                     </label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <select
-                        value={product.processing_cost_unit || 'liter'}
-                        onChange={(e) => handleProductChange(product.id, 'processing_cost_unit', e.target.value)}
-                        style={{ width: '100px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                      >
-                        <option value="liter">$/L</option>
-                        <option value="kg">$/kg</option>
-                      </select>
-                      <input
-                        type="number"
-                        value={product.processing_cost_unit === 'kg' ? product.processing_cost_per_kg : product.processing_cost_per_liter}
-                        onChange={(e) => {
-                          const field = product.processing_cost_unit === 'kg' ? 'processing_cost_per_kg' : 'processing_cost_per_liter';
-                          handleProductChange(product.id, field, e.target.value);
-                        }}
-                        onFocus={handleInputFocus}
-                        step="0.01"
-                        style={{ flex: 1 }}
-                        placeholder={product.processing_cost_unit === 'liter' ? t('processingCostPlaceholderLiter') : t('processingCostPlaceholderKg')}
-                      />
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '120px' }}>
+                        <label style={{ fontSize: '0.85em', color: '#666', fontWeight: '500' }}>Unidad:</label>
+                        <select
+                          value={product.processing_cost_unit || 'liter'}
+                          onChange={(e) => handleProductChange(product.id, 'processing_cost_unit', e.target.value)}
+                          style={{ 
+                            padding: '8px 12px', 
+                            border: '2px solid #ddd', 
+                            borderRadius: '6px',
+                            fontSize: '0.95em',
+                            fontWeight: '600',
+                            background: '#fff',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#2d5016'}
+                          onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                        >
+                          <option value="liter">$/L (por litro)</option>
+                          <option value="kg">$/kg (por kilogramo)</option>
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                        <label style={{ fontSize: '0.85em', color: '#666', fontWeight: '500' }}>
+                          Costo {product.processing_cost_unit === 'liter' ? 'por litro' : 'por kg'}:
+                        </label>
+                        <input
+                          type="number"
+                          value={product.processing_cost_unit === 'kg' ? product.processing_cost_per_kg : product.processing_cost_per_liter}
+                          onChange={(e) => {
+                            const field = product.processing_cost_unit === 'kg' ? 'processing_cost_per_kg' : 'processing_cost_per_liter';
+                            handleProductChange(product.id, field, e.target.value);
+                          }}
+                          onFocus={handleInputFocus}
+                          step="0.01"
+                          placeholder={product.processing_cost_unit === 'liter' ? t('processingCostPlaceholderLiter') : t('processingCostPlaceholderKg')}
+                          style={{ 
+                            padding: '8px 12px', 
+                            border: '2px solid #ddd', 
+                            borderRadius: '6px',
+                            fontSize: '0.95em'
+                          }}
+                        />
+                      </div>
                     </div>
-                    <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                      {product.processing_cost_unit === 'liter' 
+                    <div style={{ 
+                      padding: '10px 12px', 
+                      background: '#e3f2fd', 
+                      borderRadius: '6px', 
+                      border: '1px solid #90caf9',
+                      fontSize: '0.85em',
+                      color: '#1565c0'
+                    }}>
+                      <strong>ℹ️ {t('note')}:</strong> {product.processing_cost_unit === 'liter' 
                         ? t('processingCostHelpLiter') 
                         : t('processingCostHelpKg')}
-                    </small>
+                    </div>
                   </div>
 
                   <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>
-                      {t('packagingCost')} 
-                      <span style={{ 
-                        marginLeft: '8px', 
-                        padding: '2px 8px', 
-                        background: '#e8f5e9', 
-                        borderRadius: '4px', 
-                        fontSize: '0.85em',
-                        fontWeight: 'normal'
-                      }}>
-                        {product.packaging_cost_unit === 'liter' ? '($/L)' : '($/kg)'}
-                      </span>
+                    <label style={{ marginBottom: '8px', display: 'block', fontWeight: '600' }}>
+                      {t('packagingCost')}
                     </label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <select
-                        value={product.packaging_cost_unit || 'kg'}
-                        onChange={(e) => handleProductChange(product.id, 'packaging_cost_unit', e.target.value)}
-                        style={{ width: '100px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                      >
-                        <option value="liter">$/L</option>
-                        <option value="kg">$/kg</option>
-                      </select>
-                      <input
-                        type="number"
-                        value={product.packaging_cost_unit === 'liter' ? product.packaging_cost_per_liter : product.packaging_cost_per_kg}
-                        onChange={(e) => {
-                          const field = product.packaging_cost_unit === 'liter' ? 'packaging_cost_per_liter' : 'packaging_cost_per_kg';
-                          handleProductChange(product.id, field, e.target.value);
-                        }}
-                        onFocus={handleInputFocus}
-                        step="0.01"
-                        style={{ flex: 1 }}
-                        placeholder={product.packaging_cost_unit === 'liter' ? t('packagingCostPlaceholderLiter') : t('packagingCostPlaceholderKg')}
-                      />
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '120px' }}>
+                        <label style={{ fontSize: '0.85em', color: '#666', fontWeight: '500' }}>Unidad:</label>
+                        <select
+                          value={product.packaging_cost_unit || 'kg'}
+                          onChange={(e) => handleProductChange(product.id, 'packaging_cost_unit', e.target.value)}
+                          style={{ 
+                            padding: '8px 12px', 
+                            border: '2px solid #ddd', 
+                            borderRadius: '6px',
+                            fontSize: '0.95em',
+                            fontWeight: '600',
+                            background: '#fff',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#2d5016'}
+                          onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                        >
+                          <option value="liter">$/L (por litro)</option>
+                          <option value="kg">$/kg (por kilogramo)</option>
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                        <label style={{ fontSize: '0.85em', color: '#666', fontWeight: '500' }}>
+                          Costo {product.packaging_cost_unit === 'liter' ? 'por litro' : 'por kg'}:
+                        </label>
+                        <input
+                          type="number"
+                          value={product.packaging_cost_unit === 'liter' ? product.packaging_cost_per_liter : product.packaging_cost_per_kg}
+                          onChange={(e) => {
+                            const field = product.packaging_cost_unit === 'liter' ? 'packaging_cost_per_liter' : 'packaging_cost_per_kg';
+                            handleProductChange(product.id, field, e.target.value);
+                          }}
+                          onFocus={handleInputFocus}
+                          step="0.01"
+                          placeholder={product.packaging_cost_unit === 'liter' ? t('packagingCostPlaceholderLiter') : t('packagingCostPlaceholderKg')}
+                          style={{ 
+                            padding: '8px 12px', 
+                            border: '2px solid #ddd', 
+                            borderRadius: '6px',
+                            fontSize: '0.95em'
+                          }}
+                        />
+                      </div>
                     </div>
-                    <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
-                      {product.packaging_cost_unit === 'liter' 
+                    <div style={{ 
+                      padding: '10px 12px', 
+                      background: '#e8f5e9', 
+                      borderRadius: '6px', 
+                      border: '1px solid #81c784',
+                      fontSize: '0.85em',
+                      color: '#2e7d32'
+                    }}>
+                      <strong>ℹ️ {t('note')}:</strong> {product.packaging_cost_unit === 'liter' 
                         ? t('packagingCostHelpLiter') 
                         : t('packagingCostHelpKg')}
-                    </small>
+                    </div>
                   </div>
                 </div>
 
@@ -1072,16 +1115,12 @@ function Module2Transformation({ user }) {
                             <td><strong>{t('totalProductionCost')}</strong></td>
                             <td><strong>${totalCosts.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong></td>
                           </tr>
-                          <tr>
-                            <td><strong>{t('averageCostPerKg')}</strong></td>
-                            <td><strong>${averageCostPerKg.toFixed(2)} / kg</strong></td>
-                          </tr>
                         </tbody>
                       </table>
                       
                       {products.length > 1 && (
                         <>
-                          <h3 style={{ fontSize: '1.1em', marginTop: '25px', marginBottom: '15px' }}>{t('breakdownByProduct')}</h3>
+                          <h3 style={{ fontSize: '1.1em', marginTop: '25px', marginBottom: '15px' }}>{t('costPerKgByProduct')}</h3>
                           <table className="table">
                             <thead>
                               <tr>
@@ -1110,7 +1149,17 @@ function Module2Transformation({ user }) {
                               ))}
                             </tbody>
                           </table>
+                          <div style={{ marginTop: '15px', padding: '12px', background: '#f5f5f5', borderRadius: '6px', fontSize: '0.9em' }}>
+                            <strong>{t('weightedAverageCostPerKg')}</strong>: ${averageCostPerKg.toFixed(2)} / kg
+                            <br />
+                            <small style={{ color: '#666' }}>{t('note')}: {t('weightedAverageCostPerKg')}</small>
+                          </div>
                         </>
+                      )}
+                      {products.length === 1 && (
+                        <div style={{ marginTop: '15px', padding: '12px', background: '#f5f5f5', borderRadius: '6px', fontSize: '0.9em' }}>
+                          <strong>{t('weightedAverageCostPerKg')}</strong>: ${averageCostPerKg.toFixed(2)} / kg
+                        </div>
                       )}
                     </div>
                   );
@@ -1235,7 +1284,22 @@ function Module2Transformation({ user }) {
                           <th>% {t('salesChannels')}</th>
                           <th>{t('kgL')}</th>
                           <th>{t('salesPrice')} ({t('average')})</th>
-                          <th>{t('costAverage')}</th>
+                          <th>
+                            {t('costAverage')}
+                            <span 
+                              title={t('costAverageTooltip')}
+                              style={{ 
+                                marginLeft: '5px', 
+                                cursor: 'help',
+                                fontSize: '0.9em',
+                                color: '#666',
+                                textDecoration: 'none',
+                                borderBottom: '1px dotted #666'
+                              }}
+                            >
+                              ℹ️
+                            </span>
+                          </th>
                           <th>{t('marginPerKg')}</th>
                           <th>{t('marginPercent')}</th>
                           <th>{t('totalIncome')}</th>
@@ -1323,21 +1387,125 @@ function Module2Transformation({ user }) {
               </div>
 
               <div className="card">
-                <h2>{t('visualization')}</h2>
-                <h3 style={{ marginBottom: '15px' }}>{t('optionsComparison')}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h2 style={{ margin: 0 }}>{t('visualization')}</h2>
+                  <select
+                    value={chartViewType}
+                    onChange={(e) => setChartViewType(e.target.value)}
+                    style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9em' }}
+                  >
+                    <option value="grouped">{t('chartViewGrouped')}</option>
+                    <option value="donut">{t('chartViewDonut')}</option>
+                    <option value="stacked">{t('chartViewStacked')}</option>
+                    <option value="waterfall">{t('chartViewWaterfall')}</option>
+                  </select>
+                </div>
                 {comparisonData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={comparisonData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
-                    <Legend />
-                    <Bar dataKey={t('income')} fill="#8884d8" />
-                    <Bar dataKey={t('totalCosts')} fill="#ffc658" />
-                    <Bar dataKey={t('margin')} fill="#82ca9d" />
-                  </BarChart>
-                </ResponsiveContainer>
+                  <>
+                    {chartViewType === 'grouped' && (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={comparisonData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
+                          <Legend />
+                          <Bar dataKey={t('income')} fill="#8884d8" />
+                          <Bar dataKey={t('totalCosts')} fill="#ffc658" />
+                          <Bar dataKey={t('margin')} fill="#82ca9d" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {chartViewType === 'donut' && (() => {
+                      const totalLiters = (productionData.daily_production_liters || 0) * (productionData.production_days || 0) * (productionData.animals_count || 0);
+                      const channelData = {
+                        direct: { kg: 0, revenue: 0 },
+                        distributors: { kg: 0, revenue: 0 },
+                        third: { kg: 0, revenue: 0 },
+                      };
+                      let totalProductKg = 0;
+                      products.forEach(product => {
+                        const distributionPct = parseFloat(product.distribution_percentage) || 0;
+                        const litersPerKg = parseFloat(product.liters_per_kg_product) || 1;
+                        const productLiters = totalLiters * (distributionPct / 100);
+                        const productKg = productLiters / litersPerKg;
+                        totalProductKg += productKg;
+                        const directPct = parseFloat(product.sales_channel_direct_percentage) || 0;
+                        const distPct = parseFloat(product.sales_channel_distributors_percentage) || 0;
+                        const thirdPct = parseFloat(product.sales_channel_third_percentage) || 0;
+                        channelData.direct.kg += productKg * (directPct / 100);
+                        channelData.distributors.kg += productKg * (distPct / 100);
+                        channelData.third.kg += productKg * (thirdPct / 100);
+                      });
+                      const donutData = [
+                        { name: t('salesChannelDirect'), value: totalProductKg > 0 ? (channelData.direct.kg / totalProductKg) * 100 : 0 },
+                        { name: t('salesChannelDistributors'), value: totalProductKg > 0 ? (channelData.distributors.kg / totalProductKg) * 100 : 0 },
+                        { name: t('salesChannelThird'), value: totalProductKg > 0 ? (channelData.third.kg / totalProductKg) * 100 : 0 },
+                      ].filter(item => item.value > 0);
+                      const COLORS = ['#8884d8', '#82ca9d', '#ffc658'];
+                      return (
+                        <ResponsiveContainer width="100%" height={300}>
+                          <PieChart>
+                            <Pie
+                              data={donutData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {donutData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => `${value.toFixed(1)}%`} />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      );
+                    })()}
+                    {chartViewType === 'stacked' && (() => {
+                      const totalLiters = (productionData.daily_production_liters || 0) * (productionData.production_days || 0) * (productionData.animals_count || 0);
+                      const productData = products.map(product => {
+                        const distributionPct = parseFloat(product.distribution_percentage) || 0;
+                        const litersPerKg = parseFloat(product.liters_per_kg_product) || 1;
+                        const productLiters = totalLiters * (distributionPct / 100);
+                        const productKg = productLiters / litersPerKg;
+                        return {
+                          name: product.product_type_custom || t(`productTypes.${product.product_type}`) || product.product_type,
+                          kg: productKg,
+                        };
+                      });
+                      return (
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={productData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip formatter={(value) => `${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} kg`} />
+                            <Legend />
+                            <Bar dataKey="kg" stackId="a" fill="#8884d8" name={t('productMix')} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      );
+                    })()}
+                    {chartViewType === 'waterfall' && (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={comparisonData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`} />
+                          <Legend />
+                          <Bar dataKey={t('income')} fill="#8884d8" />
+                          <Bar dataKey={t('totalCosts')} fill="#ffc658" />
+                          <Area type="monotone" dataKey={t('margin')} fill="#82ca9d" stroke="#82ca9d" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    )}
+                  </>
                 ) : (
                   <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
                     <p style={{ color: '#666', margin: 0 }}>{t('noDataToShow')}</p>
