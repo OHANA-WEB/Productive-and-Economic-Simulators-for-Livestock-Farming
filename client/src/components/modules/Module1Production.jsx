@@ -4,6 +4,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
 import AlertModal from '../AlertModal';
+import CostCalculatorModal from '../CostCalculatorModal';
 
 function Module1Production({ user }) {
   const { t } = useI18n();
@@ -30,6 +31,13 @@ function Module1Production({ user }) {
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
   const [viewPeriod, setViewPeriod] = useState('lactation'); // 'daily', 'monthly', 'lactation'
   const [marginViewMode, setMarginViewMode] = useState('dollars'); // 'dollars' or 'percent' for charts
+  
+  // Module 4: Cost Calculator Modal State
+  const [costCalculatorModal, setCostCalculatorModal] = useState({
+    isOpen: false,
+    calculatorType: null, // 'feed', 'labor', 'health', 'services', 'rearing'
+    targetField: null // which formData field to update
+  });
 
   useEffect(() => {
     const initialize = async () => {
@@ -130,6 +138,31 @@ function Module1Production({ user }) {
     // Only select all text if field has a value, otherwise allow typing from scratch
     if (e.target.value && e.target.value !== '') {
       e.target.select();
+    }
+  };
+  
+  // Module 4: Open Cost Calculator Modal
+  const openCostCalculator = (calculatorType, targetField) => {
+    setCostCalculatorModal({
+      isOpen: true,
+      calculatorType,
+      targetField
+    });
+  };
+  
+  // Module 4: Apply Calculated Cost to Form
+  const applyCostToForm = (calculatedCost) => {
+    if (costCalculatorModal.targetField) {
+      setFormData(prev => ({
+        ...prev,
+        [costCalculatorModal.targetField]: calculatedCost.toFixed(4)
+      }));
+      
+      setAlertModal({
+        isOpen: true,
+        message: `${t('costEstimator')}: ${t('estimatedCost')} $${calculatedCost.toFixed(4)} ${t('perLiter')} ${t('applyToModule1')} ✓`,
+        type: 'success'
+      });
     }
   };
 
@@ -360,58 +393,113 @@ function Module1Production({ user }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
               <div className="form-group">
                 <label>{t('feedCost')}</label>
-                <input
-                  type="number"
-                  name="feed_cost_per_liter"
-                  value={formData.feed_cost_per_liter}
-                  onChange={handleInputChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    name="feed_cost_per_liter"
+                    value={formData.feed_cost_per_liter}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    step="0.01"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => openCostCalculator('feed', 'feed_cost_per_liter')}
+                    style={{ padding: '8px 12px', fontSize: '0.85em', whiteSpace: 'nowrap' }}
+                    title={t('estimateCost')}
+                  >
+                    📊 {t('estimateCost')}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label>{t('laborCost')}</label>
-                <input
-                  type="number"
-                  name="labor_cost_per_liter"
-                  value={formData.labor_cost_per_liter}
-                  onChange={handleInputChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    name="labor_cost_per_liter"
+                    value={formData.labor_cost_per_liter}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    step="0.01"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => openCostCalculator('labor', 'labor_cost_per_liter')}
+                    style={{ padding: '8px 12px', fontSize: '0.85em', whiteSpace: 'nowrap' }}
+                    title={t('estimateCost')}
+                  >
+                    📊 {t('estimateCost')}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label>{t('healthCost')}</label>
-                <input
-                  type="number"
-                  name="health_cost_per_liter"
-                  value={formData.health_cost_per_liter}
-                  onChange={handleInputChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    name="health_cost_per_liter"
+                    value={formData.health_cost_per_liter}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    step="0.01"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => openCostCalculator('health', 'health_cost_per_liter')}
+                    style={{ padding: '8px 12px', fontSize: '0.85em', whiteSpace: 'nowrap' }}
+                    title={t('estimateCost')}
+                  >
+                    📊 {t('estimateCost')}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label>{t('infrastructureCost')}</label>
-                <input
-                  type="number"
-                  name="infrastructure_cost_per_liter"
-                  value={formData.infrastructure_cost_per_liter}
-                  onChange={handleInputChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    name="infrastructure_cost_per_liter"
+                    value={formData.infrastructure_cost_per_liter}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    step="0.01"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => openCostCalculator('services', 'infrastructure_cost_per_liter')}
+                    style={{ padding: '8px 12px', fontSize: '0.85em', whiteSpace: 'nowrap' }}
+                    title={t('estimateCost')}
+                  >
+                    📊 {t('estimateCost')}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label>{t('otherCosts')}</label>
-                <input
-                  type="number"
-                  name="other_costs_per_liter"
-                  value={formData.other_costs_per_liter}
-                  onChange={handleInputChange}
-                  onFocus={handleInputFocus}
-                  step="0.01"
-                />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    name="other_costs_per_liter"
+                    value={formData.other_costs_per_liter}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    step="0.01"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => openCostCalculator('rearing', 'other_costs_per_liter')}
+                    style={{ padding: '8px 12px', fontSize: '0.85em', whiteSpace: 'nowrap' }}
+                    title={t('estimateCost')}
+                  >
+                    📊 {t('estimateCost')}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -579,6 +667,16 @@ function Module1Production({ user }) {
         title={alertModal.type === 'success' ? t('success') || 'Success' : alertModal.type === 'error' ? t('error') || 'Error' : t('information') || 'Information'}
         message={alertModal.message}
         type={alertModal.type}
+      />
+      
+      {/* Module 4: Cost Calculator Modal */}
+      <CostCalculatorModal
+        isOpen={costCalculatorModal.isOpen}
+        onClose={() => setCostCalculatorModal({ isOpen: false, calculatorType: null, targetField: null })}
+        calculatorType={costCalculatorModal.calculatorType}
+        onApply={applyCostToForm}
+        currentAnimals={parseFloat(formData.animals_count) || 1}
+        currentDailyProduction={parseFloat(formData.daily_production_liters) || 1}
       />
     </div>
   );

@@ -9,7 +9,7 @@ import Module1Production from './components/modules/Module1Production';
 import Module2Transformation from './components/modules/Module2Transformation';
 import Module3Lactation from './components/modules/Module3Lactation';
 import Module4Yield from './components/modules/Module4Yield';
-import Module5Summary from './components/modules/Module5Summary';
+import Module5Gestation from './components/modules/Module5Gestation';
 import { getAuthToken, setAuthToken, removeAuthToken, getUser, setUser as saveUserToStorage } from './utils/auth';
 import api from './utils/api';
 
@@ -136,7 +136,7 @@ function AppContent() {
           path="/module5"
           element={
             user ? (
-              <Module5Summary user={user} />
+              <Module5Gestation user={user} />
             ) : (
               <Navigate to="/login" />
             )
