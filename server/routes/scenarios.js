@@ -11,7 +11,17 @@ router.use(authenticateToken);
 // Get all scenarios for the authenticated user
 router.get('/', async (req, res) => {
   try {
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
+    
     const result = await pool.query(
       'SELECT * FROM scenarios WHERE user_id = $1 ORDER BY created_at DESC',
       [req.user.userId]
@@ -19,14 +29,29 @@ router.get('/', async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Get scenarios error:', error);
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // Get a single scenario with all its data
 router.get('/:id', async (req, res) => {
   try {
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
+    
     const scenarioId = parseInt(req.params.id);
 
     // Verify scenario belongs to user
@@ -61,7 +86,12 @@ router.get('/:id', async (req, res) => {
       results: results.rows[0] || null,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Get scenario error:', error);
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -74,7 +104,16 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Name and type are required' });
     }
 
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
     const result = await pool.query(
       'INSERT INTO scenarios (user_id, name, type, description) VALUES ($1, $2, $3, $4) RETURNING *',
       [req.user.userId, name, type, description || null]
@@ -82,17 +121,32 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    console.error('Create scenario error:', error);
     if (error.code === '23505') {
       return res.status(400).json({ error: 'Scenario name already exists for this user' });
     }
-    res.status(500).json({ error: error.message });
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // Duplicate a scenario
 router.post('/:id/duplicate', async (req, res) => {
   try {
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
+    
     const scenarioId = parseInt(req.params.id);
     const { name } = req.body;
 
@@ -158,14 +212,28 @@ router.post('/:id/duplicate', async (req, res) => {
 
     res.status(201).json(newScenario);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Duplicate scenario error:', error);
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // Update scenario
 router.put('/:id', async (req, res) => {
   try {
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
     const scenarioId = parseInt(req.params.id);
     const { name, description } = req.body;
 
@@ -180,14 +248,28 @@ router.put('/:id', async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Update scenario error:', error);
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // Delete scenario
 router.delete('/:id', async (req, res) => {
   try {
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
     const scenarioId = parseInt(req.params.id);
 
     const result = await pool.query(
@@ -201,7 +283,12 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Scenario deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Delete scenario error:', error);
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -214,7 +301,16 @@ router.post('/compare', async (req, res) => {
       return res.status(400).json({ error: 'scenarioIds array is required' });
     }
 
-    const pool = getPool();
+    let pool;
+    try {
+      pool = getPool();
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed. Please check your environment variables.',
+        details: dbError.message 
+      });
+    }
     const userId = req.user.userId;
 
     // Verify all scenarios belong to user
@@ -302,7 +398,12 @@ router.post('/compare', async (req, res) => {
 
     res.json(comparisons);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Compare scenarios error:', error);
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
