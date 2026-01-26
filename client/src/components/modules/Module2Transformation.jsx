@@ -1407,6 +1407,9 @@ function Module2Transformation({ user }) {
                       
                       const unitMargin = channelPrice - productCostPerKg;
                       const unitMarginPercent = channelPrice > 0 ? (unitMargin / channelPrice) * 100 : 0;
+                      const totalRevenue = channelPrice * channelKg;
+                      const totalCost = productCostPerKg * channelKg;
+                      const totalMarginDollars = totalRevenue - totalCost;
                       
                       return {
                         productName: product.product_type_custom || t(`productTypes.${product.product_type}`) || product.product_type,
@@ -1415,6 +1418,8 @@ function Module2Transformation({ user }) {
                         unitCost: productCostPerKg,
                         unitMargin,
                         unitMarginPercent,
+                        totalRevenue,
+                        totalMarginDollars,
                       };
                     }).filter(detail => detail.kg > 0); // Only show products that have kg in this channel
                   };
@@ -1448,8 +1453,8 @@ function Module2Transformation({ user }) {
                   
                   return (
                     <>
-                      <div style={{ marginBottom: '15px', padding: '12px', background: '#fff9e6', borderRadius: '6px', border: '1px solid #ffe066', fontSize: '0.9em' }}>
-                        <strong>📌 {t('note')}:</strong> {t('priceWeightedAverageNote')}
+                      <div style={{ marginBottom: '15px', padding: '12px', background: '#e3f2fd', borderRadius: '6px', border: '1px solid #2196f3', fontSize: '0.9em' }}>
+                        <strong>✅ {t('note')}:</strong> La tabla ahora muestra primero los datos reales por producto (precios, costos, márgenes), y el promedio ponderado del mix aparece como dato secundario. <strong>Los valores en negrita son los márgenes por producto</strong>, que son los datos accionables para decisiones de negocio.
                       </div>
                       <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                         <table className="table" style={{ minWidth: '800px' }}>
@@ -1459,23 +1464,8 @@ function Module2Transformation({ user }) {
                             <th>{t('concept')}</th>
                             <th>% {t('salesChannels')}</th>
                             <th>{t('kgL')}</th>
-                            <th>{t('salesPrice')} <small>({t('weightedAverageMix')})</small></th>
-                            <th>
-                              {t('costAverage')}
-                              <span 
-                                title={t('costAverageTooltip')}
-                                style={{ 
-                                  marginLeft: '5px', 
-                                  cursor: 'help',
-                                  fontSize: '0.9em',
-                                  color: '#666',
-                                  textDecoration: 'none',
-                                  borderBottom: '1px dotted #666'
-                                }}
-                              >
-                                ℹ️
-                              </span>
-                            </th>
+                            <th>{t('salesPrice')}</th>
+                            <th>{t('costAverage')}</th>
                             <th>{t('marginPerKg')}</th>
                             <th>{t('marginPercent')}</th>
                             <th>{t('totalIncome')}</th>
@@ -1486,12 +1476,16 @@ function Module2Transformation({ user }) {
                             const margin = channel.price - averageCostPerKg;
                             const marginPercent = channel.price > 0 ? (margin / channel.price) * 100 : 0;
                             const totalMargin = channel.revenue - (averageCostPerKg * channel.kg);
-                            const isExpanded = expandedChannels[channel.key];
+                            const isExpanded = expandedChannels[channel.key] ?? true; // Auto-expand by default
                             const productDetails = getProductDetailsPerChannel(channel.key);
                             
                             return (
                               <Fragment key={idx}>
-                                <tr style={{ opacity: channel.percentage === 0 ? 0.5 : 1 }}>
+                                <tr style={{ 
+                                  opacity: channel.percentage === 0 ? 0.5 : 1,
+                                  background: '#f5f5f5',
+                                  fontWeight: 'normal'
+                                }}>
                                   <td style={{ cursor: 'pointer', textAlign: 'center' }}>
                                     {productDetails.length > 0 && (
                                       <button
@@ -1514,84 +1508,79 @@ function Module2Transformation({ user }) {
                                   <td><strong>{channel.name}</strong></td>
                                   <td>{channel.percentage.toFixed(1)}%</td>
                                   <td>{channel.kg.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                                  <td>${channel.price > 0 ? channel.price.toFixed(2) : '0.00'}</td>
-                                  <td>${averageCostPerKg.toFixed(2)}</td>
-                                  <td style={{ color: margin >= 0 ? 'green' : 'red', fontWeight: 'bold' }}>
-                                    ${margin.toFixed(2)}
+                                  <td colSpan="5" style={{ fontStyle: 'italic', color: '#666' }}>
+                                    {productDetails.length > 1 ? t('clickToSeeProductDetails') : t('seeProductDetailsBelow')}
                                   </td>
-                                  <td style={{ color: marginPercent >= 0 ? 'green' : 'red', fontWeight: 'bold' }}>
-                                    {marginPercent.toFixed(1)}%
-                                  </td>
-                                  <td>${channel.revenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                                 </tr>
-                                {isExpanded && productDetails.length > 0 && (
-                                  <tr>
-                                    <td colSpan="9" style={{ padding: '15px', background: '#f9f9f9' }}>
-                                      <div style={{ marginLeft: '0', paddingLeft: '10px' }}>
-                                        <h4 style={{ marginTop: 0, marginBottom: '10px', fontSize: '1em' }}>
-                                          {t('productDetailInChannel')}
-                                        </h4>
-                                        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                                          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
-                                            <thead>
-                                              <tr style={{ borderBottom: '2px solid #ddd' }}>
-                                                <th style={{ padding: '8px', textAlign: 'left' }}>{t('product')}</th>
-                                                <th style={{ padding: '8px', textAlign: 'right' }}>Kg</th>
-                                                <th style={{ padding: '8px', textAlign: 'right' }}>{t('salesPrice')}</th>
-                                                <th style={{ padding: '8px', textAlign: 'right' }}>{t('unitCost')}</th>
-                                                <th style={{ padding: '8px', textAlign: 'right' }}>{t('unitMargin')}</th>
-                                                <th style={{ padding: '8px', textAlign: 'right' }}>{t('marginPercent')}</th>
-                                              </tr>
-                                            </thead>
-                                          <tbody>
-                                            {productDetails.map((detail, detailIdx) => (
-                                              <tr key={detailIdx} style={{ borderBottom: '1px solid #eee' }}>
-                                                <td style={{ padding: '8px' }}>{detail.productName}</td>
-                                                <td style={{ padding: '8px', textAlign: 'right' }}>
-                                                  {detail.kg.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                                </td>
-                                                <td style={{ padding: '8px', textAlign: 'right' }}>
-                                                  ${detail.price.toFixed(2)}
-                                                </td>
-                                                <td style={{ padding: '8px', textAlign: 'right' }}>
-                                                  ${detail.unitCost.toFixed(2)}
-                                                </td>
-                                                <td style={{ 
-                                                  padding: '8px', 
-                                                  textAlign: 'right',
-                                                  color: detail.unitMargin >= 0 ? 'green' : 'red',
-                                                  fontWeight: 'bold'
-                                                }}>
-                                                  ${detail.unitMargin.toFixed(2)}
-                                                </td>
-                                                <td style={{ 
-                                                  padding: '8px', 
-                                                  textAlign: 'right',
-                                                  color: detail.unitMarginPercent >= 0 ? 'green' : 'red',
-                                                  fontWeight: 'bold'
-                                                }}>
-                                                  {detail.unitMarginPercent.toFixed(1)}%
-                                                </td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                        </div>
-                                      </div>
+                                {isExpanded && productDetails.length > 0 && productDetails.map((detail, detailIdx) => (
+                                  <tr key={`${idx}-${detailIdx}`} style={{ 
+                                    borderBottom: detailIdx === productDetails.length - 1 ? 'none' : '1px solid #eee',
+                                    background: '#fff'
+                                  }}>
+                                    <td></td>
+                                    <td style={{ paddingLeft: '30px' }}>{detail.productName}</td>
+                                    <td>-</td>
+                                    <td>{detail.kg.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                    <td style={{ fontWeight: 'bold' }}>${detail.price.toFixed(2)}</td>
+                                    <td>${detail.unitCost.toFixed(2)}</td>
+                                    <td style={{ 
+                                      color: detail.unitMargin >= 0 ? 'green' : 'red',
+                                      fontWeight: 'bold',
+                                      fontSize: '1.05em'
+                                    }}>
+                                      ${detail.unitMargin.toFixed(2)}
+                                    </td>
+                                    <td style={{ 
+                                      color: detail.unitMarginPercent >= 0 ? 'green' : 'red',
+                                      fontWeight: 'bold',
+                                      fontSize: '1.05em'
+                                    }}>
+                                      {detail.unitMarginPercent.toFixed(1)}%
+                                    </td>
+                                    <td>${detail.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                  </tr>
+                                ))}
+                                {/* Weighted Average Summary Row (Secondary) */}
+                                {isExpanded && productDetails.length > 1 && (
+                                  <tr style={{ 
+                                    background: '#f9f9f9',
+                                    borderTop: '1px dashed #ccc',
+                                    fontStyle: 'italic',
+                                    fontSize: '0.95em'
+                                  }}>
+                                    <td></td>
+                                    <td style={{ paddingLeft: '30px', color: '#666' }}>
+                                      <small>📊 {t('weightedAverageMix')}</small>
+                                    </td>
+                                    <td>-</td>
+                                    <td><small>{channel.kg.toLocaleString(undefined, { maximumFractionDigits: 2 })}</small></td>
+                                    <td style={{ color: '#666' }}>
+                                      <small>${channel.price > 0 ? channel.price.toFixed(2) : '0.00'}</small>
+                                    </td>
+                                    <td style={{ color: '#666' }}>
+                                      <small>${averageCostPerKg.toFixed(2)}</small>
+                                    </td>
+                                    <td style={{ color: '#666' }}>
+                                      <small>${margin.toFixed(2)}</small>
+                                    </td>
+                                    <td style={{ color: '#666' }}>
+                                      <small>{marginPercent.toFixed(1)}%</small>
+                                    </td>
+                                    <td style={{ color: '#666' }}>
+                                      <small>${channel.revenue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</small>
                                     </td>
                                   </tr>
                                 )}
                               </Fragment>
                             );
                           })}
-                          <tr style={{ borderTop: '2px solid #333', fontWeight: 'bold' }}>
+                          <tr style={{ borderTop: '2px solid #333', fontWeight: 'bold', background: '#f5f5f5' }}>
                             <td colSpan="2"><strong>{t('total')}</strong></td>
+                            <td>100%</td>
                             <td>{totalProductKg.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                            <td>-</td>
-                            <td>${averageCostPerKg.toFixed(2)}</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
+                            <td colSpan="4" style={{ color: '#666', fontStyle: 'italic', fontSize: '0.9em' }}>
+                              {t('totalAcrossAllChannels')}
+                            </td>
                             <td>${(channels[0].revenue + channels[1].revenue + channels[2].revenue).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                           </tr>
                         </tbody>

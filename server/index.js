@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import scenarioRoutes from './routes/scenarios.js';
 import moduleRoutes from './routes/modules.js';
 import breedRoutes from './routes/breeds.js';
+import module3Routes from './routes/module3.js';
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/breeds', breedRoutes);
+app.use('/api/module3', module3Routes);
 
 // Health check
 app.get('/api/health', async (req, res) => {

@@ -1,33 +1,78 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  ComposedChart, Line, Area 
+} from 'recharts';
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
 import AlertModal from '../AlertModal';
 
+/**
+ * Module 3: Scientific Lactation Intelligence (MetaCaprine ECM Engine)
+ * Breed comparison based on ECM (Energy Corrected Milk) lifetime production
+ * 
+ * Key Features:
+ * - Automatic breed ranking by lifetime ECM
+ * - Compare 2 breeds side-by-side
+ * - Herd size scenarios (e.g., 2000 Malagueña vs 700 LaMancha)
+ * - User can override base parameters per breed
+ * - All calculations in kg (display note: ≈ L)
+ */
 function Module3Lactation({ user }) {
   const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const scenarioId = location.state?.scenarioId;
 
-  // Scientific inputs (minimal)
-  const [selectedBreed, setSelectedBreed] = useState('');
-  const [managementLevel, setManagementLevel] = useState('medium');
-  const [targetLactationDays, setTargetLactationDays] = useState('');
-  
   // Available breeds from database
   const [breeds, setBreeds] = useState([]);
-  const [breedDetails, setBreedDetails] = useState(null);
   
-  // Simulation results
-  const [simulation, setSimulation] = useState(null);
-  const [comparisonBreeds, setComparisonBreeds] = useState([]);
+  // Comparison mode: single breed or A vs B
+  const [viewMode, setViewMode] = useState('single'); // 'single', 'compare', 'ranking'
+  
+  // Single breed simulation
+  const [selectedBreed, setSelectedBreed] = useState('');
+  const [singleOverrides, setSingleOverrides] = useState({
+    herd_size: 1,
+    milk_kg_yr: '',
+    fat_pct: '',
+    protein_pct: '',
+    lact_days_avg: '',
+    lactations_lifetime_avg: ''
+  });
+  const [singleResult, setSingleResult] = useState(null);
+  
+  // Comparison: A vs B
+  const [breedA, setBreedA] = useState('');
+  const [breedB, setBreedB] = useState('');
+  const [overridesA, setOverridesA] = useState({
+    herd_size: 1,
+    milk_kg_yr: '',
+    fat_pct: '',
+    protein_pct: '',
+    lact_days_avg: '',
+    lactations_lifetime_avg: ''
+  });
+  const [overridesB, setOverridesB] = useState({
+    herd_size: 1,
+    milk_kg_yr: '',
+    fat_pct: '',
+    protein_pct: '',
+    lact_days_avg: '',
+    lactations_lifetime_avg: ''
+  });
+  const [comparisonResult, setComparisonResult] = useState(null);
+  
+  // Ranking view
+  const [rankingResults, setRankingResults] = useState(null);
+  const [rankingMode, setRankingMode] = useState('per_head'); // 'per_head' or 'total'
   
   const [scenarios, setScenarios] = useState([]);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
+  const [expandedBreed, setExpandedBreed] = useState({});
 
   useEffect(() => {
     loadScenarios();
@@ -39,10 +84,25 @@ function Module3Lactation({ user }) {
 
   const loadBreeds = async () => {
     try {
-      const response = await api.get('/breeds');
-      setBreeds(response.data);
+      const response = await api.get('/module3/breeds');
+      setBreeds(response.data.breeds || []);
+      
+      // Auto-load ranking on first load
+      if (response.data.breeds && response.data.breeds.length > 0) {
+        const topBreeds = response.data.breeds.slice(0, 10);
+        setRankingResults({
+          mode: 'per_head',
+          count: topBreeds.length,
+          scenarios: topBreeds
+        });
+      }
     } catch (error) {
       console.error('Error loading breeds:', error);
+      setAlertModal({
+        isOpen: true,
+        message: t('errorLoadingBreeds') || 'Error loading breed data. Please ensure Module 3 migration has been run.',
+        type: 'error'
+      });
     }
   };
 
@@ -65,60 +125,113 @@ function Module3Lactation({ user }) {
       const scenario = response.data;
       setSelectedScenario(scenario);
       
-      // Load saved lactation simulation if exists
-      if (scenario.lactationSimulation) {
-        const sim = scenario.lactationSimulation;
-        setSelectedBreed(sim.selected_breed);
-        setManagementLevel(sim.management_level);
-        setTargetLactationDays(sim.target_lactation_days || '');
-        
-        // Load full simulation results
-        if (sim.selected_breed) {
-          await runSimulation(sim.selected_breed, sim.management_level, sim.target_lactation_days);
-        }
+      // Load saved breed scenarios if exists
+      const savedResponse = await api.get(`/module3/scenario/${id}/load`);
+      if (savedResponse.data.scenarios && savedResponse.data.scenarios.length > 0) {
+        const saved = savedResponse.data.scenarios[0];
+        setSelectedBreed(saved.breed_key);
+        setSingleOverrides({
+          herd_size: saved.herd_size || 1,
+          milk_kg_yr: saved.milk_kg_yr_override || '',
+          fat_pct: saved.fat_pct_override || '',
+          protein_pct: saved.protein_pct_override || '',
+          lact_days_avg: saved.lact_days_avg_override || '',
+          lactations_lifetime_avg: saved.lactations_lifetime_avg_override || ''
+        });
+        // Auto-calculate
+        await handleSimulateSingle(saved.breed_key, {
+          herd_size: saved.herd_size || 1,
+          milk_kg_yr: saved.milk_kg_yr_override || '',
+          fat_pct: saved.fat_pct_override || '',
+          protein_pct: saved.protein_pct_override || '',
+          lact_days_avg: saved.lact_days_avg_override || '',
+          lactations_lifetime_avg: saved.lactations_lifetime_avg_override || ''
+        });
       }
     } catch (error) {
       console.error('Error loading scenario:', error);
     }
   };
 
-  const handleBreedChange = async (breedName) => {
-    setSelectedBreed(breedName);
-    
-    if (breedName) {
-      // Load detailed breed information
-      try {
-        const response = await api.get(`/breeds/${breedName}`);
-        setBreedDetails(response.data);
-      } catch (error) {
-        console.error('Error loading breed details:', error);
-      }
-    } else {
-      setBreedDetails(null);
+  const handleSimulateSingle = async (breedKey = selectedBreed, overrides = singleOverrides) => {
+    if (!breedKey) {
+      setAlertModal({
+        isOpen: true,
+        message: t('pleaseSelectBreed') || 'Please select a breed',
+        type: 'info'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Clean overrides: only send non-empty values
+      const cleanOverrides = {};
+      Object.keys(overrides).forEach(key => {
+        const value = overrides[key];
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanOverrides[key] = Number(value);
+        }
+      });
+
+      const response = await api.post('/module3/simulate', {
+        breed_key: breedKey,
+        overrides: cleanOverrides
+      });
+      
+      setSingleResult(response.data.scenario);
+    } catch (error) {
+      console.error('Error simulating breed:', error);
+      setAlertModal({
+        isOpen: true,
+        message: error.response?.data?.error || t('errorCalculating') || 'Error calculating',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const runSimulation = async (breed, management, targetDays) => {
-    if (!breed || !management) return;
-    
-    try {
-      setLoading(true);
-      const response = await api.post(`/modules/lactation/${selectedScenario.id}`, {
-        selected_breed: breed,
-        management_level: management,
-        target_lactation_days: targetDays || null
-      });
-      
-      setSimulation(response.data.simulation);
-      
-      // Load comparison breeds
-      await loadComparisonBreeds(breed);
-      
-    } catch (error) {
-      console.error('Simulation error:', error);
+  const handleCompare = async () => {
+    if (!breedA || !breedB) {
       setAlertModal({
         isOpen: true,
-        message: error.response?.data?.error || t('errorSaving'),
+        message: t('pleaseSelectTwoBreedsForComparison') || 'Please select both breeds to compare',
+        type: 'info'
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const cleanOverridesA = {};
+      const cleanOverridesB = {};
+      
+      Object.keys(overridesA).forEach(key => {
+        const value = overridesA[key];
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanOverridesA[key] = Number(value);
+        }
+      });
+      
+      Object.keys(overridesB).forEach(key => {
+        const value = overridesB[key];
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanOverridesB[key] = Number(value);
+        }
+      });
+
+      const response = await api.post('/module3/compare', {
+        a: { breed_key: breedA, overrides: cleanOverridesA },
+        b: { breed_key: breedB, overrides: cleanOverridesB }
+      });
+      
+      setComparisonResult(response.data.comparison);
+    } catch (error) {
+      console.error('Error comparing breeds:', error);
+      setAlertModal({
+        isOpen: true,
+        message: error.response?.data?.error || t('errorRunningComparison') || 'Error comparing breeds',
         type: 'error'
       });
     } finally {
@@ -130,7 +243,7 @@ function Module3Lactation({ user }) {
     if (!selectedScenario) {
       setAlertModal({
         isOpen: true,
-        message: t('pleaseSelectScenario'),
+        message: t('pleaseSelectScenario') || 'Please select a scenario',
         type: 'info'
       });
       return;
@@ -139,484 +252,545 @@ function Module3Lactation({ user }) {
     if (!selectedBreed) {
       setAlertModal({
         isOpen: true,
-        message: t('pleaseSelectBreed'),
+        message: 'Please select a breed',
         type: 'info'
       });
       return;
     }
 
-    await runSimulation(selectedBreed, managementLevel, targetLactationDays);
-    
-    setAlertModal({
-      isOpen: true,
-      message: t('simulationCompleted'),
-      type: 'success'
-    });
-  };
-
-  const loadComparisonBreeds = async (currentBreed) => {
+    setLoading(true);
     try {
-      // Get top 4 breeds for comparison (excluding current breed)
-      const otherBreeds = breeds
-        .filter(b => b.breed_name !== currentBreed)
-        .slice(0, 3);
+      const cleanOverrides = {};
+      Object.keys(singleOverrides).forEach(key => {
+        const value = singleOverrides[key];
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanOverrides[key] = Number(value);
+        }
+      });
+
+      await api.post(`/module3/scenario/${selectedScenario.id}/save`, {
+        breed_key: selectedBreed,
+        overrides: cleanOverrides
+      });
       
-      const comparisons = [];
-      for (const breed of otherBreeds) {
-        const response = await api.post(`/modules/lactation/${selectedScenario.id}`, {
-          selected_breed: breed.breed_name,
-          management_level: managementLevel,
-          target_lactation_days: targetLactationDays || null
-        });
-        comparisons.push({
-          breed_name: breed.breed_name,
-          simulation: response.data.simulation
-        });
-      }
-      
-      setComparisonBreeds(comparisons);
+      setAlertModal({
+        isOpen: true,
+        message: t('dataSaved') || 'Data saved successfully',
+        type: 'success'
+      });
     } catch (error) {
-      console.error('Error loading comparisons:', error);
+      console.error('Error saving breed scenario:', error);
+      setAlertModal({
+        isOpen: true,
+        message: error.response?.data?.error || t('errorSaving') || 'Error saving',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleScenarioChange = (e) => {
-    const id = parseInt(e.target.value);
-    if (id) {
-      loadScenario(id);
-      navigate('/module3', { state: { scenarioId: id } });
+  const handleOverrideChange = (field, value, target = 'single') => {
+    if (target === 'single') {
+      setSingleOverrides(prev => ({ ...prev, [field]: value }));
+    } else if (target === 'A') {
+      setOverridesA(prev => ({ ...prev, [field]: value }));
+    } else if (target === 'B') {
+      setOverridesB(prev => ({ ...prev, [field]: value }));
     }
   };
 
-  // Group breeds by category
-  const breedsByCategory = {
-    dairy: breeds.filter(b => b.breed_category === 'dairy'),
-    dual_purpose: breeds.filter(b => b.breed_category === 'dual_purpose'),
-    native: breeds.filter(b => b.breed_category === 'native')
+  const getBreedData = (breedKey) => {
+    return breeds.find(b => b.breed_key === breedKey);
   };
 
-  // Prepare chart data for lactation curve
-  const lactationCurveData = simulation?.lactation_curve 
-    ? simulation.lactation_curve.filter((_, index) => index % 10 === 0) // Sample every 10 days
-    : [];
-
-  // Prepare comparison chart data
-  const comparisonData = simulation ? [
-    {
-      breed: simulation.breed_name,
-      [t('totalProduction')]: Number(simulation.total_lactation_liters || 0),
-      [t('fat')]: Number(simulation.fat_percentage || 0),
-      [t('protein')]: Number(simulation.protein_percentage || 0),
-      [t('solids')]: Number(simulation.solids_percentage || 0),
-      current: true
-    },
-    ...comparisonBreeds.map(c => ({
-      breed: c.breed_name,
-      [t('totalProduction')]: Number(c.simulation?.total_lactation_liters || 0),
-      [t('fat')]: Number(c.simulation?.fat_percentage || 0),
-      [t('protein')]: Number(c.simulation?.protein_percentage || 0),
-      [t('solids')]: Number(c.simulation?.solids_percentage || 0),
-      current: false
-    }))
-  ] : [];
-
-  // Radar chart data for breed profile
-  const radarData = simulation ? [
-    { metric: t('volume'), value: (Number(simulation.total_lactation_liters || 0) / 100), fullMark: 100 },
-    { metric: t('fat'), value: Number(simulation.fat_percentage || 0) * 10, fullMark: 60 },
-    { metric: t('protein'), value: Number(simulation.protein_percentage || 0) * 10, fullMark: 45 },
-    { metric: t('solids'), value: Number(simulation.solids_percentage || 0) * 4, fullMark: 60 },
-    { metric: t('persistence'), value: 100 - (Number(simulation.persistence_rate || 0) * 5), fullMark: 100 }
-  ] : [];
+  const formatNumber = (num, decimals = 1) => {
+    if (num === null || num === undefined || isNaN(num)) return '0';
+    return Number(num).toLocaleString(undefined, { maximumFractionDigits: decimals });
+  };
 
   return (
-    <div className="module-container">
-      <div className="module-header">
-        <div className="module-title-section">
-          <h1 className="module-title">🔬 {t('module3Title')}</h1>
-          <p className="module-subtitle">{t('module3ScientificSubtitle')}</p>
-        </div>
-        
-        <div className="module-actions">
-          <select 
-            className="form-select scenario-select" 
-            value={selectedScenario?.id || ''} 
-            onChange={handleScenarioChange}
-          >
-            <option value="">{t('selectScenario')}</option>
-            {scenarios.map(scenario => (
-              <option key={scenario.id} value={scenario.id}>
-                {scenario.name}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="container">
+      <header style={{ marginBottom: '20px' }}>
+        <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
+          {t('backToDashboard')}
+        </button>
+        <h1 style={{ marginTop: '20px' }}>{t('module3Title')}</h1>
+        <p style={{ color: '#666', fontSize: '0.95em' }}>
+          🧬 {t('module3ScientificSubtitle')}
+        </p>
+      </header>
+
+      <div className="card">
+        <h2>{t('selectScenario')}</h2>
+        <select
+          value={selectedScenario?.id || ''}
+          onChange={(e) => {
+            const id = parseInt(e.target.value);
+            if (id) {
+              navigate(`/module3`, { state: { scenarioId: id }, replace: true });
+              loadScenario(id);
+            }
+          }}
+          style={{ marginBottom: '20px' }}
+        >
+          <option value="">{t('selectScenarioPlaceholder')}</option>
+          {scenarios.map(s => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
       </div>
 
-      {!selectedScenario ? (
-        <div className="empty-state">
-          <div className="empty-icon">📊</div>
-          <h3>{t('noScenarioSelected')}</h3>
-          <p>{t('selectScenarioToStart')}</p>
-        </div>
-      ) : (
+      {selectedScenario && (
         <>
-          {/* Scientific Input Section */}
+          {/* View Mode Selector */}
           <div className="card">
-            <div className="card-header">
-              <h2 className="card-title">🐄 {t('selectBreedAndManagement')}</h2>
-              <p className="card-subtitle">{t('scientificEngineDescription')}</p>
-            </div>
-            <div className="card-content">
-              {/* Breed Selection */}
-              <div className="form-section">
-                <label className="form-label">{t('selectBreed')}</label>
-                <select
-                  className="form-select"
-                  value={selectedBreed}
-                  onChange={(e) => handleBreedChange(e.target.value)}
-                >
-                  <option value="">{t('chooseBreed')}</option>
-                  
-                  {breedsByCategory.dairy.length > 0 && (
-                    <optgroup label={`🥛 ${t('dairyBreeds')}`}>
-                      {breedsByCategory.dairy.map(breed => (
-                        <option key={breed.id} value={breed.breed_name}>
-                          {breed.breed_name} - {breed.total_lactation_liters}L / {breed.fat_percentage}% {t('fat')}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  
-                  {breedsByCategory.dual_purpose.length > 0 && (
-                    <optgroup label={`🌾 ${t('dualPurposeBreeds')}`}>
-                      {breedsByCategory.dual_purpose.map(breed => (
-                        <option key={breed.id} value={breed.breed_name}>
-                          {breed.breed_name} - {breed.total_lactation_liters}L / {breed.fat_percentage}% {t('fat')}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  
-                  {breedsByCategory.native.length > 0 && (
-                    <optgroup label={`🌍 ${t('nativeBreeds')}`}>
-                      {breedsByCategory.native.map(breed => (
-                        <option key={breed.id} value={breed.breed_name}>
-                          {breed.breed_name} - {breed.total_lactation_liters}L / {breed.fat_percentage}% {t('fat')}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </select>
-              </div>
-
-              {/* Management Level Selection */}
-              <div className="form-section">
-                <label className="form-label">{t('managementLevel')}</label>
-                <div className="radio-group">
-                  <label className={`radio-card ${managementLevel === 'low' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="management"
-                      value="low"
-                      checked={managementLevel === 'low'}
-                      onChange={(e) => setManagementLevel(e.target.value)}
-                    />
-                    <div className="radio-content">
-                      <div className="radio-title">⭐ {t('lowManagement')}</div>
-                      <div className="radio-description">{t('lowManagementDesc')}</div>
-                    </div>
-                  </label>
-                  
-                  <label className={`radio-card ${managementLevel === 'medium' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="management"
-                      value="medium"
-                      checked={managementLevel === 'medium'}
-                      onChange={(e) => setManagementLevel(e.target.value)}
-                    />
-                    <div className="radio-content">
-                      <div className="radio-title">⭐⭐ {t('mediumManagement')}</div>
-                      <div className="radio-description">{t('mediumManagementDesc')}</div>
-                    </div>
-                  </label>
-                  
-                  <label className={`radio-card ${managementLevel === 'high' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="management"
-                      value="high"
-                      checked={managementLevel === 'high'}
-                      onChange={(e) => setManagementLevel(e.target.value)}
-                    />
-                    <div className="radio-content">
-                      <div className="radio-title">⭐⭐⭐ {t('highManagement')}</div>
-                      <div className="radio-description">{t('highManagementDesc')}</div>
-                    </div>
-                  </label>
-                  
-                  <label className={`radio-card ${managementLevel === 'optimal' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="management"
-                      value="optimal"
-                      checked={managementLevel === 'optimal'}
-                      onChange={(e) => setManagementLevel(e.target.value)}
-                    />
-                    <div className="radio-content">
-                      <div className="radio-title">⭐⭐⭐⭐ {t('optimalManagement')}</div>
-                      <div className="radio-description">{t('optimalManagementDesc')}</div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Optional: Custom lactation days */}
-              <div className="form-section">
-                <label className="form-label">
-                  {t('customLactationDays')} <span className="optional-label">({t('optional')})</span>
-                </label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={targetLactationDays}
-                  onChange={(e) => setTargetLactationDays(e.target.value)}
-                  placeholder={t('useBreedDefault')}
-                  min="150"
-                  max="450"
-                />
-                <small className="input-hint">{t('lactationDaysHint')}</small>
-              </div>
-
-              <button 
-                className="btn btn-primary btn-large" 
-                onClick={handleSave}
-                disabled={loading || !selectedBreed}
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                className={`btn ${viewMode === 'single' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setViewMode('single')}
               >
-                {loading ? t('calculating') : t('runSimulation')}
+                📊 {t('singleBreedSimulation')}
+              </button>
+              <button
+                className={`btn ${viewMode === 'compare' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setViewMode('compare')}
+              >
+                ⚖️ {t('compareAvsB')}
+              </button>
+              <button
+                className={`btn ${viewMode === 'ranking' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setViewMode('ranking')}
+              >
+                🏆 {t('ranking')}
               </button>
             </div>
           </div>
 
-          {/* Simulation Results */}
-          {simulation && (
-            <>
-              {/* Breed Profile Panel */}
-              <div className="card card-highlight">
-                <div className="card-header">
-                  <h2 className="card-title">📊 {simulation.breed_name} - {t('scientificProfile')}</h2>
-                  <span className="badge badge-success">{t(managementLevel + 'Management')}</span>
+          {/* Single Breed View */}
+          {viewMode === 'single' && (
+            <div className="card">
+              <h2>🐐 {t('singleBreedSimulation')}</h2>
+              
+              <div className="form-group">
+                <label>{t('selectBreed')}</label>
+                <select
+                  value={selectedBreed}
+                  onChange={(e) => setSelectedBreed(e.target.value)}
+                  style={{ marginBottom: '20px' }}
+                >
+                  <option value="">{t('chooseBreed')}</option>
+                  {breeds.map(breed => (
+                    <option key={breed.breed_key} value={breed.breed_key}>
+                      {breed.breed_name} ({breed.country_or_system}) - {formatNumber(breed.ecm_kg_lifetime)} kg {t('ecmLifetime')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedBreed && getBreedData(selectedBreed) && (
+                <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>{t('baseParameters')}</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                    <div>
+                      <strong>{t('milkKgPerYear')}:</strong> {formatNumber(getBreedData(selectedBreed).milk_kg_yr)}
+                    </div>
+                    <div>
+                      <strong>{t('fatPercent')}:</strong> {formatNumber(getBreedData(selectedBreed).fat_pct, 2)}
+                    </div>
+                    <div>
+                      <strong>{t('proteinPercent')}:</strong> {formatNumber(getBreedData(selectedBreed).protein_pct, 2)}
+                    </div>
+                    <div>
+                      <strong>{t('lactationDaysAvg')}:</strong> {formatNumber(getBreedData(selectedBreed).lact_days_avg, 0)}
+                    </div>
+                    <div>
+                      <strong>{t('lactationsPerLife')}:</strong> {formatNumber(getBreedData(selectedBreed).lactations_lifetime_avg, 1)}
+                    </div>
+                    <div>
+                      <strong>{t('ecmLifetime')}:</strong> {formatNumber(getBreedData(selectedBreed).ecm_kg_lifetime, 1)} kg
+                    </div>
+                  </div>
+                  <p style={{ marginTop: '10px', fontSize: '0.9em', color: '#666' }}>
+                    {getBreedData(selectedBreed).notes}
+                  </p>
                 </div>
-                <div className="card-content">
-                  <div className="metrics-grid">
-                    {/* Production Metrics */}
-                    <div className="metric-card">
-                      <div className="metric-icon">🥛</div>
-                      <div className="metric-content">
-                        <div className="metric-label">{t('expectedProduction')}</div>
-                        <div className="metric-value">{Number(simulation.total_lactation_liters || 0).toLocaleString()} L</div>
-                        <div className="metric-sub">
-                          {t('lactationDays')}: {simulation.lactation_days} | 
-                          {t('peak')}: {Number(simulation.peak_yield || 0).toFixed(1)} L/día ({t('day')} {simulation.peak_day})
-                        </div>
-                      </div>
-                    </div>
+              )}
 
-                    {/* Composition */}
-                    <div className="metric-card">
-                      <div className="metric-icon">🧈</div>
-                      <div className="metric-content">
-                        <div className="metric-label">{t('milkComposition')}</div>
-                        <div className="metric-value">{Number(simulation.solids_percentage || 0).toFixed(2)}% {t('solids')}</div>
-                        <div className="metric-sub">
-                          {t('fat')}: {Number(simulation.fat_percentage || 0).toFixed(2)}% ({Number(simulation.fat_kg || 0).toFixed(1)} kg) | 
-                          {t('protein')}: {Number(simulation.protein_percentage || 0).toFixed(2)}% ({Number(simulation.protein_kg || 0).toFixed(1)} kg)
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Persistence */}
-                    <div className="metric-card">
-                      <div className="metric-icon">📉</div>
-                      <div className="metric-content">
-                        <div className="metric-label">{t('lactationPersistence')}</div>
-                        <div className="metric-value">{Number(simulation.persistence_rate || 0).toFixed(2)}%</div>
-                        <div className="metric-sub">{t('monthlyDecline')}</div>
-                      </div>
-                    </div>
-
-                    {/* Reproductive Cycle */}
-                    <div className="metric-card">
-                      <div className="metric-icon">🔄</div>
-                      <div className="metric-content">
-                        <div className="metric-label">{t('reproductiveCycle')}</div>
-                        <div className="metric-value">{Number(simulation.cycles_per_year || 0).toFixed(2)}</div>
-                        <div className="metric-sub">
-                          {t('calvingInterval')}: {simulation.calving_interval_days} días | 
-                          {t('dryPeriod')}: {simulation.dry_period_days} días
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lactation Curve Chart */}
-                  <div className="chart-section">
-                    <h3 className="chart-title">{t('lactationCurve')}</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={lactationCurveData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="day" 
-                          label={{ value: t('daysInMilk'), position: 'insideBottom', offset: -5 }}
-                        />
-                        <YAxis 
-                          label={{ value: t('dailyProduction') + ' (L)', angle: -90, position: 'insideLeft' }}
-                        />
-                        <Tooltip 
-                          formatter={(value) => [Number(value).toFixed(2) + ' L', t('production')]}
-                          labelFormatter={(label) => t('day') + ' ' + label}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="yield" 
-                          stroke="#10b981" 
-                          strokeWidth={3}
-                          dot={false}
-                          name={t('production')}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Radar Chart for Breed Profile */}
-                  <div className="chart-section">
-                    <h3 className="chart-title">{t('breedProfile')}</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <RadarChart data={radarData}>
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="metric" />
-                        <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                        <Radar 
-                          name={simulation.breed_name}
-                          dataKey="value" 
-                          stroke="#10b981" 
-                          fill="#10b981" 
-                          fillOpacity={0.6} 
-                        />
-                        <Tooltip />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
+              <h3>{t('overridesOptional')}</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
+                <div className="form-group">
+                  <label>{t('herdSize')}</label>
+                  <input
+                    type="number"
+                    value={singleOverrides.herd_size}
+                    onChange={(e) => handleOverrideChange('herd_size', e.target.value, 'single')}
+                    min="1"
+                    step="1"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('milkKgPerYear')}</label>
+                  <input
+                    type="number"
+                    value={singleOverrides.milk_kg_yr}
+                    onChange={(e) => handleOverrideChange('milk_kg_yr', e.target.value, 'single')}
+                    placeholder={t('leaveEmptyForDefault')}
+                    step="0.1"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('fatPercent')}</label>
+                  <input
+                    type="number"
+                    value={singleOverrides.fat_pct}
+                    onChange={(e) => handleOverrideChange('fat_pct', e.target.value, 'single')}
+                    placeholder={t('leaveEmptyForDefault')}
+                    step="0.01"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('proteinPercent')}</label>
+                  <input
+                    type="number"
+                    value={singleOverrides.protein_pct}
+                    onChange={(e) => handleOverrideChange('protein_pct', e.target.value, 'single')}
+                    placeholder={t('leaveEmptyForDefault')}
+                    step="0.01"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('lactationDaysAvg')}</label>
+                  <input
+                    type="number"
+                    value={singleOverrides.lact_days_avg}
+                    onChange={(e) => handleOverrideChange('lact_days_avg', e.target.value, 'single')}
+                    placeholder={t('leaveEmptyForDefault')}
+                    step="1"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('lactationsPerLife')}</label>
+                  <input
+                    type="number"
+                    value={singleOverrides.lactations_lifetime_avg}
+                    onChange={(e) => handleOverrideChange('lactations_lifetime_avg', e.target.value, 'single')}
+                    placeholder={t('leaveEmptyForDefault')}
+                    step="0.1"
+                  />
                 </div>
               </div>
 
-              {/* Optimization Potential */}
-              {simulation.optimization_potential?.has_potential && (
-                <div className="card card-info">
-                  <div className="card-header">
-                    <h2 className="card-title">💡 {t('optimizationOpportunities')}</h2>
-                  </div>
-                  <div className="card-content">
-                    <div className="alert alert-info">
-                      <strong>{t('improvementPotential')}:</strong> +{Number(simulation.optimization_potential?.improvement_percentage || 0).toFixed(1)}% 
-                      ({Number(simulation.optimization_potential?.improvement_liters || 0).toLocaleString()} L)
-                    </div>
-                    
-                    <p>
-                      {t('currentLevel')}: <strong>{t(managementLevel + 'Management')}</strong> → 
-                      {t('nextLevel')}: <strong>{t(simulation.optimization_potential.next_level + 'Management')}</strong>
-                    </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => handleSimulateSingle()}
+                  disabled={loading}
+                >
+                  {loading ? t('calculating') : t('calculate')}
+                </button>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={handleSave}
+                  disabled={loading || !singleResult}
+                >
+                  {t('save')}
+                </button>
+              </div>
 
-                    {simulation.optimization_potential.recommendations?.length > 0 && (
-                      <div className="recommendations-list">
-                        <h4>{t('recommendations')}:</h4>
-                        <ul>
-                          {simulation.optimization_potential.recommendations.map((rec, index) => (
-                            <li key={index}>{rec}</li>
-                          ))}
-                        </ul>
+              {singleResult && (
+                <div style={{ marginTop: '30px' }}>
+                  <h2>{t('results')}</h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                    <div style={{ padding: '15px', background: '#e3f2fd', borderRadius: '8px' }}>
+                      <h3 style={{ marginTop: 0 }}>{t('perAnimalAnnual')}</h3>
+                      <p><strong>{t('milk')}:</strong> {formatNumber(singleResult.milk_kg_yr)} kg {singleResult.approx_liters_note}</p>
+                      <p><strong>{t('fat')}:</strong> {formatNumber(singleResult.fat_kg_yr)} kg ({formatNumber(singleResult.fat_pct, 2)}%)</p>
+                      <p><strong>{t('protein')}:</strong> {formatNumber(singleResult.protein_kg_yr)} kg ({formatNumber(singleResult.protein_pct, 2)}%)</p>
+                      <p><strong>{t('fat')} + {t('protein')}:</strong> {formatNumber(singleResult.fat_plus_protein_kg_yr)} kg</p>
+                      <p><strong>ECM:</strong> {formatNumber(singleResult.ecm_kg_yr)} kg</p>
+                    </div>
+                    <div style={{ padding: '15px', background: '#e8f5e9', borderRadius: '8px' }}>
+                      <h3 style={{ marginTop: 0 }}>{t('perAnimalLifetime')}</h3>
+                      <p><strong>{t('milk')}:</strong> {formatNumber(singleResult.milk_kg_lifetime)} kg</p>
+                      <p><strong>{t('fat')}:</strong> {formatNumber(singleResult.fat_kg_lifetime)} kg</p>
+                      <p><strong>{t('protein')}:</strong> {formatNumber(singleResult.protein_kg_lifetime)} kg</p>
+                      <p><strong>{t('fat')} + {t('protein')}:</strong> {formatNumber(singleResult.fat_plus_protein_kg_lifetime)} kg</p>
+                      <p><strong>{t('ecmLifetime')}:</strong> {formatNumber(singleResult.ecm_kg_lifetime)} kg</p>
+                      <p><small>({formatNumber(singleResult.lactations_lifetime_avg, 1)} {t('lactationsPerLife')} × {formatNumber(singleResult.lact_days_avg, 0)} {t('days')})</small></p>
+                    </div>
+                    <div style={{ padding: '15px', background: '#fff3e0', borderRadius: '8px' }}>
+                      <h3 style={{ marginTop: 0 }}>{t('herdTotal')} ({formatNumber(singleResult.herd_size, 0)} {t('animals')})</h3>
+                      <p><strong>{t('totalMilkPerYear')}:</strong> {formatNumber(singleResult.milk_kg_yr_total)} kg</p>
+                      <p><strong>{t('totalFatPerYear')}:</strong> {formatNumber(singleResult.fat_kg_yr_total)} kg</p>
+                      <p><strong>{t('totalProteinPerYear')}:</strong> {formatNumber(singleResult.protein_kg_yr_total)} kg</p>
+                      <p><strong>{t('totalECMPerYear')}:</strong> {formatNumber(singleResult.ecm_kg_yr_total)} kg</p>
+                      <p><strong>{t('totalECMLifetime')}:</strong> {formatNumber(singleResult.ecm_kg_lifetime_total)} kg</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Compare A vs B View */}
+          {viewMode === 'compare' && (
+            <div className="card">
+              <h2>⚖️ {t('compareTwoBreeds')}</h2>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px', marginBottom: '20px' }}>
+                {/* Breed A */}
+                <div style={{ padding: '20px', background: '#e3f2fd', borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>{t('breedA')}</h3>
+                  <div className="form-group">
+                    <label>{t('selectBreed')}</label>
+                    <select
+                      value={breedA}
+                      onChange={(e) => setBreedA(e.target.value)}
+                    >
+                      <option value="">{t('chooseBreed')}</option>
+                      {breeds.map(breed => (
+                        <option key={breed.breed_key} value={breed.breed_key}>
+                          {breed.breed_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {breedA && (
+                    <>
+                      <div className="form-group">
+                        <label>{t('herdSize')}</label>
+                        <input
+                          type="number"
+                          value={overridesA.herd_size}
+                          onChange={(e) => handleOverrideChange('herd_size', e.target.value, 'A')}
+                          min="1"
+                        />
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Breed Comparison */}
-              {comparisonBreeds.length > 0 && (
-                <div className="card">
-                  <div className="card-header">
-                    <h2 className="card-title">🔬 {t('breedComparison')}</h2>
-                    <p className="card-subtitle">{t('compareAlternatives')}</p>
-                  </div>
-                  <div className="card-content">
-                    {/* Comparison Table */}
-                    <div className="table-container">
-                      <table className="comparison-table">
-                        <thead>
-                          <tr>
-                            <th>{t('breed')}</th>
-                            <th>{t('totalProduction')} (L)</th>
-                            <th>{t('fat')} (%)</th>
-                            <th>{t('protein')} (%)</th>
-                            <th>{t('solids')} (kg)</th>
-                            <th>{t('persistence')} (%)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="current-breed">
-                            <td><strong>{simulation.breed_name}</strong> ⭐</td>
-                            <td><strong>{Number(simulation.total_lactation_liters || 0).toLocaleString()}</strong></td>
-                            <td><strong>{Number(simulation.fat_percentage || 0).toFixed(2)}</strong></td>
-                            <td><strong>{Number(simulation.protein_percentage || 0).toFixed(2)}</strong></td>
-                            <td><strong>{Number(simulation.solids_kg || 0).toFixed(1)}</strong></td>
-                            <td><strong>{Number(simulation.persistence_rate || 0).toFixed(2)}</strong></td>
-                          </tr>
-                          {comparisonBreeds.map((comp, index) => (
-                            <tr key={index}>
-                              <td>{comp.breed_name}</td>
-                              <td>{Number(comp.simulation?.total_lactation_liters || 0).toLocaleString()}</td>
-                              <td>{Number(comp.simulation?.fat_percentage || 0).toFixed(2)}</td>
-                              <td>{Number(comp.simulation?.protein_percentage || 0).toFixed(2)}</td>
-                              <td>{Number(comp.simulation?.solids_kg || 0).toFixed(1)}</td>
-                              <td>{Number(comp.simulation?.persistence_rate || 0).toFixed(2)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Comparison Bar Chart */}
-                    <div className="chart-section">
-                      <h3 className="chart-title">{t('productionComparison')}</h3>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={comparisonData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="breed" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar 
-                            dataKey={t('totalProduction')} 
-                            fill="#10b981" 
-                            name={t('production') + ' (L)'}
+                      <details>
+                        <summary style={{ cursor: 'pointer', marginBottom: '10px' }}>{t('advancedOverrides')}</summary>
+                        <div className="form-group">
+                          <label>{t('milkKgPerYear')}</label>
+                          <input
+                            type="number"
+                            value={overridesA.milk_kg_yr}
+                            onChange={(e) => handleOverrideChange('milk_kg_yr', e.target.value, 'A')}
+                            placeholder={t('leaveEmptyForDefault')}
                           />
-                        </BarChart>
-                      </ResponsiveContainer>
+                        </div>
+                        <div className="form-group">
+                          <label>{t('fatPercent')}</label>
+                          <input
+                            type="number"
+                            value={overridesA.fat_pct}
+                            onChange={(e) => handleOverrideChange('fat_pct', e.target.value, 'A')}
+                            placeholder={t('leaveEmptyForDefault')}
+                            step="0.01"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>{t('proteinPercent')}</label>
+                          <input
+                            type="number"
+                            value={overridesA.protein_pct}
+                            onChange={(e) => handleOverrideChange('protein_pct', e.target.value, 'A')}
+                            placeholder={t('leaveEmptyForDefault')}
+                            step="0.01"
+                          />
+                        </div>
+                      </details>
+                    </>
+                  )}
+                </div>
+
+                {/* Breed B */}
+                <div style={{ padding: '20px', background: '#f3e5f5', borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>{t('breedB')}</h3>
+                  <div className="form-group">
+                    <label>{t('selectBreed')}</label>
+                    <select
+                      value={breedB}
+                      onChange={(e) => setBreedB(e.target.value)}
+                    >
+                      <option value="">{t('chooseBreed')}</option>
+                      {breeds.map(breed => (
+                        <option key={breed.breed_key} value={breed.breed_key}>
+                          {breed.breed_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {breedB && (
+                    <>
+                      <div className="form-group">
+                        <label>{t('herdSize')}</label>
+                        <input
+                          type="number"
+                          value={overridesB.herd_size}
+                          onChange={(e) => handleOverrideChange('herd_size', e.target.value, 'B')}
+                          min="1"
+                        />
+                      </div>
+                      <details>
+                        <summary style={{ cursor: 'pointer', marginBottom: '10px' }}>{t('advancedOverrides')}</summary>
+                        <div className="form-group">
+                          <label>{t('milkKgPerYear')}</label>
+                          <input
+                            type="number"
+                            value={overridesB.milk_kg_yr}
+                            onChange={(e) => handleOverrideChange('milk_kg_yr', e.target.value, 'B')}
+                            placeholder={t('leaveEmptyForDefault')}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>{t('fatPercent')}</label>
+                          <input
+                            type="number"
+                            value={overridesB.fat_pct}
+                            onChange={(e) => handleOverrideChange('fat_pct', e.target.value, 'B')}
+                            placeholder={t('leaveEmptyForDefault')}
+                            step="0.01"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>{t('proteinPercent')}</label>
+                          <input
+                            type="number"
+                            value={overridesB.protein_pct}
+                            onChange={(e) => handleOverrideChange('protein_pct', e.target.value, 'B')}
+                            placeholder={t('leaveEmptyForDefault')}
+                            step="0.01"
+                          />
+                        </div>
+                      </details>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <button 
+                className="btn btn-primary" 
+                onClick={handleCompare}
+                disabled={loading || !breedA || !breedB}
+              >
+                {loading ? t('comparing') : t('runComparison')}
+              </button>
+
+              {comparisonResult && (
+                <div style={{ marginTop: '30px' }}>
+                  <h2>{t('comparisonResults')}</h2>
+                  <div style={{ padding: '20px', background: comparisonResult.winner === 'A' ? '#e3f2fd' : '#f3e5f5', borderRadius: '8px', marginBottom: '20px' }}>
+                    <h3 style={{ marginTop: 0 }}>
+                      🏆 {t('winner')}: {t('breed')} {comparisonResult.winner} ({comparisonResult.winner === 'A' ? comparisonResult.aScenario.breed_name : comparisonResult.bScenario.breed_name})
+                    </h3>
+                    <p><strong>{t('ecmLifetimeDifference')}:</strong> {formatNumber(Math.abs(comparisonResult.delta.ecm_kg_lifetime_total))} kg ({formatNumber(Math.abs(comparisonResult.ecmDeltaPercent), 1)}%)</p>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '30px' }}>
+                    <div>
+                      <h4>{t('breedA')}: {comparisonResult.aScenario.breed_name}</h4>
+                      <p><strong>{t('herdSize')}:</strong> {formatNumber(comparisonResult.aScenario.herd_size, 0)} {t('animals')}</p>
+                      <p><strong>ECM/{t('animals')}/yr:</strong> {formatNumber(comparisonResult.aScenario.ecm_kg_yr)} kg</p>
+                      <p><strong>{t('totalECMLifetime')}:</strong> {formatNumber(comparisonResult.aScenario.ecm_kg_lifetime_total)} kg</p>
+                      <p><strong>{t('fat')} {t('totalECMLifetime')}:</strong> {formatNumber(comparisonResult.aScenario.fat_kg_lifetime * comparisonResult.aScenario.herd_size)} kg</p>
+                      <p><strong>{t('protein')} {t('totalECMLifetime')}:</strong> {formatNumber(comparisonResult.aScenario.protein_kg_lifetime * comparisonResult.aScenario.herd_size)} kg</p>
+                    </div>
+                    <div>
+                      <h4>{t('breedB')}: {comparisonResult.bScenario.breed_name}</h4>
+                      <p><strong>{t('herdSize')}:</strong> {formatNumber(comparisonResult.bScenario.herd_size, 0)} {t('animals')}</p>
+                      <p><strong>ECM/{t('animals')}/yr:</strong> {formatNumber(comparisonResult.bScenario.ecm_kg_yr)} kg</p>
+                      <p><strong>{t('totalECMLifetime')}:</strong> {formatNumber(comparisonResult.bScenario.ecm_kg_lifetime_total)} kg</p>
+                      <p><strong>{t('fat')} {t('totalECMLifetime')}:</strong> {formatNumber(comparisonResult.bScenario.fat_kg_lifetime * comparisonResult.bScenario.herd_size)} kg</p>
+                      <p><strong>{t('protein')} {t('totalECMLifetime')}:</strong> {formatNumber(comparisonResult.bScenario.protein_kg_lifetime * comparisonResult.bScenario.herd_size)} kg</p>
                     </div>
                   </div>
+
+                  {/* Charts */}
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={[
+                      { name: 'Breed A', 'ECM Lifetime': comparisonResult.aScenario.ecm_kg_lifetime_total, 'Fat': comparisonResult.aScenario.fat_kg_lifetime * comparisonResult.aScenario.herd_size, 'Protein': comparisonResult.aScenario.protein_kg_lifetime * comparisonResult.aScenario.herd_size },
+                      { name: 'Breed B', 'ECM Lifetime': comparisonResult.bScenario.ecm_kg_lifetime_total, 'Fat': comparisonResult.bScenario.fat_kg_lifetime * comparisonResult.bScenario.herd_size, 'Protein': comparisonResult.bScenario.protein_kg_lifetime * comparisonResult.bScenario.herd_size }
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="ECM Lifetime" fill="#8884d8" />
+                      <Bar dataKey="Fat" fill="#82ca9d" />
+                      <Bar dataKey="Protein" fill="#ffc658" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               )}
-            </>
+            </div>
+          )}
+
+          {/* Ranking View */}
+          {viewMode === 'ranking' && rankingResults && (
+            <div className="card">
+              <h2>🏆 {t('breedRankingByEcmLifetime')}</h2>
+              <p style={{ color: '#666', marginBottom: '20px' }}>
+                {t('breedRankingSubtitle')}
+              </p>
+
+              <div className="table-container" style={{ overflowX: 'auto', marginBottom: '30px' }}>
+                <table className="table" style={{ minWidth: '800px' }}>
+                  <thead>
+                    <tr>
+                      <th>{t('rank')}</th>
+                      <th>{t('breed')}</th>
+                      <th>{t('countrySystem')}</th>
+                      <th>{t('milkKgPerYear')}</th>
+                      <th>{t('fatPercent')}</th>
+                      <th>{t('proteinPercent')}</th>
+                      <th>{t('ecmPerYear')}</th>
+                      <th>{t('lactationsPerLife')}</th>
+                      <th style={{ fontWeight: 'bold', background: '#e8f5e9' }}>{t('ecmLifetime')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rankingResults.scenarios.map((scenario, idx) => (
+                      <tr key={scenario.breed_key || idx} style={{ cursor: 'pointer' }} onClick={() => setExpandedBreed(prev => ({ ...prev, [scenario.breed_key]: !prev[scenario.breed_key] }))}>
+                        <td style={{ fontWeight: 'bold' }}>{idx + 1}</td>
+                        <td><strong>{scenario.breed_name || scenario.breed_key}</strong></td>
+                        <td><small>{scenario.country_or_system}</small></td>
+                        <td>{formatNumber(scenario.milk_kg_yr)}</td>
+                        <td>{formatNumber(scenario.fat_pct, 2)}</td>
+                        <td>{formatNumber(scenario.protein_pct, 2)}</td>
+                        <td>{formatNumber(scenario.ecm_kg_yr)}</td>
+                        <td>{formatNumber(scenario.lactations_lifetime_avg, 1)}</td>
+                        <td style={{ fontWeight: 'bold', background: idx < 3 ? '#fff3e0' : '#e8f5e9' }}>
+                          {formatNumber(scenario.ecm_kg_lifetime)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Ranking Chart */}
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={rankingResults.scenarios.slice(0, 10)} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="breed_name" type="category" width={150} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="ecm_kg_lifetime" fill="#8884d8" name="ECM Lifetime (kg)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </>
       )}
 
       <AlertModal
         isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.type === 'success' ? t('success') : alertModal.type === 'error' ? t('error') : t('information')}
         message={alertModal.message}
         type={alertModal.type}
-        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
       />
     </div>
   );
