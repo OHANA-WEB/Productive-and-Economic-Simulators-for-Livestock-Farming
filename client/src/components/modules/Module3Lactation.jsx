@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ComposedChart, LineChart, Line, Area 
+  ComposedChart, LineChart, Line, Area, Cell
 } from 'recharts';
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
@@ -790,65 +790,129 @@ function Module3Lactation({ user }) {
                   {/* Charts 2 & 3: Fat and Protein - Side by Side */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
                     {/* Fat Chart */}
-                    <div className="card">
-                      <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600' }}>
+                    <div className="card" style={{ padding: '1.5rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                      <h3 style={{ marginBottom: '1.5rem', fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                         {t('fatProductiveLife') || 'Grasa (kg vida productiva)'}
                       </h3>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={[
-                          { 
-                            name: comparisonResult.aScenario.breed_name, 
-                            value: comparisonResult.aScenario.fat_kg_lifetime * comparisonResult.aScenario.herd_size
-                          },
-                          { 
-                            name: comparisonResult.bScenario.breed_name, 
-                            value: comparisonResult.bScenario.fat_kg_lifetime * comparisonResult.bScenario.herd_size
-                          }
-                        ]}>
-                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                          <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                          <YAxis stroke={chartColors.axis.tick} />
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart 
+                          data={[
+                            { 
+                              breed: comparisonResult.aScenario.breed_name, 
+                              value: comparisonResult.aScenario.fat_kg_lifetime * comparisonResult.aScenario.herd_size
+                            },
+                            { 
+                              breed: comparisonResult.bScenario.breed_name, 
+                              value: comparisonResult.bScenario.fat_kg_lifetime * comparisonResult.bScenario.herd_size
+                            }
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                          <XAxis 
+                            dataKey="breed" 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.axis.tick, fontSize: 12 }}
+                            axisLine={{ stroke: chartColors.axis.tick }}
+                          />
+                          <YAxis 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.axis.tick, fontSize: 12 }}
+                            axisLine={{ stroke: chartColors.axis.tick }}
+                          />
                           <Tooltip 
-                            formatter={(value) => `${formatNumber(value, 0)} kg`}
+                            formatter={(value) => [`${formatNumber(value, 0)} kg`, '']}
                             contentStyle={{ 
                               backgroundColor: chartColors.tooltip.bg, 
                               border: `1px solid ${chartColors.tooltip.border}`,
-                              color: chartColors.tooltip.text
+                              color: chartColors.tooltip.text,
+                              borderRadius: '8px',
+                              padding: '8px 12px'
                             }} 
+                            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                           />
-                          <Bar dataKey="value" fill={chartColors.secondary} />
+                          <Bar 
+                            dataKey="value" 
+                            radius={[8, 8, 0, 0]}
+                            label={{ 
+                              position: 'top', 
+                              formatter: (value) => `${formatNumber(value, 0)} kg`,
+                              fill: chartColors.text.primary,
+                              fontSize: 12,
+                              fontWeight: '600'
+                            }}
+                          >
+                            {[
+                              { breed: comparisonResult.aScenario.breed_name, value: comparisonResult.aScenario.fat_kg_lifetime * comparisonResult.aScenario.herd_size },
+                              { breed: comparisonResult.bScenario.breed_name, value: comparisonResult.bScenario.fat_kg_lifetime * comparisonResult.bScenario.herd_size }
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={index === 0 ? '#4caf50' : '#2196f3'} />
+                            ))}
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
 
                     {/* Protein Chart */}
-                    <div className="card">
-                      <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: '600' }}>
+                    <div className="card" style={{ padding: '1.5rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                      <h3 style={{ marginBottom: '1.5rem', fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                         {t('proteinProductiveLife') || 'Proteína (kg vida productiva)'}
                       </h3>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={[
-                          { 
-                            name: comparisonResult.aScenario.breed_name, 
-                            value: comparisonResult.aScenario.protein_kg_lifetime * comparisonResult.aScenario.herd_size
-                          },
-                          { 
-                            name: comparisonResult.bScenario.breed_name, 
-                            value: comparisonResult.bScenario.protein_kg_lifetime * comparisonResult.bScenario.herd_size
-                          }
-                        ]}>
-                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                          <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                          <YAxis stroke={chartColors.axis.tick} />
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart 
+                          data={[
+                            { 
+                              breed: comparisonResult.aScenario.breed_name, 
+                              value: comparisonResult.aScenario.protein_kg_lifetime * comparisonResult.aScenario.herd_size
+                            },
+                            { 
+                              breed: comparisonResult.bScenario.breed_name, 
+                              value: comparisonResult.bScenario.protein_kg_lifetime * comparisonResult.bScenario.herd_size
+                            }
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                          <XAxis 
+                            dataKey="breed" 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.axis.tick, fontSize: 12 }}
+                            axisLine={{ stroke: chartColors.axis.tick }}
+                          />
+                          <YAxis 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.axis.tick, fontSize: 12 }}
+                            axisLine={{ stroke: chartColors.axis.tick }}
+                          />
                           <Tooltip 
-                            formatter={(value) => `${formatNumber(value, 0)} kg`}
+                            formatter={(value) => [`${formatNumber(value, 0)} kg`, '']}
                             contentStyle={{ 
                               backgroundColor: chartColors.tooltip.bg, 
                               border: `1px solid ${chartColors.tooltip.border}`,
-                              color: chartColors.tooltip.text
+                              color: chartColors.tooltip.text,
+                              borderRadius: '8px',
+                              padding: '8px 12px'
                             }} 
+                            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                           />
-                          <Bar dataKey="value" fill={chartColors.tertiary} />
+                          <Bar 
+                            dataKey="value" 
+                            radius={[8, 8, 0, 0]}
+                            label={{ 
+                              position: 'top', 
+                              formatter: (value) => `${formatNumber(value, 0)} kg`,
+                              fill: chartColors.text.primary,
+                              fontSize: 12,
+                              fontWeight: '600'
+                            }}
+                          >
+                            {[
+                              { breed: comparisonResult.aScenario.breed_name, value: comparisonResult.aScenario.protein_kg_lifetime * comparisonResult.aScenario.herd_size },
+                              { breed: comparisonResult.bScenario.breed_name, value: comparisonResult.bScenario.protein_kg_lifetime * comparisonResult.bScenario.herd_size }
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={index === 0 ? '#4caf50' : '#2196f3'} />
+                            ))}
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

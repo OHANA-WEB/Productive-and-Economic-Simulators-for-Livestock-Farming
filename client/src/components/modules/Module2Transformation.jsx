@@ -620,66 +620,66 @@ function Module2Transformation({ user }) {
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
-              <div className="form-group">
-                <label>{t('dailyProduction')} 🔒</label>
+              <div className="form-group" style={{ display: 'grid', gridTemplateRows: '1fr auto auto', gap: '8px', alignItems: 'end' }}>
+                <label style={{ gridRow: '1', alignSelf: 'start' }}>{t('dailyProduction')} 🔒</label>
                 <input
                   type="number"
                   name="daily_production_liters"
                   value={productionData.daily_production_liters}
                   readOnly
                   disabled
-                  style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
                   step="0.01"
                 />
-                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
-              <div className="form-group">
-                <label>{t('productionDays')} 🔒</label>
+              <div className="form-group" style={{ display: 'grid', gridTemplateRows: '1fr auto auto', gap: '8px', alignItems: 'end' }}>
+                <label style={{ gridRow: '1', alignSelf: 'start' }}>{t('productionDays')} 🔒</label>
                 <input
                   type="number"
                   name="production_days"
                   value={productionData.production_days}
                   readOnly
                   disabled
-                  style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
                 />
-                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
-              <div className="form-group">
-                <label>{t('animalsCount')} 🔒</label>
+              <div className="form-group" style={{ display: 'grid', gridTemplateRows: '1fr auto auto', gap: '8px', alignItems: 'end' }}>
+                <label style={{ gridRow: '1', alignSelf: 'start' }}>{t('animalsCount')} 🔒</label>
                 <input
                   type="number"
                   name="animals_count"
                   value={productionData.animals_count}
                   readOnly
                   disabled
-                  style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
                 />
-                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
-              <div className="form-group">
-                <label>{t('milkPriceForComparison')} 🔒</label>
+              <div className="form-group" style={{ display: 'grid', gridTemplateRows: '1fr auto auto', gap: '8px', alignItems: 'end' }}>
+                <label style={{ gridRow: '1', alignSelf: 'start' }}>{t('milkPriceForComparison')} 🔒</label>
                 <input
                   type="number"
                   name="milk_price_per_liter"
                   value={productionData.milk_price_per_liter}
                   readOnly
                   disabled
-                  style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
                   step="0.01"
                 />
-                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
-              <div className="form-group">
-                <label>{t('milkProductionCostPerLiter')} 🔒</label>
+              <div className="form-group" style={{ display: 'grid', gridTemplateRows: '1fr auto auto', gap: '8px', alignItems: 'end' }}>
+                <label style={{ gridRow: '1', alignSelf: 'start' }}>{t('milkProductionCostPerLiter')} 🔒</label>
                 <input
                   type="number"
                   name="milk_production_cost_per_liter"
@@ -693,10 +693,10 @@ function Module2Transformation({ user }) {
                   })()}
                   readOnly
                   disabled
-                  style={{ background: '#f5f5f5', cursor: 'not-allowed', color: '#666' }}
+                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
                   step="0.01"
                 />
-                <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>
+                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
