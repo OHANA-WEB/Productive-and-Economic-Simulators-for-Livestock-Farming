@@ -135,15 +135,18 @@
 }
 
 .breed-rank-badge.gold {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: var(--accent-warning);
+  color: var(--text-inverse);
 }
 
 .breed-rank-badge.silver {
-  background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%);
+  background: var(--text-tertiary);
+  color: var(--text-inverse);
 }
 
 .breed-rank-badge.bronze {
-  background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
+  background: var(--accent-error);
+  color: var(--text-inverse);
 }
 
 .breed-see-more {

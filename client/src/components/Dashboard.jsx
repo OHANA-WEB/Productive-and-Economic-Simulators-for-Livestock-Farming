@@ -104,13 +104,13 @@ function Dashboard({ user, onLogout }) {
 
   const getModuleColor = (type) => {
     const colorMap = {
-      milk_sale: '#4CAF50',
-      transformation: '#4a7c2a',
-      lactation: '#FF9800',
-      yield: '#9C27B0',
-      summary: '#F44336'
+      milk_sale: 'var(--accent-success)',
+      transformation: 'var(--accent-success)',
+      lactation: 'var(--accent-warning)',
+      yield: 'var(--accent-info)',
+      summary: 'var(--accent-error)'
     };
-    return colorMap[type] || '#6c757d';
+    return colorMap[type] || 'var(--text-tertiary)';
   };
 
   const getModuleIcon = (type) => {
@@ -319,7 +319,7 @@ function Dashboard({ user, onLogout }) {
                 <span className="meta-item">
                   <span className="meta-label">📝 {t('status')}:</span>
                   <span className="meta-value" style={{ 
-                    color: scenario.updated_at && scenario.updated_at !== scenario.created_at ? '#059669' : '#6b7280',
+                    color: scenario.updated_at && scenario.updated_at !== scenario.created_at ? 'var(--accent-success)' : 'var(--text-tertiary)',
                     fontWeight: '500'
                   }}>
                     {scenario.updated_at && scenario.updated_at !== scenario.created_at ? t('editableWithData') : t('new')}
@@ -387,11 +387,11 @@ function Dashboard({ user, onLogout }) {
           <>
             <strong>{t('deleteConfirm')}</strong>
             {deleteModal.scenarioName && (
-              <span style={{ display: 'block', marginTop: '8px', fontWeight: '600', color: '#111827' }}>
+              <span style={{ display: 'block', marginTop: '8px', fontWeight: '600', color: 'var(--text-primary)' }}>
                 "{deleteModal.scenarioName}"
               </span>
             )}
-            <span style={{ display: 'block', marginTop: '12px', fontSize: '14px', color: '#6b7280' }}>
+            <span style={{ display: 'block', marginTop: '12px', fontSize: '14px', color: 'var(--text-tertiary)' }}>
               {t('deleteConfirmMessage')}
             </span>
           </>

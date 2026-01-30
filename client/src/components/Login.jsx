@@ -351,7 +351,7 @@ function Login({ onLogin }) {
                     cursor: 'pointer',
                     fontSize: '1.2em',
                     padding: '5px',
-                    color: '#2d5016',
+                    color: 'var(--accent-success)',
                   }}
                   disabled={loading}
                   title={showPassword ? t('hidePassword') || 'Hide password' : t('showPassword') || 'Show password'}

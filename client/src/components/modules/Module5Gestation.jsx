@@ -251,11 +251,11 @@ function Module5Gestation({ user }) {
 
   const getAlertColor = (type) => {
     switch (type) {
-      case 'error': return '#ffebee';
-      case 'warning': return '#fff3e0';
-      case 'success': return '#e8f5e9';
-      case 'info': return '#e3f2fd';
-      default: return '#f5f5f5';
+      case 'error': return 'rgba(220, 38, 38, 0.1)';
+      case 'warning': return 'rgba(234, 179, 8, 0.1)';
+      case 'success': return 'rgba(22, 163, 74, 0.1)';
+      case 'info': return 'rgba(37, 99, 235, 0.1)';
+      default: return 'var(--bg-tertiary)';
     }
   };
 
@@ -429,7 +429,7 @@ function Module5Gestation({ user }) {
               {/* Weekly Timeline */}
               <div className="card">
                 <h2>{t('weeklyTimeline')}</h2>
-                <p style={{ color: '#666', marginBottom: '20px' }}>
+                <p style={{ color: 'var(--text-tertiary)', marginBottom: '20px' }}>
                   {t('weeklyTimelineDescription')}
                 </p>
                 
@@ -439,9 +439,9 @@ function Module5Gestation({ user }) {
                       key={week.week}
                       style={{
                         padding: '15px',
-                        background: week.isCurrent ? '#fff9c4' : week.isPast ? '#f5f5f5' : week.stageColor,
+                        background: week.isCurrent ? 'rgba(234, 179, 8, 0.15)' : week.isPast ? 'var(--bg-tertiary)' : week.stageColor,
                         borderRadius: '8px',
-                        border: week.isCurrent ? '3px solid #fbc02d' : '1px solid #e0e0e0',
+                        border: week.isCurrent ? '3px solid var(--accent-warning)' : '1px solid var(--border-color)',
                         opacity: week.isPast ? 0.6 : 1,
                       }}
                     >
@@ -451,13 +451,13 @@ function Module5Gestation({ user }) {
                             {week.isCurrent && '📍 '}{t('week')} {week.week}
                             {week.isCurrent && ` (${t('current')})`}
                           </h3>
-                          <p style={{ margin: '5px 0 0 0', fontSize: '0.9em', color: '#666' }}>
+                          <p style={{ margin: '5px 0 0 0', fontSize: '0.9em', color: 'var(--text-tertiary)' }}>
                             {formatDate(week.startDate)} • {t('days')} {week.startDay}-{week.endDay}
                           </p>
                         </div>
                         <div style={{ 
                           padding: '6px 12px', 
-                          background: 'rgba(255,255,255,0.7)', 
+                          background: 'var(--bg-secondary)', 
                           borderRadius: '4px',
                           fontSize: '0.85em',
                           fontWeight: 'bold'
@@ -476,7 +476,7 @@ function Module5Gestation({ user }) {
                                 background: getAlertColor(alert.type),
                                 borderRadius: '4px',
                                 marginTop: idx > 0 ? '8px' : 0,
-                                border: `1px solid ${alert.type === 'error' ? '#ef5350' : alert.type === 'warning' ? '#ff9800' : '#e0e0e0'}`,
+                                border: `1px solid ${alert.type === 'error' ? 'var(--accent-error)' : alert.type === 'warning' ? 'var(--accent-warning)' : 'var(--border-color)'}`,
                               }}
                             >
                               <p style={{ margin: 0, fontSize: '0.9em' }}>

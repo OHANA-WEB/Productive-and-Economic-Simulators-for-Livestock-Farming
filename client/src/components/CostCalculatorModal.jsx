@@ -189,7 +189,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
         </div>
         
         <div className="modal-body">
-          <p style={{ color: '#666', marginBottom: '20px', fontSize: '0.95em' }}>
+          <p style={{ color: 'var(--text-tertiary)', marginBottom: '20px', fontSize: '0.95em' }}>
             {t('costEstimatorDescription')}
           </p>
           
@@ -197,7 +197,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
           {calculatorType === 'feed' && (
             <div>
               <h3>{t('feedCostCalculator')}</h3>
-              <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+              <p style={{ fontSize: '0.9em', color: 'var(--text-tertiary)', marginBottom: '15px' }}>
                 {t('feedCalcDescription')}
               </p>
               
@@ -291,7 +291,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
           {calculatorType === 'labor' && (
             <div>
               <h3>{t('laborCostCalculator')}</h3>
-              <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+              <p style={{ fontSize: '0.9em', color: 'var(--text-tertiary)', marginBottom: '15px' }}>
                 {t('laborCalcDescription')}
               </p>
               
@@ -367,7 +367,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
           {calculatorType === 'health' && (
             <div>
               <h3>{t('healthCostCalculator')}</h3>
-              <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+              <p style={{ fontSize: '0.9em', color: 'var(--text-tertiary)', marginBottom: '15px' }}>
                 {t('healthCalcDescription')}
               </p>
               
@@ -381,7 +381,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
                   step="0.01"
                   placeholder="Ej: 25"
                 />
-                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                <small style={{ display: 'block', marginTop: '5px', color: 'var(--text-tertiary)' }}>
                   {t('healthCostHint')}
                 </small>
               </div>
@@ -432,7 +432,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
           {calculatorType === 'services' && (
             <div>
               <h3>{t('servicesCostCalculator')}</h3>
-              <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+              <p style={{ fontSize: '0.9em', color: 'var(--text-tertiary)', marginBottom: '15px' }}>
                 {t('servicesCalcDescription')}
               </p>
               
@@ -490,7 +490,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
           {calculatorType === 'rearing' && (
             <div>
               <h3>{t('rearingCostCalculator')}</h3>
-              <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '15px' }}>
+              <p style={{ fontSize: '0.9em', color: 'var(--text-tertiary)', marginBottom: '15px' }}>
                 {t('rearingCalcDescription')}
               </p>
               
@@ -504,7 +504,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
                   step="0.01"
                   placeholder="Ej: 300"
                 />
-                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                <small style={{ display: 'block', marginTop: '5px', color: 'var(--text-tertiary)' }}>
                   {t('rearingCostHint')}
                 </small>
               </div>
@@ -531,7 +531,7 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
                   step="1"
                   placeholder="Ej: 20"
                 />
-                <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                <small style={{ display: 'block', marginTop: '5px', color: 'var(--text-tertiary)' }}>
                   {t('replacementRateHint')}
                 </small>
               </div>
@@ -539,15 +539,15 @@ function CostCalculatorModal({ isOpen, onClose, calculatorType, onApply, current
           )}
           
           {/* Calculated Result */}
-          <div style={{ marginTop: '30px', padding: '20px', background: '#e3f2fd', borderRadius: '8px' }}>
+          <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '8px', border: '1px solid var(--accent-info)' }}>
             <h3 style={{ marginTop: 0, marginBottom: '10px' }}>{t('estimatedCost')}</h3>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '2em', fontWeight: 'bold', color: '#1976d2' }}>
+              <span style={{ fontSize: '2em', fontWeight: 'bold', color: 'var(--accent-info)' }}>
                 ${calculatedCost.toFixed(4)}
               </span>
-              <span style={{ color: '#666' }}>{t('perLiter')}</span>
+              <span style={{ color: 'var(--text-tertiary)' }}>{t('perLiter')}</span>
             </div>
-            <p style={{ fontSize: '0.9em', color: '#666', margin: 0 }}>
+            <p style={{ fontSize: '0.9em', color: 'var(--text-tertiary)', margin: 0 }}>
               {t('basedOnCurrentHerdSize')}: {currentAnimals} {t('animals')} × {currentDailyProduction} L/day = {(currentAnimals * currentDailyProduction).toFixed(1)} L/day {t('total')}
             </p>
           </div>

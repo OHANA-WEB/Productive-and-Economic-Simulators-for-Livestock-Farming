@@ -579,12 +579,12 @@ function Module2Transformation({ user }) {
         <div style={{ 
           marginTop: '16px', 
           padding: '18px 24px', 
-          background: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)', 
+          background: 'var(--bg-tertiary)', 
           borderRadius: '12px',
-          borderLeft: '4px solid #8e24aa',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+          borderLeft: '4px solid var(--accent-info)',
+          boxShadow: '0 2px 8px var(--shadow-color)'
         }}>
-          <p style={{ margin: 0, fontSize: '15px', lineHeight: '1.6', color: '#6a1b9a' }}>
+          <p style={{ margin: 0, fontSize: '15px', lineHeight: '1.6', color: 'var(--text-primary)' }}>
             ℹ️ {t('module2Explanation')}
           </p>
         </div>
@@ -614,8 +614,8 @@ function Module2Transformation({ user }) {
         <>
           <div className="card">
             <h2>{t('baseProductionData')}</h2>
-            <div style={{ marginBottom: '20px', padding: '15px', background: '#e8f5e9', borderRadius: '8px', border: '1px solid #4caf50' }}>
-              <p style={{ margin: 0, fontSize: '0.9em', color: '#2e7d32', fontWeight: '500' }}>
+            <div style={{ marginBottom: '20px', padding: '15px', background: 'rgba(22, 163, 74, 0.1)', borderRadius: '8px', border: '1px solid var(--accent-success)' }}>
+              <p style={{ margin: 0, fontSize: '0.9em', color: 'var(--accent-success)', fontWeight: '500' }}>
                 📊 <strong>{t('note')}:</strong> {t('inheritedDataNote')}
               </p>
             </div>
@@ -628,10 +628,10 @@ function Module2Transformation({ user }) {
                   value={productionData.daily_production_liters}
                   readOnly
                   disabled
-                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
+                  style={{ gridRow: '2', background: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--text-tertiary)', width: '100%', height: '40px' }}
                   step="0.01"
                 />
-                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
+                <small style={{ gridRow: '3', color: 'var(--text-tertiary)', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
@@ -643,9 +643,9 @@ function Module2Transformation({ user }) {
                   value={productionData.production_days}
                   readOnly
                   disabled
-                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
+                  style={{ gridRow: '2', background: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--text-tertiary)', width: '100%', height: '40px' }}
                 />
-                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
+                <small style={{ gridRow: '3', color: 'var(--text-tertiary)', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
@@ -657,9 +657,9 @@ function Module2Transformation({ user }) {
                   value={productionData.animals_count}
                   readOnly
                   disabled
-                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
+                  style={{ gridRow: '2', background: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--text-tertiary)', width: '100%', height: '40px' }}
                 />
-                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
+                <small style={{ gridRow: '3', color: 'var(--text-tertiary)', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
@@ -671,10 +671,10 @@ function Module2Transformation({ user }) {
                   value={productionData.milk_price_per_liter}
                   readOnly
                   disabled
-                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
+                  style={{ gridRow: '2', background: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--text-tertiary)', width: '100%', height: '40px' }}
                   step="0.01"
                 />
-                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
+                <small style={{ gridRow: '3', color: 'var(--text-tertiary)', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
@@ -693,10 +693,10 @@ function Module2Transformation({ user }) {
                   })()}
                   readOnly
                   disabled
-                  style={{ gridRow: '2', background: '#f5f5f5', cursor: 'not-allowed', color: '#666', width: '100%', height: '40px' }}
+                  style={{ gridRow: '2', background: 'var(--bg-tertiary)', cursor: 'not-allowed', color: 'var(--text-tertiary)', width: '100%', height: '40px' }}
                   step="0.01"
                 />
-                <small style={{ gridRow: '3', color: '#666', fontSize: '0.85em', height: '20px' }}>
+                <small style={{ gridRow: '3', color: 'var(--text-tertiary)', fontSize: '0.85em', height: '20px' }}>
                   {t('inheritedFromModule1')}
                 </small>
               </div>
@@ -718,21 +718,21 @@ function Module2Transformation({ user }) {
             {(() => {
               const totalDistribution = products.reduce((sum, p) => sum + (parseFloat(p.distribution_percentage) || 0), 0);
               return (
-                <div style={{ marginBottom: '20px', padding: '12px', background: totalDistribution === 100 ? '#e8f5e9' : '#ffebee', borderRadius: '8px', border: `1px solid ${totalDistribution === 100 ? '#4caf50' : '#f44336'}` }}>
+                <div style={{ marginBottom: '20px', padding: '12px', background: totalDistribution === 100 ? 'rgba(22, 163, 74, 0.1)' : 'rgba(220, 38, 38, 0.1)', borderRadius: '8px', border: `1px solid ${totalDistribution === 100 ? 'var(--accent-success)' : 'var(--accent-error)'}` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <strong style={{ color: totalDistribution === 100 ? '#2e7d32' : '#c62828' }}>
+                    <strong style={{ color: totalDistribution === 100 ? 'var(--accent-success)' : 'var(--accent-error)' }}>
                       {t('totalDistribution')}:
                     </strong>
                     <span style={{ 
                       fontWeight: 'bold', 
                       fontSize: '1.1em',
-                      color: totalDistribution === 100 ? '#2e7d32' : '#c62828'
+                      color: totalDistribution === 100 ? 'var(--accent-success)' : 'var(--accent-error)'
                     }}>
                       {totalDistribution.toFixed(2)}%
                     </span>
                   </div>
                   {totalDistribution !== 100 && (
-                    <p style={{ margin: '8px 0 0 0', fontSize: '0.85em', color: '#c62828' }}>
+                    <p style={{ margin: '8px 0 0 0', fontSize: '0.85em', color: 'var(--accent-error)' }}>
                       {t('distributionMustSum100').replace('{total}', totalDistribution.toFixed(2))}
                     </p>
                   )}
@@ -747,17 +747,17 @@ function Module2Transformation({ user }) {
                 style={{ 
                   marginBottom: '30px', 
                   padding: '20px', 
-                  background: '#f9f9f9', 
+                  background: 'var(--bg-tertiary)', 
                   borderRadius: '8px',
-                  border: '1px solid #e0e0e0',
+                  border: '1px solid var(--border-color)',
                   position: 'relative'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                  <h4 style={{ margin: 0, color: '#333' }}>
+                  <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>
                     {t('products')} #{index + 1}
                     {product.product_type_custom && (
-                      <span style={{ marginLeft: '10px', color: '#666', fontWeight: 'normal', fontSize: '0.9em' }}>
+                      <span style={{ marginLeft: '10px', color: 'var(--text-tertiary)', fontWeight: 'normal', fontSize: '0.9em' }}>
                         ({product.product_type_custom})
                       </span>
                     )}
@@ -770,8 +770,8 @@ function Module2Transformation({ user }) {
                       style={{ 
                         padding: '6px 12px', 
                         fontSize: '0.85em',
-                        background: '#f44336',
-                        color: 'white',
+                        background: 'var(--accent-error)',
+                        color: 'var(--text-inverse)',
                         border: 'none'
                       }}
                     >
@@ -842,22 +842,22 @@ function Module2Transformation({ user }) {
                     </label>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '120px' }}>
-                        <label style={{ fontSize: '0.85em', color: '#666', fontWeight: '500' }}>Unidad:</label>
+                        <label style={{ fontSize: '0.85em', color: 'var(--text-tertiary)', fontWeight: '500' }}>Unidad:</label>
                         <select
                           value={product.processing_cost_unit || 'liter'}
                           onChange={(e) => handleProductChange(product.id, 'processing_cost_unit', e.target.value)}
                           style={{ 
                             padding: '8px 12px', 
-                            border: '2px solid #ddd', 
+                            border: '2px solid var(--border-color)', 
                             borderRadius: '6px',
                             fontSize: '0.95em',
                             fontWeight: '600',
-                            background: '#fff',
+                            background: 'var(--bg-secondary)',
                             cursor: 'pointer',
                             transition: 'all 0.2s'
                           }}
-                          onFocus={(e) => e.target.style.borderColor = '#2d5016'}
-                          onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                          onFocus={(e) => e.target.style.borderColor = 'var(--accent-success)'}
+                          onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                         >
                           <option value="liter">$/L (por litro)</option>
                           <option value="kg">$/kg (por kilogramo)</option>
@@ -880,7 +880,7 @@ function Module2Transformation({ user }) {
                             placeholder={product.processing_cost_unit === 'liter' ? t('processingCostPlaceholderLiter') : t('processingCostPlaceholderKg')}
                             style={{ 
                               padding: '8px 45px 8px 12px', 
-                              border: '2px solid #ddd', 
+                              border: '2px solid var(--border-color)', 
                               borderRadius: '6px',
                               fontSize: '0.95em',
                               width: '100%'
@@ -889,7 +889,7 @@ function Module2Transformation({ user }) {
                           <span style={{ 
                             position: 'absolute', 
                             right: '12px', 
-                            color: '#666', 
+                            color: 'var(--text-tertiary)', 
                             fontWeight: '600',
                             fontSize: '0.9em',
                             pointerEvents: 'none'
@@ -901,11 +901,11 @@ function Module2Transformation({ user }) {
                     </div>
                     <div style={{ 
                       padding: '10px 12px', 
-                      background: '#e3f2fd', 
+                      background: 'rgba(37, 99, 235, 0.1)',
                       borderRadius: '6px', 
-                      border: '1px solid #90caf9',
+                      border: '1px solid var(--accent-info)',
                       fontSize: '0.85em',
-                      color: '#1565c0'
+                      color: 'var(--accent-info)'
                     }}>
                       <strong>ℹ️ {t('note')}:</strong> {product.processing_cost_unit === 'liter' 
                         ? t('processingCostHelpLiter') 
@@ -919,22 +919,22 @@ function Module2Transformation({ user }) {
                     </label>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '120px' }}>
-                        <label style={{ fontSize: '0.85em', color: '#666', fontWeight: '500' }}>Unidad:</label>
+                        <label style={{ fontSize: '0.85em', color: 'var(--text-tertiary)', fontWeight: '500' }}>Unidad:</label>
                         <select
                           value={product.packaging_cost_unit || 'kg'}
                           onChange={(e) => handleProductChange(product.id, 'packaging_cost_unit', e.target.value)}
                           style={{ 
                             padding: '8px 12px', 
-                            border: '2px solid #ddd', 
+                            border: '2px solid var(--border-color)', 
                             borderRadius: '6px',
                             fontSize: '0.95em',
                             fontWeight: '600',
-                            background: '#fff',
+                            background: 'var(--bg-secondary)',
                             cursor: 'pointer',
                             transition: 'all 0.2s'
                           }}
-                          onFocus={(e) => e.target.style.borderColor = '#2d5016'}
-                          onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                          onFocus={(e) => e.target.style.borderColor = 'var(--accent-success)'}
+                          onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                         >
                           <option value="liter">$/L (por litro)</option>
                           <option value="kg">$/kg (por kilogramo)</option>
@@ -957,7 +957,7 @@ function Module2Transformation({ user }) {
                             placeholder={product.packaging_cost_unit === 'liter' ? t('packagingCostPlaceholderLiter') : t('packagingCostPlaceholderKg')}
                             style={{ 
                               padding: '8px 45px 8px 12px', 
-                              border: '2px solid #ddd', 
+                              border: '2px solid var(--border-color)', 
                               borderRadius: '6px',
                               fontSize: '0.95em',
                               width: '100%'
@@ -966,7 +966,7 @@ function Module2Transformation({ user }) {
                           <span style={{ 
                             position: 'absolute', 
                             right: '12px', 
-                            color: '#666', 
+                            color: 'var(--text-tertiary)', 
                             fontWeight: '600',
                             fontSize: '0.9em',
                             pointerEvents: 'none'
@@ -978,11 +978,11 @@ function Module2Transformation({ user }) {
                     </div>
                     <div style={{ 
                       padding: '10px 12px', 
-                      background: '#e8f5e9', 
+                      background: 'rgba(22, 163, 74, 0.1)', 
                       borderRadius: '6px', 
-                      border: '1px solid #81c784',
+                      border: '1px solid var(--accent-success)',
                       fontSize: '0.85em',
-                      color: '#2e7d32'
+                      color: 'var(--accent-success)'
                     }}>
                       <strong>ℹ️ {t('note')}:</strong> {product.packaging_cost_unit === 'liter' 
                         ? t('packagingCostHelpLiter') 
@@ -992,10 +992,10 @@ function Module2Transformation({ user }) {
                 </div>
 
                 {/* Sales Channels for this product */}
-                <h4 style={{ marginTop: '25px', marginBottom: '15px', fontSize: '1em', color: '#555' }}>
+                <h4 style={{ marginTop: '25px', marginBottom: '15px', fontSize: '1em', color: 'var(--text-secondary)' }}>
                   {t('salesChannels')}
                 </h4>
-                <div style={{ marginBottom: '15px', padding: '10px', background: '#fff9e6', borderRadius: '6px', border: '1px solid #ffe066', fontSize: '0.9em' }}>
+                <div style={{ marginBottom: '15px', padding: '10px', background: 'rgba(234, 179, 8, 0.1)', borderRadius: '6px', border: '1px solid var(--accent-warning)', fontSize: '0.9em' }}>
                   <strong>📌 {t('note')}:</strong> {t('salesChannelsNote')}
                 </div>
                 {(() => {
@@ -1003,7 +1003,7 @@ function Module2Transformation({ user }) {
                                           parseFloat(product.sales_channel_distributors_percentage || 0) + 
                                           parseFloat(product.sales_channel_third_percentage || 0);
                   return (
-                    <div style={{ marginBottom: '15px', padding: '8px', background: '#f5f5f5', borderRadius: '4px' }}>
+                    <div style={{ marginBottom: '15px', padding: '8px', background: 'var(--bg-tertiary)', borderRadius: '4px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <strong>{t('total')}:</strong>
                         <span style={{ 
@@ -1077,9 +1077,9 @@ function Module2Transformation({ user }) {
                       max="100"
                       step="0.01"
                       readOnly
-                      style={{ background: '#f0f0f0' }}
+                      style={{ background: 'var(--bg-tertiary)' }}
                     />
-                    <small style={{ color: '#666', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>{t('autoCalculated')}</small>
+                    <small style={{ color: 'var(--text-tertiary)', fontSize: '0.85em', display: 'block', marginTop: '5px' }}>{t('autoCalculated')}</small>
                   </div>
                   <div className="form-group">
                     <label>{t('thirdChannelPrice')}</label>
@@ -1109,8 +1109,8 @@ function Module2Transformation({ user }) {
             <>
               {/* Results loaded indicator */}
               {selectedScenario?.results && (
-                <div className="card" style={{ background: '#e8f5e9', border: '1px solid #4caf50', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#2e7d32' }}>
+                <div className="card" style={{ background: 'rgba(22, 163, 74, 0.1)', border: '1px solid var(--accent-success)', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-success)' }}>
                     <span style={{ fontSize: '1.2em' }}>✓</span>
                     <strong>{t('autoLoadedResults')}</strong>
                   </div>
@@ -1221,7 +1221,7 @@ function Module2Transformation({ user }) {
                             <td><strong>{t('totalPackagingCost')}</strong></td>
                             <td>${totalPackagingCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                           </tr>
-                          <tr style={{ borderTop: '2px solid #333' }}>
+                          <tr style={{ borderTop: '2px solid var(--border-color)' }}>
                             <td><strong>{t('totalProductionCost')}</strong></td>
                             <td><strong>${totalCosts.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong></td>
                           </tr>
@@ -1262,7 +1262,7 @@ function Module2Transformation({ user }) {
                               </tbody>
                             </table>
                           </div>
-                          <div style={{ marginTop: '15px', padding: '12px', background: '#f5f5f5', borderRadius: '6px', fontSize: '0.9em' }}>
+                          <div style={{ marginTop: '15px', padding: '12px', background: 'var(--bg-tertiary)', borderRadius: '6px', fontSize: '0.9em' }}>
                             <strong>{t('weightedAverageCostPerKg')}</strong>: ${averageCostPerKg.toFixed(2)} / kg
                             <br />
                             <small style={{ color: '#666' }}>{t('note')}: {t('weightedAverageCostPerKg')}</small>
@@ -1464,7 +1464,7 @@ function Module2Transformation({ user }) {
                   
                   return (
                     <>
-                      <div style={{ marginBottom: '15px', padding: '12px', background: '#e3f2fd', borderRadius: '6px', border: '1px solid #2196f3', fontSize: '0.9em' }}>
+                      <div style={{ marginBottom: '15px', padding: '12px', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '6px', border: '1px solid var(--accent-info)', fontSize: '0.9em' }}>
                         <strong>✅ {t('note')}:</strong> La tabla ahora muestra primero los datos reales por producto (precios, costos, márgenes), y el promedio ponderado del mix aparece como dato secundario. <strong>Los valores en negrita son los márgenes por producto</strong>, que son los datos accionables para decisiones de negocio.
                       </div>
                       <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -1494,7 +1494,7 @@ function Module2Transformation({ user }) {
                               <Fragment key={idx}>
                                 <tr style={{ 
                                   opacity: channel.percentage === 0 ? 0.5 : 1,
-                                  background: '#f5f5f5',
+                                  background: 'var(--bg-tertiary)',
                                   fontWeight: 'normal'
                                 }}>
                                   <td style={{ cursor: 'pointer', textAlign: 'center' }}>
@@ -1525,8 +1525,8 @@ function Module2Transformation({ user }) {
                                 </tr>
                                 {isExpanded && productDetails.length > 0 && productDetails.map((detail, detailIdx) => (
                                   <tr key={`${idx}-${detailIdx}`} style={{ 
-                                    borderBottom: detailIdx === productDetails.length - 1 ? 'none' : '1px solid #eee',
-                                    background: '#fff'
+                                    borderBottom: detailIdx === productDetails.length - 1 ? 'none' : '1px solid var(--border-color)',
+                                    background: 'var(--bg-secondary)'
                                   }}>
                                     <td></td>
                                     <td style={{ paddingLeft: '30px' }}>{detail.productName}</td>
@@ -1554,8 +1554,8 @@ function Module2Transformation({ user }) {
                                 {/* Weighted Average Summary Row (Secondary) */}
                                 {isExpanded && productDetails.length > 1 && (
                                   <tr style={{ 
-                                    background: '#f9f9f9',
-                                    borderTop: '1px dashed #ccc',
+                                    background: 'var(--bg-tertiary)',
+                                    borderTop: '1px dashed var(--border-color)',
                                     fontStyle: 'italic',
                                     fontSize: '0.95em'
                                   }}>

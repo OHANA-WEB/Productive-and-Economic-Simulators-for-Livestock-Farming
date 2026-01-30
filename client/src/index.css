@@ -55,10 +55,10 @@ code {
 }
 
 .card-form {
-  background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
-  color: white;
+  background: var(--accent-success);
+  color: var(--text-inverse);
   border: none;
-  box-shadow: 0 4px 20px rgba(45, 80, 22, 0.25);
+  box-shadow: 0 4px 20px rgba(22, 163, 74, 0.25);
   margin-bottom: 32px;
 }
 
@@ -2328,60 +2328,146 @@ label {
    ============================================ */
 
 :root {
-  /* Light mode colors (default) */
-  --bg-primary: linear-gradient(135deg, #f0f5ec 0%, #d4e4c4 100%);
+  /* ============================================
+     LIGHT MODE - Professional SaaS Dashboard
+     ============================================ */
+  
+  /* Backgrounds */
+  --bg-primary: #f8f9fa;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f8f9fa;
-  --text-primary: #333;
-  --text-secondary: #2d3748;
-  --text-tertiary: #718096;
-  --border-color: #e0e0e0;
-  --border-light: #e8f0e0;
-  --shadow-color: rgba(0, 0, 0, 0.08);
-  --shadow-hover: rgba(0, 0, 0, 0.12);
-  --accent-color: #2d5016;
-  --accent-hover: #1e3d0f;
-  --accent-light: #4a7c2a;
+  --bg-tertiary: #f1f3f5;
+  --bg-quaternary: #e9ecef;
+  
+  /* Text */
+  --text-primary: #1a1f2e;
+  --text-secondary: #495057;
+  --text-tertiary: #868e96;
+  --text-inverse: #ffffff;
+  
+  /* Semantic Accents */
+  --accent-success: #16a34a;
+  --accent-success-hover: #15803d;
+  --accent-info: #2563eb;
+  --accent-info-hover: #1d4ed8;
+  --accent-warning: #ca8a04;
+  --accent-warning-hover: #a16207;
+  --accent-error: #dc2626;
+  --accent-error-hover: #b91c1c;
+  
+  /* Legacy accent support (green for primary actions) */
+  --accent-color: #16a34a;
+  --accent-hover: #15803d;
+  --accent-light: #22c55e;
+  --success-color: #16a34a;
+  --error-color: #dc2626;
+  --warning-color: #ca8a04;
+  --info-color: #2563eb;
+  
+  /* Borders & Dividers */
+  --border-color: #dee2e6;
+  --border-secondary: #ced4da;
+  --border-light: #e9ecef;
+  --border-subtle: #e9ecef;
+  
+  /* Shadows */
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --shadow-hover: rgba(0, 0, 0, 0.08);
+  --shadow-heavy: rgba(0, 0, 0, 0.15);
+  
+  /* Chart Colors */
+  --chart-primary: #2563eb;
+  --chart-secondary: #16a34a;
+  --chart-tertiary: #ca8a04;
+  --chart-quaternary: #7c3aed;
+  --chart-quinary: #ea580c;
+  --chart-grid: #e9ecef;
+  --chart-axis: #868e96;
+  
+  /* Component-specific (backward compatibility) */
   --card-bg: #ffffff;
   --input-bg: #ffffff;
-  --input-border: #e0e0e0;
+  --input-border: #dee2e6;
   --header-bg: #ffffff;
   --sidebar-bg: #ffffff;
   --footer-bg: #ffffff;
 }
 
 .dark-mode {
-  /* Dark mode colors - Improved contrast and modern palette */
-  --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #e2e8f0;
-  --text-tertiary: #94a3b8;
-  --border-color: #475569;
-  --border-light: #64748b;
-  --shadow-color: rgba(0, 0, 0, 0.4);
-  --shadow-hover: rgba(0, 0, 0, 0.6);
-  --accent-color: #4ade80;
-  --accent-hover: #34d399;
-  --accent-light: #6ee7b7;
-  --success-color: #10b981;
+  /* ============================================
+     DARK MODE - Professional SaaS Dashboard
+     ============================================ */
+  
+  /* Backgrounds */
+  --bg-primary: #0f1419;
+  --bg-secondary: #1a1f2e;
+  --bg-tertiary: #252b3a;
+  --bg-quaternary: #2d3443;
+  
+  /* Text */
+  --text-primary: #e8ecf0;
+  --text-secondary: #b4bcc8;
+  --text-tertiary: #7a8494;
+  --text-inverse: #0f1419;
+  
+  /* Semantic Accents */
+  --accent-success: #22c55e;
+  --accent-success-hover: #16a34a;
+  --accent-info: #3b82f6;
+  --accent-info-hover: #2563eb;
+  --accent-warning: #eab308;
+  --accent-warning-hover: #ca8a04;
+  --accent-error: #ef4444;
+  --accent-error-hover: #dc2626;
+  
+  /* Legacy accent support (green for primary actions) */
+  --accent-color: #22c55e;
+  --accent-hover: #16a34a;
+  --accent-light: #34d399;
+  --success-color: #22c55e;
   --error-color: #ef4444;
-  --warning-color: #f59e0b;
+  --warning-color: #eab308;
   --info-color: #3b82f6;
-  --card-bg: #1e293b;
-  --input-bg: #0f172a;
-  --input-border: #334155;
-  --header-bg: #1e293b;
-  --sidebar-bg: #1e293b;
-  --footer-bg: #1e293b;
+  
+  /* Borders & Dividers */
+  --border-color: #2d3443;
+  --border-secondary: #3a4251;
+  --border-light: #3a4251;
+  --border-subtle: #1f2532;
+  
+  /* Shadows */
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --shadow-hover: rgba(0, 0, 0, 0.3);
+  --shadow-heavy: rgba(0, 0, 0, 0.5);
+  
+  /* Chart Colors */
+  --chart-primary: #3b82f6;
+  --chart-secondary: #22c55e;
+  --chart-tertiary: #eab308;
+  --chart-quaternary: #8b5cf6;
+  --chart-quinary: #f97316;
+  --chart-grid: #2d3443;
+  --chart-axis: #7a8494;
+  
+  /* Component-specific (backward compatibility) */
+  --card-bg: #1a1f2e;
+  --input-bg: #1a1f2e;
+  --input-border: #2d3443;
+  --header-bg: #1a1f2e;
+  --sidebar-bg: #1a1f2e;
+  --footer-bg: #1a1f2e;
 }
 
 /* Apply dark mode to body */
 .dark-mode body {
   background: var(--bg-primary);
-  background-attachment: fixed;
   color: var(--text-primary);
+}
+
+/* Light mode body */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Cards */
@@ -2399,8 +2485,8 @@ label {
 }
 
 .dark-mode .card-form {
-  background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
-  color: white;
+  background: var(--accent-success);
+  color: var(--text-inverse);
 }
 
 /* Inputs and selects */

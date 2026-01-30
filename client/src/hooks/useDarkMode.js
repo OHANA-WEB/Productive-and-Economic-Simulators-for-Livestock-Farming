@@ -35,28 +35,38 @@ export function useDarkMode() {
 
 /**
  * Get chart color scheme based on dark mode
+ * Uses CSS variables for professional, consistent colors
  */
 export function useChartColors() {
   const isDark = useDarkMode();
 
+  // Get computed CSS variables for chart colors
+  const getCSSVar = (varName) => {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  };
+
   return {
-    primary: isDark ? '#60a5fa' : '#3b82f6',
-    secondary: isDark ? '#34d399' : '#10b981',
-    tertiary: isDark ? '#fbbf24' : '#f59e0b',
-    quaternary: isDark ? '#f472b6' : '#ec4899',
-    quinary: isDark ? '#a78bfa' : '#8b5cf6',
-    senary: isDark ? '#fb923c' : '#f97316',
-    text: isDark ? '#e5e7eb' : '#1f2937',
-    textSecondary: isDark ? '#9ca3af' : '#6b7280',
-    grid: isDark ? '#374151' : '#e5e7eb',
+    primary: getCSSVar('--chart-primary') || (isDark ? '#3b82f6' : '#2563eb'),
+    secondary: getCSSVar('--chart-secondary') || (isDark ? '#22c55e' : '#16a34a'),
+    tertiary: getCSSVar('--chart-tertiary') || (isDark ? '#eab308' : '#ca8a04'),
+    quaternary: getCSSVar('--chart-quaternary') || (isDark ? '#8b5cf6' : '#7c3aed'),
+    quinary: getCSSVar('--chart-quinary') || (isDark ? '#f97316' : '#ea580c'),
+    senary: isDark ? '#fb923c' : '#f97316', // Fallback for 6th series
+    text: {
+      primary: getCSSVar('--text-primary') || (isDark ? '#e8ecf0' : '#1a1f2e'),
+      secondary: getCSSVar('--text-secondary') || (isDark ? '#b4bcc8' : '#495057')
+    },
+    textPrimary: getCSSVar('--text-primary') || (isDark ? '#e8ecf0' : '#1a1f2e'),
+    textSecondary: getCSSVar('--text-secondary') || (isDark ? '#b4bcc8' : '#495057'),
+    grid: getCSSVar('--chart-grid') || (isDark ? '#2d3443' : '#e9ecef'),
     tooltip: {
-      bg: isDark ? '#1f2937' : '#ffffff',
-      border: isDark ? '#374151' : '#e5e7eb',
-      text: isDark ? '#e5e7eb' : '#1f2937'
+      bg: getCSSVar('--bg-secondary') || (isDark ? '#1a1f2e' : '#ffffff'),
+      border: getCSSVar('--border-color') || (isDark ? '#2d3443' : '#dee2e6'),
+      text: getCSSVar('--text-primary') || (isDark ? '#e8ecf0' : '#1a1f2e')
     },
     axis: {
-      line: isDark ? '#4b5563' : '#d1d5db',
-      tick: isDark ? '#9ca3af' : '#6b7280'
+      line: getCSSVar('--border-color') || (isDark ? '#2d3443' : '#dee2e6'),
+      tick: getCSSVar('--chart-axis') || (isDark ? '#7a8494' : '#868e96')
     }
   };
 }

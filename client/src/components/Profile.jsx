@@ -193,7 +193,7 @@ function Profile({ user, onUserUpdate }) {
                   disabled
                   className="form-input"
                   placeholder={t('loading') || 'Loading...'}
-                  style={{ backgroundColor: '#f8f9fa', cursor: 'not-allowed' }}
+                  style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
                 />
               ) : (
                 <input
@@ -203,7 +203,7 @@ function Profile({ user, onUserUpdate }) {
                   disabled
                   className="form-input"
                   placeholder={email ? '' : (t('noEmailAvailable') || 'No email available')}
-                  style={{ backgroundColor: '#f8f9fa', cursor: 'not-allowed' }}
+                  style={{ backgroundColor: 'var(--bg-tertiary)', cursor: 'not-allowed' }}
                 />
               )}
               <small className="form-hint">{t('emailCannotChange') || 'Email cannot be changed'}</small>

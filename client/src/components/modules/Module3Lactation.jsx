@@ -341,16 +341,16 @@ function Module3Lactation({ user }) {
         <div style={{ 
           marginTop: '16px', 
           padding: '18px 24px', 
-          background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)', 
+          background: 'rgba(22, 163, 74, 0.1)', 
           borderRadius: '12px',
-          borderLeft: '4px solid #4caf50',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          borderLeft: '4px solid var(--accent-success)',
+          boxShadow: '0 2px 8px var(--shadow-color)',
           marginBottom: '16px'
         }}>
-          <p style={{ margin: '0 0 12px 0', fontSize: '15px', lineHeight: '1.6', color: '#2e7d32' }}>
+          <p style={{ margin: '0 0 12px 0', fontSize: '15px', lineHeight: '1.6', color: 'var(--accent-success)' }}>
             🧬 {t('module3Explanation')}
           </p>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6', color: '#388e3c', fontStyle: 'italic', paddingTop: '12px', borderTop: '1px solid rgba(76, 175, 80, 0.2)' }}>
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)', fontStyle: 'italic', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
             <strong>ECM:</strong> {t('ecmDefinition')}
           </p>
         </div>
@@ -424,31 +424,40 @@ function Module3Lactation({ user }) {
               </div>
 
               {selectedBreed && getBreedData(selectedBreed) && (
-                <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
-                  <h3 style={{ marginTop: 0 }}>{t('baseParameters')}</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                <div style={{ 
+                  marginBottom: '20px', 
+                  padding: '15px', 
+                  background: 'var(--bg-tertiary)', 
+                  borderRadius: '8px',
+                  border: '2px solid var(--accent-error)',
+                  color: 'var(--text-primary)'
+                }}>
+                  <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>{t('baseParameters')} ({t('fromDatabase') || 'from database'})</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', color: 'var(--text-primary)' }}>
                     <div>
-                      <strong>{t('milkKgPerYear')}:</strong> {formatNumber(getBreedData(selectedBreed).milk_kg_yr)}
+                      <strong style={{ color: 'var(--text-primary)' }}>{t('milkKgPerYear')}:</strong> <span style={{ color: 'var(--text-primary)' }}>{formatNumber(getBreedData(selectedBreed).milk_kg_yr)}</span>
                     </div>
                     <div>
-                      <strong>{t('fatPercent')}:</strong> {formatNumber(getBreedData(selectedBreed).fat_pct, 2)}
+                      <strong style={{ color: 'var(--text-primary)' }}>{t('fatPercent')}:</strong> <span style={{ color: 'var(--text-primary)' }}>{formatNumber(getBreedData(selectedBreed).fat_pct, 2)}</span>
                     </div>
                     <div>
-                      <strong>{t('proteinPercent')}:</strong> {formatNumber(getBreedData(selectedBreed).protein_pct, 2)}
+                      <strong style={{ color: 'var(--text-primary)' }}>{t('proteinPercent')}:</strong> <span style={{ color: 'var(--text-primary)' }}>{formatNumber(getBreedData(selectedBreed).protein_pct, 2)}</span>
                     </div>
                     <div>
-                      <strong>{t('lactationDaysAvg')}:</strong> {formatNumber(getBreedData(selectedBreed).lact_days_avg, 0)}
+                      <strong style={{ color: 'var(--text-primary)' }}>{t('lactationDaysAvg')}:</strong> <span style={{ color: 'var(--text-primary)' }}>{formatNumber(getBreedData(selectedBreed).lact_days_avg, 0)}</span>
                     </div>
                     <div>
-                      <strong>{t('lactationsPerLife')}:</strong> {formatNumber(getBreedData(selectedBreed).lactations_lifetime_avg, 1)}
+                      <strong style={{ color: 'var(--text-primary)' }}>{t('lactationsPerLife')}:</strong> <span style={{ color: 'var(--text-primary)' }}>{formatNumber(getBreedData(selectedBreed).lactations_lifetime_avg, 1)}</span>
                     </div>
                     <div>
-                      <strong>{t('ecmLifetime')}:</strong> {formatNumber(getBreedData(selectedBreed).ecm_kg_lifetime, 1)} kg
+                      <strong style={{ color: 'var(--text-primary)' }}>{t('ecmLifetime')}:</strong> <span style={{ color: 'var(--text-primary)' }}>{formatNumber(getBreedData(selectedBreed).ecm_kg_lifetime, 1)} kg</span>
                     </div>
                   </div>
-                  <p style={{ marginTop: '10px', fontSize: '0.9em', color: '#666' }}>
-                    {getBreedData(selectedBreed).notes}
-                  </p>
+                  {getBreedData(selectedBreed).notes && (
+                    <p style={{ marginTop: '10px', fontSize: '0.9em', color: 'var(--text-secondary)' }}>
+                      <strong>{t('source') || 'Source'}:</strong> {getBreedData(selectedBreed).notes}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -537,30 +546,30 @@ function Module3Lactation({ user }) {
                 <div style={{ marginTop: '30px' }}>
                   <h2>{t('results')}</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-                    <div style={{ padding: '15px', background: '#e3f2fd', borderRadius: '8px' }}>
-                      <h3 style={{ marginTop: 0 }}>{t('perAnimalAnnual')}</h3>
-                      <p><strong>{t('milk')}:</strong> {formatNumber(singleResult.milk_kg_yr)} kg {singleResult.approx_liters_note}</p>
-                      <p><strong>{t('fat')}:</strong> {formatNumber(singleResult.fat_kg_yr)} kg ({formatNumber(singleResult.fat_pct, 2)}%)</p>
-                      <p><strong>{t('protein')}:</strong> {formatNumber(singleResult.protein_kg_yr)} kg ({formatNumber(singleResult.protein_pct, 2)}%)</p>
-                      <p><strong>{t('fat')} + {t('protein')}:</strong> {formatNumber(singleResult.fat_plus_protein_kg_yr)} kg</p>
-                      <p><strong>ECM:</strong> {formatNumber(singleResult.ecm_kg_yr)} kg</p>
+                    <div style={{ padding: '15px', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '8px', border: '1px solid var(--accent-info)', color: 'var(--text-primary)' }}>
+                      <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>{t('perAnimalAnnual')}</h3>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('milk')}:</strong> {formatNumber(singleResult.milk_kg_yr)} kg {singleResult.approx_liters_note}</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('fat')}:</strong> {formatNumber(singleResult.fat_kg_yr)} kg ({formatNumber(singleResult.fat_pct, 2)}%)</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('protein')}:</strong> {formatNumber(singleResult.protein_kg_yr)} kg ({formatNumber(singleResult.protein_pct, 2)}%)</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('fat')} + {t('protein')}:</strong> {formatNumber(singleResult.fat_plus_protein_kg_yr)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>ECM:</strong> {formatNumber(singleResult.ecm_kg_yr)} kg</p>
                     </div>
-                    <div style={{ padding: '15px', background: '#e8f5e9', borderRadius: '8px' }}>
-                      <h3 style={{ marginTop: 0 }}>{t('perAnimalLifetime')}</h3>
-                      <p><strong>{t('milk')}:</strong> {formatNumber(singleResult.milk_kg_lifetime)} kg</p>
-                      <p><strong>{t('fat')}:</strong> {formatNumber(singleResult.fat_kg_lifetime)} kg</p>
-                      <p><strong>{t('protein')}:</strong> {formatNumber(singleResult.protein_kg_lifetime)} kg</p>
-                      <p><strong>{t('fat')} + {t('protein')}:</strong> {formatNumber(singleResult.fat_plus_protein_kg_lifetime)} kg</p>
-                      <p><strong>{t('ecmLifetime')}:</strong> {formatNumber(singleResult.ecm_kg_lifetime)} kg</p>
-                      <p><small>({formatNumber(singleResult.lactations_lifetime_avg, 1)} {t('lactationsPerLife')} × {formatNumber(singleResult.lact_days_avg, 0)} {t('days')})</small></p>
+                    <div style={{ padding: '15px', background: 'rgba(22, 163, 74, 0.1)', borderRadius: '8px', border: '1px solid var(--accent-success)', color: 'var(--text-primary)' }}>
+                      <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>{t('perAnimalLifetime')}</h3>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('milk')}:</strong> {formatNumber(singleResult.milk_kg_lifetime)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('fat')}:</strong> {formatNumber(singleResult.fat_kg_lifetime)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('protein')}:</strong> {formatNumber(singleResult.protein_kg_lifetime)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('fat')} + {t('protein')}:</strong> {formatNumber(singleResult.fat_plus_protein_kg_lifetime)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('ecmLifetime')}:</strong> {formatNumber(singleResult.ecm_kg_lifetime)} kg</p>
+                      <p style={{ color: 'var(--text-secondary)' }}><small>({formatNumber(singleResult.lactations_lifetime_avg, 1)} {t('lactationsPerLife')} × {formatNumber(singleResult.lact_days_avg, 0)} {t('days')})</small></p>
                     </div>
-                    <div style={{ padding: '15px', background: '#fff3e0', borderRadius: '8px' }}>
-                      <h3 style={{ marginTop: 0 }}>{t('herdTotal')} ({formatNumber(singleResult.herd_size, 0)} {t('animals')})</h3>
-                      <p><strong>{t('totalMilkPerYear')}:</strong> {formatNumber(singleResult.milk_kg_yr_total)} kg</p>
-                      <p><strong>{t('totalFatPerYear')}:</strong> {formatNumber(singleResult.fat_kg_yr_total)} kg</p>
-                      <p><strong>{t('totalProteinPerYear')}:</strong> {formatNumber(singleResult.protein_kg_yr_total)} kg</p>
-                      <p><strong>{t('totalECMPerYear')}:</strong> {formatNumber(singleResult.ecm_kg_yr_total)} kg</p>
-                      <p><strong>{t('totalECMLifetime')}:</strong> {formatNumber(singleResult.ecm_kg_lifetime_total)} kg</p>
+                    <div style={{ padding: '15px', background: 'rgba(234, 179, 8, 0.1)', borderRadius: '8px', border: '1px solid var(--accent-warning)', color: 'var(--text-primary)' }}>
+                      <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>{t('herdTotal')} ({formatNumber(singleResult.herd_size, 0)} {t('animals')})</h3>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('totalMilkPerYear')}:</strong> {formatNumber(singleResult.milk_kg_yr_total)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('totalFatPerYear')}:</strong> {formatNumber(singleResult.fat_kg_yr_total)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('totalProteinPerYear')}:</strong> {formatNumber(singleResult.protein_kg_yr_total)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('totalECMPerYear')}:</strong> {formatNumber(singleResult.ecm_kg_yr_total)} kg</p>
+                      <p style={{ color: 'var(--text-primary)' }}><strong>{t('totalECMLifetime')}:</strong> {formatNumber(singleResult.ecm_kg_lifetime_total)} kg</p>
                     </div>
                   </div>
                 </div>
@@ -575,8 +584,8 @@ function Module3Lactation({ user }) {
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px', marginBottom: '20px' }}>
                 {/* Breed A */}
-                <div style={{ padding: '20px', background: '#e3f2fd', borderRadius: '8px' }}>
-                  <h3 style={{ marginTop: 0 }}>{t('breedA')}</h3>
+                <div style={{ padding: '20px', background: 'rgba(37, 99, 235, 0.1)', borderRadius: '8px', border: '1px solid var(--accent-info)', color: 'var(--text-primary)' }}>
+                  <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>{t('breedA')}</h3>
                   <div className="form-group">
                     <label>{t('selectBreed')}</label>
                     <select
@@ -639,8 +648,8 @@ function Module3Lactation({ user }) {
                 </div>
 
                 {/* Breed B */}
-                <div style={{ padding: '20px', background: '#f3e5f5', borderRadius: '8px' }}>
-                  <h3 style={{ marginTop: 0 }}>{t('breedB')}</h3>
+                <div style={{ padding: '20px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid var(--chart-quaternary)', color: 'var(--text-primary)' }}>
+                  <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>{t('breedB')}</h3>
                   <div className="form-group">
                     <label>{t('selectBreed')}</label>
                     <select
@@ -846,7 +855,7 @@ function Module3Lactation({ user }) {
                               { breed: comparisonResult.aScenario.breed_name, value: comparisonResult.aScenario.fat_kg_lifetime * comparisonResult.aScenario.herd_size },
                               { breed: comparisonResult.bScenario.breed_name, value: comparisonResult.bScenario.fat_kg_lifetime * comparisonResult.bScenario.herd_size }
                             ].map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={index === 0 ? '#4caf50' : '#2196f3'} />
+                              <Cell key={`cell-${index}`} fill={index === 0 ? chartColors.secondary : chartColors.primary} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -910,7 +919,7 @@ function Module3Lactation({ user }) {
                               { breed: comparisonResult.aScenario.breed_name, value: comparisonResult.aScenario.protein_kg_lifetime * comparisonResult.aScenario.herd_size },
                               { breed: comparisonResult.bScenario.breed_name, value: comparisonResult.bScenario.protein_kg_lifetime * comparisonResult.bScenario.herd_size }
                             ].map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={index === 0 ? '#4caf50' : '#2196f3'} />
+                              <Cell key={`cell-${index}`} fill={index === 0 ? chartColors.secondary : chartColors.primary} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -926,7 +935,7 @@ function Module3Lactation({ user }) {
           {viewMode === 'ranking' && rankingResults && (
             <div className="card">
               <h2>🏆 {t('breedRankingByEcmLifetime')}</h2>
-              <p style={{ color: '#666', marginBottom: '20px' }}>
+              <p style={{ color: 'var(--text-tertiary)', marginBottom: '20px' }}>
                 {t('breedRankingSubtitle')}
               </p>
 
@@ -1017,7 +1026,7 @@ function Module3Lactation({ user }) {
                       <th>{t('proteinPercent')}</th>
                       <th>{t('ecmPerYear')}</th>
                       <th>{t('lactationsPerLife')}</th>
-                      <th style={{ fontWeight: 'bold', background: '#e8f5e9' }}>{t('ecmLifetime')}</th>
+                      <th style={{ fontWeight: 'bold', background: 'rgba(22, 163, 74, 0.1)' }}>{t('ecmLifetime')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1038,7 +1047,7 @@ function Module3Lactation({ user }) {
                         <td>{formatNumber(scenario.protein_pct, 2)}</td>
                         <td>{formatNumber(scenario.ecm_kg_yr)}</td>
                         <td>{formatNumber(scenario.lactations_lifetime_avg, 1)}</td>
-                        <td style={{ fontWeight: 'bold', background: idx < 3 ? '#fff3e0' : '#e8f5e9' }}>
+                        <td style={{ fontWeight: 'bold', background: idx < 3 ? 'rgba(234, 179, 8, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}>
                           {formatNumber(scenario.ecm_kg_lifetime)}
                         </td>
                       </tr>
@@ -1265,44 +1274,45 @@ function Module3Lactation({ user }) {
                   {rankingResults.scenarios[0] && (
                     <div style={{ 
                       padding: '1.5rem', 
-                      background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)', 
+                      background: 'rgba(22, 163, 74, 0.1)', 
                       borderRadius: '8px',
-                      border: '2px solid #4caf50',
-                      marginBottom: '2rem'
+                      border: '2px solid var(--accent-success)',
+                      marginBottom: '2rem',
+                      color: 'var(--text-primary)'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                         <span style={{ fontSize: '2rem' }}>🥇</span>
                         <div>
-                          <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#2e7d32' }}>
+                          <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--accent-success)' }}>
                             {t('bestProducer') || 'Mejor Productora'}: {rankingResults.scenarios[0].breed_name}
                           </h4>
-                          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#388e3c' }}>
+                          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                             {rankingResults.scenarios[0].country_or_system || rankingResults.scenarios[0].validation_source}
                           </p>
                         </div>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
                         <div>
-                          <div style={{ fontSize: '0.875rem', color: '#2e7d32', marginBottom: '0.25rem' }}>
+                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                             {t('ecmProductiveLife') || 'ECM Vida Productiva'}
                           </div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1b5e20' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                             {formatNumber(rankingResults.scenarios[0].ecm_kg_lifetime, 0)} kg
                           </div>
                         </div>
                         <div>
-                          <div style={{ fontSize: '0.875rem', color: '#2e7d32', marginBottom: '0.25rem' }}>
+                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                             {t('milkKgPerYear') || 'Leche (kg/año)'}
                           </div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1b5e20' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                             {formatNumber(rankingResults.scenarios[0].milk_kg_yr, 0)} kg
                           </div>
                         </div>
                         <div>
-                          <div style={{ fontSize: '0.875rem', color: '#2e7d32', marginBottom: '0.25rem' }}>
+                          <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                             {t('lactationsPerLife') || 'Lactancias'}
                           </div>
-                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1b5e20' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                             {formatNumber(rankingResults.scenarios[0].lactations_lifetime_avg, 1)}
                           </div>
                         </div>
@@ -1334,7 +1344,7 @@ function Module3Lactation({ user }) {
             left: 0, 
             right: 0, 
             bottom: 0, 
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+            backgroundColor: 'var(--shadow-heavy)', 
             display: breedDetailModalOpen ? 'flex' : 'none',
             alignItems: 'center',
             justifyContent: 'center',
@@ -1350,13 +1360,14 @@ function Module3Lactation({ user }) {
           <div 
             className="modal-container" 
             style={{ 
-              background: 'white', 
+              background: 'var(--bg-secondary)', 
               borderRadius: '12px', 
               maxWidth: '700px', 
               width: '100%', 
               maxHeight: '90vh', 
               overflowY: 'auto',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 20px 25px -5px var(--shadow-heavy)',
+              color: 'var(--text-primary)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1365,7 +1376,7 @@ function Module3Lactation({ user }) {
               alignItems: 'center', 
               justifyContent: 'space-between', 
               padding: '24px 24px 16px 24px',
-              borderBottom: '1px solid #e5e7eb'
+              borderBottom: '1px solid var(--border-color)'
             }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginBottom: '8px', position: 'relative' }}>
                 <div 
@@ -1375,7 +1386,7 @@ function Module3Lactation({ user }) {
                     borderRadius: '16px', 
                     overflow: 'hidden',
                     flexShrink: 0,
-                    border: '3px solid #4caf50',
+                    border: '3px solid var(--accent-success)',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
                     cursor: imageHover.isHovering ? 'zoom-out' : 'zoom-in'
@@ -1410,8 +1421,8 @@ function Module3Lactation({ user }) {
                     display: 'none',
                     width: '100%', 
                     height: '100%', 
-                    background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
-                    color: 'white',
+                    background: 'var(--accent-success)',
+                    color: 'var(--text-inverse)',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '3rem',
@@ -1447,10 +1458,10 @@ function Module3Lactation({ user }) {
                   )}
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '700', color: '#1f2937' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                     {selectedBreedDetail.breed_name}
                   </h2>
-                  <p style={{ margin: '8px 0 0 0', fontSize: '1rem', color: '#6b7280' }}>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '1rem', color: 'var(--text-secondary)' }}>
                     {selectedBreedDetail.country_or_system || selectedBreedDetail.validation_source || 'N/A'}
                   </p>
                 </div>
@@ -1467,7 +1478,7 @@ function Module3Lactation({ user }) {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
-                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseEnter={(e) => e.target.style.background = 'var(--bg-tertiary)'}
                 onMouseLeave={(e) => e.target.style.background = 'none'}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1479,7 +1490,7 @@ function Module3Lactation({ user }) {
             <div style={{ padding: '24px' }}>
               {/* Production Data Section */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                   {t('productionData') || 'Datos de Producción'}
                 </h3>
                 <div style={{ 
@@ -1489,53 +1500,53 @@ function Module3Lactation({ user }) {
                 }}>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('milkKgPerYear') || 'Leche (kg/año)'}
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.milk_kg_yr, 0)} kg
                     </div>
                   </div>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('lactationDaysAvg') || 'Días de Lactación'}
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.lact_days_avg, 0)} días
                     </div>
                   </div>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('fatPercent') || '% Grasa'}
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.fat_pct, 2)}%
                     </div>
                   </div>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('proteinPercent') || '% Proteína'}
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.protein_pct, 2)}%
                     </div>
                   </div>
@@ -1544,7 +1555,7 @@ function Module3Lactation({ user }) {
 
               {/* ECM Data Section */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                   {t('ecmData') || 'Datos ECM (Energy Corrected Milk)'}
                 </h3>
                 <div style={{ 
@@ -1554,27 +1565,27 @@ function Module3Lactation({ user }) {
                 }}>
                   <div style={{ 
                     padding: '16px', 
-                    background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)', 
+                    background: 'rgba(22, 163, 74, 0.1)', 
                     borderRadius: '8px',
-                    border: '2px solid #4caf50'
+                    border: '2px solid var(--accent-success)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#2e7d32', marginBottom: '4px', fontWeight: '600' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--accent-success)', marginBottom: '4px', fontWeight: '600' }}>
                       {t('ecmPerYear') || 'ECM por Año'}
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1b5e20' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.ecm_kg_yr, 0)} kg
                     </div>
                   </div>
                   <div style={{ 
                     padding: '16px', 
-                    background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)', 
+                    background: 'rgba(234, 179, 8, 0.1)', 
                     borderRadius: '8px',
-                    border: '2px solid #ff9800'
+                    border: '2px solid var(--accent-warning)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#e65100', marginBottom: '4px', fontWeight: '600' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--accent-warning)', marginBottom: '4px', fontWeight: '600' }}>
                       {t('ecmLifetime') || 'ECM Vida Productiva'}
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#bf360c' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.ecm_kg_lifetime, 0)} kg
                     </div>
                   </div>
@@ -1583,7 +1594,7 @@ function Module3Lactation({ user }) {
 
               {/* Lifetime Production Section */}
               <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                   {t('lifetimeProduction') || 'Producción Vitalicia'}
                 </h3>
                 <div style={{ 
@@ -1593,40 +1604,40 @@ function Module3Lactation({ user }) {
                 }}>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('lactationsPerLife') || 'Lactancias'}
                     </div>
-                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.lactations_lifetime_avg, 1)}
                     </div>
                   </div>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('fatKgPerYear') || 'Grasa (kg/año)'}
                     </div>
-                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.fat_kg_yr, 1)} kg
                     </div>
                   </div>
                   <div style={{ 
                     padding: '12px', 
-                    background: '#f9fafb', 
+                    background: 'var(--bg-tertiary)', 
                     borderRadius: '8px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid var(--border-color)'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                       {t('proteinKgPerYear') || 'Proteína (kg/año)'}
                     </div>
-                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1f2937' }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatNumber(selectedBreedDetail.protein_kg_yr, 1)} kg
                     </div>
                   </div>
@@ -1637,14 +1648,14 @@ function Module3Lactation({ user }) {
               {selectedBreedDetail.validation_source && (
                 <div style={{ 
                   padding: '12px', 
-                  background: '#eff6ff', 
+                  background: 'rgba(37, 99, 235, 0.1)', 
                   borderRadius: '8px',
-                  border: '1px solid #bfdbfe'
+                  border: '1px solid var(--accent-info)'
                 }}>
-                  <div style={{ fontSize: '0.875rem', color: '#1e40af', fontWeight: '600', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--accent-info)', fontWeight: '600', marginBottom: '4px' }}>
                     {t('validationSource') || 'Fuente de Validación'}
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#1e3a8a' }}>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
                     {selectedBreedDetail.validation_source}
                   </div>
                 </div>
@@ -1655,14 +1666,14 @@ function Module3Lactation({ user }) {
                 <div style={{ 
                   marginTop: '16px',
                   padding: '12px', 
-                  background: '#fef3c7', 
+                  background: 'rgba(234, 179, 8, 0.1)', 
                   borderRadius: '8px',
-                  border: '1px solid #fde68a'
+                  border: '1px solid var(--accent-warning)'
                 }}>
-                  <div style={{ fontSize: '0.875rem', color: '#92400e', fontWeight: '600', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--accent-warning)', fontWeight: '600', marginBottom: '4px' }}>
                     {t('notes') || 'Notas'}
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#78350f' }}>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>
                     {selectedBreedDetail.notes}
                   </div>
                 </div>
@@ -1671,7 +1682,7 @@ function Module3Lactation({ user }) {
 
             <div style={{ 
               padding: '16px 24px', 
-              borderTop: '1px solid #e5e7eb',
+              borderTop: '1px solid var(--border-color)',
               display: 'flex',
               justifyContent: 'flex-end'
             }}>
