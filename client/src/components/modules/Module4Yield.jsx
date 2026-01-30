@@ -233,9 +233,6 @@ function Module4Yield({ user }) {
   return (
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
-        <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          {t('backToDashboard')}
-        </button>
         <h1 style={{ marginTop: '20px' }}>{t('module4Title')}</h1>
       </header>
 

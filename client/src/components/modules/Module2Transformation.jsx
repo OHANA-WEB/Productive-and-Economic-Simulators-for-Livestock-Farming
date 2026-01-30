@@ -575,9 +575,6 @@ function Module2Transformation({ user }) {
   return (
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
-        <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          {t('backToDashboard')}
-        </button>
         <h1 style={{ marginTop: '20px' }}>{t('module2Title')}</h1>
         <div style={{ 
           marginTop: '16px', 

@@ -77,6 +77,9 @@ function Module3Lactation({ user }) {
   const [loading, setLoading] = useState(false);
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
   const [expandedBreed, setExpandedBreed] = useState({});
+  const [selectedBreedDetail, setSelectedBreedDetail] = useState(null);
+  const [breedDetailModalOpen, setBreedDetailModalOpen] = useState(false);
+  const [imageHover, setImageHover] = useState({ isHovering: false, x: 0, y: 0 });
 
   useEffect(() => {
     loadScenarios();
@@ -85,6 +88,25 @@ function Module3Lactation({ user }) {
       loadScenario(scenarioId);
     }
   }, [scenarioId]);
+
+  // Handle ESC key to close breed detail modal
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && breedDetailModalOpen) {
+        setBreedDetailModalOpen(false);
+      }
+    };
+
+    if (breedDetailModalOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [breedDetailModalOpen]);
 
   const loadBreeds = async () => {
     try {
@@ -315,9 +337,6 @@ function Module3Lactation({ user }) {
   return (
     <div className="container">
       <header style={{ marginBottom: '20px' }}>
-        <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          {t('backToDashboard')}
-        </button>
         <h1 style={{ marginTop: '20px' }}>{t('module3Title')}</h1>
         <div style={{ 
           marginTop: '16px', 
@@ -872,7 +891,15 @@ function Module3Lactation({ user }) {
                 <div className="breed-ranking-list">
                   {rankingResults.scenarios.map((breed, index) => {
                     return (
-                      <div key={breed.breed_key || index} className="breed-ranking-item">
+                      <div 
+                        key={breed.breed_key || index} 
+                        className="breed-ranking-item"
+                        onClick={() => {
+                          setSelectedBreedDetail(breed);
+                          setBreedDetailModalOpen(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <div className="breed-image-container">
                           <img 
                             src={getBreedImage(breed.breed_name)} 
@@ -931,7 +958,14 @@ function Module3Lactation({ user }) {
                   </thead>
                   <tbody>
                     {rankingResults.scenarios.map((scenario, idx) => (
-                      <tr key={scenario.breed_key || idx} style={{ cursor: 'pointer' }} onClick={() => setExpandedBreed(prev => ({ ...prev, [scenario.breed_key]: !prev[scenario.breed_key] }))}>
+                      <tr 
+                        key={scenario.breed_key || idx} 
+                        style={{ cursor: 'pointer' }} 
+                        onClick={() => {
+                          setSelectedBreedDetail(scenario);
+                          setBreedDetailModalOpen(true);
+                        }}
+                      >
                         <td style={{ fontWeight: 'bold' }}>{idx + 1}</td>
                         <td><strong>{scenario.breed_name || scenario.breed_key}</strong></td>
                         <td><small>{scenario.country_or_system}</small></td>
@@ -1225,6 +1259,369 @@ function Module3Lactation({ user }) {
         message={alertModal.message}
         type={alertModal.type}
       />
+
+      {/* Breed Detail Modal */}
+      {selectedBreedDetail && (
+        <div 
+          className="modal-backdrop" 
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+            display: breedDetailModalOpen ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setBreedDetailModalOpen(false);
+            }
+          }}
+        >
+          <div 
+            className="modal-container" 
+            style={{ 
+              background: 'white', 
+              borderRadius: '12px', 
+              maxWidth: '700px', 
+              width: '100%', 
+              maxHeight: '90vh', 
+              overflowY: 'auto',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              padding: '24px 24px 16px 24px',
+              borderBottom: '1px solid #e5e7eb'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginBottom: '8px', position: 'relative' }}>
+                <div 
+                  style={{ 
+                    width: '400px', 
+                    height: '300px', 
+                    borderRadius: '16px', 
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    border: '3px solid #4caf50',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    cursor: imageHover.isHovering ? 'zoom-out' : 'zoom-in'
+                  }}
+                  onMouseEnter={() => setImageHover({ isHovering: true, x: 0, y: 0 })}
+                  onMouseLeave={() => setImageHover({ isHovering: false, x: 0, y: 0 })}
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+                    setImageHover({ isHovering: true, x, y });
+                  }}
+                >
+                  <img 
+                    src={getBreedImage(selectedBreedDetail.breed_name)} 
+                    alt={selectedBreedDetail.breed_name}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover',
+                      transform: imageHover.isHovering ? 'scale(2.5)' : 'scale(1)',
+                      transformOrigin: `${imageHover.x}% ${imageHover.y}%`,
+                      transition: imageHover.isHovering ? 'none' : 'transform 0.3s ease-out'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      const placeholder = e.target.nextSibling;
+                      if (placeholder) placeholder.style.display = 'flex';
+                    }}
+                  />
+                  <div style={{ 
+                    display: 'none',
+                    width: '100%', 
+                    height: '100%', 
+                    background: 'linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)',
+                    color: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '3rem',
+                    fontWeight: '700'
+                  }}>
+                    {getBreedInitials(selectedBreedDetail.breed_name)}
+                  </div>
+                  
+                  {/* Zoom indicator */}
+                  {!imageHover.isHovering && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      background: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M10 7V13M7 10H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {t('hoverToZoom') || 'Pasa el mouse para ampliar'}
+                    </div>
+                  )}
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '700', color: '#1f2937' }}>
+                    {selectedBreedDetail.breed_name}
+                  </h2>
+                  <p style={{ margin: '8px 0 0 0', fontSize: '1rem', color: '#6b7280' }}>
+                    {selectedBreedDetail.country_or_system || selectedBreedDetail.validation_source || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setBreedDetailModalOpen(false)}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  padding: '8px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = 'none'}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div style={{ padding: '24px' }}>
+              {/* Production Data Section */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                  {t('productionData') || 'Datos de Producción'}
+                </h3>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)', 
+                  gap: '12px' 
+                }}>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('milkKgPerYear') || 'Leche (kg/año)'}
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.milk_kg_yr, 0)} kg
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('lactationDaysAvg') || 'Días de Lactación'}
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.lact_days_avg, 0)} días
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('fatPercent') || '% Grasa'}
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.fat_pct, 2)}%
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('proteinPercent') || '% Proteína'}
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.protein_pct, 2)}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ECM Data Section */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                  {t('ecmData') || 'Datos ECM (Energy Corrected Milk)'}
+                </h3>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)', 
+                  gap: '12px' 
+                }}>
+                  <div style={{ 
+                    padding: '16px', 
+                    background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)', 
+                    borderRadius: '8px',
+                    border: '2px solid #4caf50'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#2e7d32', marginBottom: '4px', fontWeight: '600' }}>
+                      {t('ecmPerYear') || 'ECM por Año'}
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1b5e20' }}>
+                      {formatNumber(selectedBreedDetail.ecm_kg_yr, 0)} kg
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '16px', 
+                    background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)', 
+                    borderRadius: '8px',
+                    border: '2px solid #ff9800'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#e65100', marginBottom: '4px', fontWeight: '600' }}>
+                      {t('ecmLifetime') || 'ECM Vida Productiva'}
+                    </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#bf360c' }}>
+                      {formatNumber(selectedBreedDetail.ecm_kg_lifetime, 0)} kg
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lifetime Production Section */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+                  {t('lifetimeProduction') || 'Producción Vitalicia'}
+                </h3>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(3, 1fr)', 
+                  gap: '12px' 
+                }}>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('lactationsPerLife') || 'Lactancias'}
+                    </div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.lactations_lifetime_avg, 1)}
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('fatKgPerYear') || 'Grasa (kg/año)'}
+                    </div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.fat_kg_yr, 1)} kg
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#f9fafb', 
+                    borderRadius: '8px',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '4px' }}>
+                      {t('proteinKgPerYear') || 'Proteína (kg/año)'}
+                    </div>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#1f2937' }}>
+                      {formatNumber(selectedBreedDetail.protein_kg_yr, 1)} kg
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Validation Source */}
+              {selectedBreedDetail.validation_source && (
+                <div style={{ 
+                  padding: '12px', 
+                  background: '#eff6ff', 
+                  borderRadius: '8px',
+                  border: '1px solid #bfdbfe'
+                }}>
+                  <div style={{ fontSize: '0.875rem', color: '#1e40af', fontWeight: '600', marginBottom: '4px' }}>
+                    {t('validationSource') || 'Fuente de Validación'}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#1e3a8a' }}>
+                    {selectedBreedDetail.validation_source}
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedBreedDetail.notes && (
+                <div style={{ 
+                  marginTop: '16px',
+                  padding: '12px', 
+                  background: '#fef3c7', 
+                  borderRadius: '8px',
+                  border: '1px solid #fde68a'
+                }}>
+                  <div style={{ fontSize: '0.875rem', color: '#92400e', fontWeight: '600', marginBottom: '4px' }}>
+                    {t('notes') || 'Notas'}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#78350f' }}>
+                    {selectedBreedDetail.notes}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ 
+              padding: '16px 24px', 
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}>
+              <button 
+                className="btn btn-primary"
+                onClick={() => setBreedDetailModalOpen(false)}
+                style={{ minWidth: '100px' }}
+              >
+                {t('close') || 'Cerrar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
