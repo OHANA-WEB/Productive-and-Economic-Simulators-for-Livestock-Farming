@@ -1648,35 +1648,61 @@ function Module2Transformation({ user }) {
                 </div>
               </div>
 
-              <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h2 style={{ margin: 0, flex: '1 1 100%', minWidth: '200px' }}>{t('visualization')}</h2>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <label style={{ fontWeight: 'bold', fontSize: '0.9em' }}>{t('marginViewMode')}:</label>
-                    <select
-                      value={marginViewMode}
-                      onChange={(e) => setMarginViewMode(e.target.value)}
-                      style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9em' }}
-                    >
-                      <option value="dollars">{t('viewInDollars')}</option>
-                      <option value="percent">{t('viewInPercent')}</option>
-                    </select>
-                    <select
-                      value={chartViewType}
-                      onChange={(e) => setChartViewType(e.target.value)}
-                      style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9em' }}
-                    >
-                      <option value="grouped">{t('chartViewGrouped')}</option>
-                      <option value="donut">{t('chartViewDonut')}</option>
-                      <option value="stacked">{t('chartViewStacked')}</option>
-                      <option value="waterfall">{t('chartViewWaterfall')}</option>
-                    </select>
+              {/* Visualization Chart Card */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <h2 className="chart-title">
+                      <span className="chart-title-icon">📈</span>
+                      {t('visualization')}
+                    </h2>
+                    <p className="chart-subtitle">Compare raw milk vs transformation scenarios visually</p>
+                  </div>
+                  <div className="chart-controls">
+                    <div className="chart-control-group">
+                      <label className="chart-control-label">{t('marginViewMode')}:</label>
+                      <select
+                        className="chart-control-select"
+                        value={marginViewMode}
+                        onChange={(e) => setMarginViewMode(e.target.value)}
+                      >
+                        <option value="dollars">{t('viewInDollars')}</option>
+                        <option value="percent">{t('viewInPercent')}</option>
+                      </select>
+                    </div>
+                    <div className="chart-view-toggle">
+                      <button 
+                        className={`chart-view-btn ${chartViewType === 'grouped' ? 'active' : ''}`}
+                        onClick={() => setChartViewType('grouped')}
+                      >
+                        Bar
+                      </button>
+                      <button 
+                        className={`chart-view-btn ${chartViewType === 'donut' ? 'active' : ''}`}
+                        onClick={() => setChartViewType('donut')}
+                      >
+                        Donut
+                      </button>
+                      <button 
+                        className={`chart-view-btn ${chartViewType === 'stacked' ? 'active' : ''}`}
+                        onClick={() => setChartViewType('stacked')}
+                      >
+                        Stack
+                      </button>
+                      <button 
+                        className={`chart-view-btn ${chartViewType === 'waterfall' ? 'active' : ''}`}
+                        onClick={() => setChartViewType('waterfall')}
+                      >
+                        Flow
+                      </button>
+                    </div>
                   </div>
                 </div>
+                
+                <div className="chart-container">
                 {comparisonData.length > 0 ? (
                   <>
                     {chartViewType === 'grouped' && (() => {
-                      // Transform data based on margin view mode
                       const chartData = marginViewMode === 'percent' ? comparisonData.map(item => {
                         const income = Number(item[t('income')]) || 0;
                         const costs = Number(item[t('totalCosts')]) || 0;
@@ -1690,11 +1716,22 @@ function Module2Transformation({ user }) {
                       }) : comparisonData;
                       
                       return (
-                        <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                            <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                            <YAxis stroke={chartColors.axis.tick} />
+                        <ResponsiveContainer width="100%" height={340}>
+                          <BarChart data={chartData} barCategoryGap="20%">
+                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                            <XAxis 
+                              dataKey="name" 
+                              stroke={chartColors.axis.tick}
+                              tick={{ fill: chartColors.text.secondary, fontSize: 12, fontWeight: 500 }}
+                              tickLine={false}
+                            />
+                            <YAxis 
+                              stroke={chartColors.axis.tick}
+                              tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                              axisLine={false}
+                              tickLine={false}
+                              tickFormatter={(value) => marginViewMode === 'percent' ? `${value}%` : `$${(value/1000).toFixed(0)}k`}
+                            />
                             <Tooltip 
                               formatter={(value) => 
                                 marginViewMode === 'percent' 
@@ -1704,13 +1741,16 @@ function Module2Transformation({ user }) {
                               contentStyle={{ 
                                 backgroundColor: chartColors.tooltip.bg, 
                                 border: `1px solid ${chartColors.tooltip.border}`,
-                                color: chartColors.tooltip.text
+                                borderRadius: '12px',
+                                boxShadow: chartColors.tooltip.shadow,
+                                padding: '12px 16px'
                               }}
+                              cursor={{ fill: chartColors.background.hover }}
                             />
-                            <Legend />
-                            <Bar dataKey={t('income')} fill={chartColors.primary} />
-                            <Bar dataKey={t('totalCosts')} fill={chartColors.tertiary} />
-                            <Bar dataKey={t('margin')} fill={chartColors.secondary} />
+                            <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                            <Bar dataKey={t('income')} fill={chartColors.revenue} radius={[6, 6, 0, 0]} />
+                            <Bar dataKey={t('totalCosts')} fill={chartColors.costs} radius={[6, 6, 0, 0]} />
+                            <Bar dataKey={t('margin')} fill={chartColors.margin} radius={[6, 6, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       );
@@ -1741,9 +1781,8 @@ function Module2Transformation({ user }) {
                         { name: t('salesChannelDistributors'), value: totalProductKg > 0 ? (channelData.distributors.kg / totalProductKg) * 100 : 0 },
                         { name: t('salesChannelThird'), value: totalProductKg > 0 ? (channelData.third.kg / totalProductKg) * 100 : 0 },
                       ].filter(item => item.value > 0);
-                      const COLORS = [chartColors.primary, chartColors.secondary, chartColors.tertiary];
                       return (
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={340}>
                           <PieChart>
                             <Pie
                               data={donutData}
@@ -1751,12 +1790,14 @@ function Module2Transformation({ user }) {
                               cy="50%"
                               labelLine={false}
                               label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                              outerRadius={80}
+                              outerRadius={110}
+                              innerRadius={60}
                               fill={chartColors.primary}
                               dataKey="value"
+                              paddingAngle={3}
                             >
                               {donutData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
                               ))}
                             </Pie>
                             <Tooltip 
@@ -1764,10 +1805,11 @@ function Module2Transformation({ user }) {
                               contentStyle={{ 
                                 backgroundColor: chartColors.tooltip.bg, 
                                 border: `1px solid ${chartColors.tooltip.border}`,
-                                color: chartColors.tooltip.text
+                                borderRadius: '12px',
+                                boxShadow: chartColors.tooltip.shadow
                               }}
                             />
-                            <Legend />
+                            <Legend wrapperStyle={{ paddingTop: '16px' }} />
                           </PieChart>
                         </ResponsiveContainer>
                       );
@@ -1785,27 +1827,42 @@ function Module2Transformation({ user }) {
                         };
                       });
                       return (
-                        <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={productData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                            <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                            <YAxis stroke={chartColors.axis.tick} />
+                        <ResponsiveContainer width="100%" height={340}>
+                          <BarChart data={productData} barCategoryGap="20%">
+                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                            <XAxis 
+                              dataKey="name" 
+                              stroke={chartColors.axis.tick}
+                              tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                              tickLine={false}
+                            />
+                            <YAxis 
+                              stroke={chartColors.axis.tick}
+                              tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
                             <Tooltip 
                               formatter={(value) => `${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} kg`}
                               contentStyle={{ 
                                 backgroundColor: chartColors.tooltip.bg, 
                                 border: `1px solid ${chartColors.tooltip.border}`,
-                                color: chartColors.tooltip.text
+                                borderRadius: '12px',
+                                boxShadow: chartColors.tooltip.shadow
                               }}
+                              cursor={{ fill: chartColors.background.hover }}
                             />
-                            <Legend />
-                            <Bar dataKey="kg" stackId="a" fill={chartColors.primary} name={t('productMix')} />
+                            <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                            <Bar dataKey="kg" stackId="a" fill={chartColors.primary} name={t('productMix')} radius={[8, 8, 0, 0]}>
+                              {productData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
+                              ))}
+                            </Bar>
                           </BarChart>
                         </ResponsiveContainer>
                       );
                     })()}
                     {chartViewType === 'waterfall' && (() => {
-                      // Transform data based on margin view mode
                       const chartData = marginViewMode === 'percent' ? comparisonData.map(item => {
                         const income = Number(item[t('income')]) || 0;
                         const costs = Number(item[t('totalCosts')]) || 0;
@@ -1819,11 +1876,27 @@ function Module2Transformation({ user }) {
                       }) : comparisonData;
                       
                       return (
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={340}>
                           <ComposedChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                            <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                            <YAxis stroke={chartColors.axis.tick} />
+                            <defs>
+                              <linearGradient id="marginAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={chartColors.margin} stopOpacity={0.4}/>
+                                <stop offset="95%" stopColor={chartColors.margin} stopOpacity={0.05}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                            <XAxis 
+                              dataKey="name" 
+                              stroke={chartColors.axis.tick}
+                              tick={{ fill: chartColors.text.secondary, fontSize: 12, fontWeight: 500 }}
+                              tickLine={false}
+                            />
+                            <YAxis 
+                              stroke={chartColors.axis.tick}
+                              tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
                             <Tooltip 
                               formatter={(value) => 
                                 marginViewMode === 'percent' 
@@ -1833,93 +1906,68 @@ function Module2Transformation({ user }) {
                               contentStyle={{ 
                                 backgroundColor: chartColors.tooltip.bg, 
                                 border: `1px solid ${chartColors.tooltip.border}`,
-                                color: chartColors.tooltip.text
+                                borderRadius: '12px',
+                                boxShadow: chartColors.tooltip.shadow
                               }}
                             />
-                            <Legend />
-                            <Bar dataKey={t('income')} fill={chartColors.primary} />
-                            <Bar dataKey={t('totalCosts')} fill={chartColors.tertiary} />
-                            <Area type="monotone" dataKey={t('margin')} fill={chartColors.secondary} stroke={chartColors.secondary} />
+                            <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                            <Bar dataKey={t('income')} fill={chartColors.revenue} radius={[6, 6, 0, 0]} />
+                            <Bar dataKey={t('totalCosts')} fill={chartColors.costs} radius={[6, 6, 0, 0]} />
+                            <Area type="monotone" dataKey={t('margin')} fill="url(#marginAreaGradient)" stroke={chartColors.margin} strokeWidth={3} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       );
                     })()}
                   </>
                 ) : (
-                  <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ color: '#666', margin: 0 }}>{t('noDataToShow')}</p>
+                  <div className="chart-empty">
+                    <div className="chart-empty-icon">📊</div>
+                    <p className="chart-empty-text">{t('noDataToShow')}</p>
                   </div>
                 )}
+                </div>
               </div>
 
               {/* Integrated Dashboard View */}
               {results && (
-                <div className="card" style={{ marginTop: '2rem' }}>
-                  <h2 className="card-section-title">{t('integratedDashboard') || 'Integrated Dashboard'}</h2>
-                  <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>
-                    {t('dashboardDescription') || 'Comprehensive view of all metrics and charts for quick decision-making'}
-                  </p>
+                <div className="chart-card">
+                  <div className="chart-header">
+                    <div>
+                      <h2 className="chart-title">
+                        <span className="chart-title-icon">🎯</span>
+                        {t('integratedDashboard') || 'Integrated Dashboard'}
+                      </h2>
+                      <p className="chart-subtitle">{t('dashboardDescription') || 'Comprehensive view of all metrics and charts for quick decision-making'}</p>
+                    </div>
+                  </div>
                   
                   {/* Key Metrics Grid */}
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-                    gap: '1rem', 
-                    marginBottom: '2rem' 
-                  }}>
-                    <div style={{ 
-                      padding: '1.5rem', 
-                      background: 'var(--bg-secondary)', 
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)'
-                    }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                        {t('totalProductKg') || 'Total Product (kg)'}
-                      </div>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                  <div className="metrics-grid">
+                    <div className="metric-card info">
+                      <div className="metric-label">{t('totalProductKg') || 'Total Product (kg)'}</div>
+                      <div className="metric-value">
                         {Number(results.total_product_kg || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
-                    <div style={{ 
-                      padding: '1.5rem', 
-                      background: 'var(--bg-secondary)', 
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)'
-                    }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                        {t('totalRevenue') || 'Total Revenue'}
-                      </div>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                    <div className="metric-card">
+                      <div className="metric-label">{t('totalRevenue') || 'Total Revenue'}</div>
+                      <div className="metric-value">
                         ${Number(results.total_income || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
-                    <div style={{ 
-                      padding: '1.5rem', 
-                      background: 'var(--bg-secondary)', 
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)'
-                    }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                        {t('totalCosts') || 'Total Costs'}
-                      </div>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                    <div className="metric-card warning">
+                      <div className="metric-label">{t('totalCosts') || 'Total Costs'}</div>
+                      <div className="metric-value">
                         ${Number(results.total_costs || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
-                    <div style={{ 
-                      padding: '1.5rem', 
-                      background: 'var(--bg-secondary)', 
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)'
-                    }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                        {t('grossMargin') || 'Gross Margin'}
-                      </div>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '700', color: results.total_margin >= 0 ? 'var(--success-color)' : 'var(--error-color)' }}>
+                    <div className={`metric-card ${results.total_margin >= 0 ? 'success' : 'error'}`}>
+                      <div className="metric-label">{t('grossMargin') || 'Gross Margin'}</div>
+                      <div className={`metric-value ${results.total_margin >= 0 ? 'success' : 'error'}`}>
                         ${Number(results.total_margin || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                        {results.margin_percentage?.toFixed(2)}%
+                      <div className={`metric-change ${results.margin_percentage >= 0 ? 'positive' : 'negative'}`}>
+                        {results.margin_percentage >= 0 ? '+' : ''}{results.margin_percentage?.toFixed(2)}%
                       </div>
                     </div>
                   </div>

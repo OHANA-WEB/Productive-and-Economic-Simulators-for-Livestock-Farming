@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
 import AlertModal from '../AlertModal';
@@ -335,81 +335,177 @@ function Module4Yield({ user }) {
 
           {results && (
             <>
-              <div className="card">
-                <h2>{t('results')}</h2>
-                <table className="table">
-                  <tbody>
-                    <tr>
-                      <td><strong>{t('totalLiters')}</strong></td>
-                      <td>{Number(results.totalLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('effectiveLiters')}</strong></td>
-                      <td>{Number(results.effectiveLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('convertedProduct')}</strong></td>
-                      <td>{Number(results.convertedProduct || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} {t('units')}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('conversionRate')}</strong></td>
-                      <td>{Number(results.conversionRate || 0).toFixed(4)}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('efficiencyPercentage')}</strong></td>
-                      <td>{Number(results.efficiencyPercentage || 0).toFixed(2)}%</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('wasteLiters')}</strong></td>
-                      <td>{Number(results.wasteLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                    </tr>
-                    <tr>
-                      <td><strong>{t('wastePercentage')}</strong></td>
-                      <td>{Number(results.totalLiters || 0) > 0 ? ((Number(results.wasteLiters || 0) / Number(results.totalLiters || 0)) * 100).toFixed(2) : 0}%</td>
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Key Metrics Cards */}
+              <div className="metrics-grid">
+                <div className="metric-card info">
+                  <div className="metric-label">{t('totalLiters') || 'Total Liters'}</div>
+                  <div className="metric-value">
+                    {Number(results.totalLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} L
+                  </div>
+                </div>
+                <div className="metric-card success">
+                  <div className="metric-label">{t('effectiveLiters') || 'Effective Liters'}</div>
+                  <div className="metric-value success">
+                    {Number(results.effectiveLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} L
+                  </div>
+                </div>
+                <div className="metric-card">
+                  <div className="metric-label">{t('convertedProduct') || 'Converted Product'}</div>
+                  <div className="metric-value">
+                    {Number(results.convertedProduct || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div className={`metric-card ${results.efficiencyPercentage >= 90 ? 'success' : results.efficiencyPercentage >= 70 ? 'warning' : 'error'}`}>
+                  <div className="metric-label">{t('efficiencyPercentage') || 'Efficiency'}</div>
+                  <div className={`metric-value ${results.efficiencyPercentage >= 90 ? 'success' : results.efficiencyPercentage >= 70 ? '' : 'error'}`}>
+                    {Number(results.efficiencyPercentage || 0).toFixed(1)}%
+                  </div>
+                </div>
               </div>
 
-              <div className="card">
-                <h2>{t('visualization')}</h2>
-                <h3 style={{ marginBottom: '15px' }}>{t('milkToProductConversion')}</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={conversionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                    <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                    <YAxis stroke={chartColors.axis.tick} />
-                    <Tooltip 
-                      formatter={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                      contentStyle={{ 
-                        backgroundColor: chartColors.tooltip.bg, 
-                        border: `1px solid ${chartColors.tooltip.border}`,
-                        color: chartColors.tooltip.text
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="value" fill={chartColors.primary} />
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Results Table Card */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <h2 className="chart-title">
+                      <span className="chart-title-icon">📋</span>
+                      {t('results')}
+                    </h2>
+                    <p className="chart-subtitle">Detailed yield and conversion metrics</p>
+                  </div>
+                </div>
+                <div className="chart-container">
+                  <table className="table">
+                    <tbody>
+                      <tr>
+                        <td><strong>{t('totalLiters')}</strong></td>
+                        <td>{Number(results.totalLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} L</td>
+                      </tr>
+                      <tr>
+                        <td><strong>{t('effectiveLiters')}</strong></td>
+                        <td style={{ color: '#16a34a', fontWeight: '600' }}>{Number(results.effectiveLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} L</td>
+                      </tr>
+                      <tr>
+                        <td><strong>{t('convertedProduct')}</strong></td>
+                        <td>{Number(results.convertedProduct || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} {t('units')}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>{t('conversionRate')}</strong></td>
+                        <td>{Number(results.conversionRate || 0).toFixed(4)}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>{t('efficiencyPercentage')}</strong></td>
+                        <td style={{ color: results.efficiencyPercentage >= 90 ? '#16a34a' : results.efficiencyPercentage >= 70 ? '#ca8a04' : '#dc2626', fontWeight: '600' }}>
+                          {Number(results.efficiencyPercentage || 0).toFixed(2)}%
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>{t('wasteLiters')}</strong></td>
+                        <td style={{ color: '#dc2626' }}>{Number(results.wasteLiters || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} L</td>
+                      </tr>
+                      <tr>
+                        <td><strong>{t('wastePercentage')}</strong></td>
+                        <td style={{ color: '#dc2626' }}>
+                          {Number(results.totalLiters || 0) > 0 ? ((Number(results.wasteLiters || 0) / Number(results.totalLiters || 0)) * 100).toFixed(2) : 0}%
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('efficiencyAndConversion')}</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={efficiencyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                    <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                    <YAxis stroke={chartColors.axis.tick} />
-                    <Tooltip 
-                      formatter={(value) => `${value.toFixed(2)}%`}
-                      contentStyle={{ 
-                        backgroundColor: chartColors.tooltip.bg, 
-                        border: `1px solid ${chartColors.tooltip.border}`,
-                        color: chartColors.tooltip.text
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="value" fill={chartColors.secondary} />
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Charts Card */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <h2 className="chart-title">
+                      <span className="chart-title-icon">📊</span>
+                      {t('visualization')}
+                    </h2>
+                    <p className="chart-subtitle">Visual breakdown of conversion and efficiency metrics</p>
+                  </div>
+                </div>
+                
+                <div className="chart-container">
+                  <h3 className="chart-section-title">{t('milkToProductConversion')}</h3>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={conversionData} barCategoryGap="20%">
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke={chartColors.axis.tick}
+                        tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        stroke={chartColors.axis.tick}
+                        tick={{ fill: chartColors.text.secondary, fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip 
+                        formatter={(value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        contentStyle={{ 
+                          backgroundColor: chartColors.tooltip.bg, 
+                          border: `1px solid ${chartColors.tooltip.border}`,
+                          borderRadius: '12px',
+                          boxShadow: chartColors.tooltip.shadow,
+                          padding: '12px 16px'
+                        }}
+                        cursor={{ fill: chartColors.background.hover }}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {conversionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="chart-container" style={{ marginTop: '24px' }}>
+                  <h3 className="chart-section-title">{t('efficiencyAndConversion')}</h3>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={efficiencyData} barCategoryGap="30%">
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke={chartColors.axis.tick}
+                        tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        stroke={chartColors.axis.tick}
+                        tick={{ fill: chartColors.text.secondary, fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                        domain={[0, 100]}
+                        tickFormatter={(value) => `${value}%`}
+                      />
+                      <Tooltip 
+                        formatter={(value) => `${Number(value).toFixed(2)}%`}
+                        contentStyle={{ 
+                          backgroundColor: chartColors.tooltip.bg, 
+                          border: `1px solid ${chartColors.tooltip.border}`,
+                          borderRadius: '12px',
+                          boxShadow: chartColors.tooltip.shadow,
+                          padding: '12px 16px'
+                        }}
+                        cursor={{ fill: chartColors.background.hover }}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {efficiencyData.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.value >= 90 ? chartColors.margin : entry.value >= 70 ? chartColors.quaternary : chartColors.costs} 
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </>
           )}

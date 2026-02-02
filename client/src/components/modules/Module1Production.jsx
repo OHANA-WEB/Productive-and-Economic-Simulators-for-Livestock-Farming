@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import api from '../../utils/api';
 import { useI18n } from '../../i18n/I18nContext';
 import AlertModal from '../AlertModal';
@@ -526,32 +526,57 @@ function Module1Production({ user }) {
 
           {results && (
             <>
-              <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h2 style={{ margin: 0, flex: '1 1 100%', minWidth: '200px' }}>{t('results')}</h2>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: '100%' }}>
+              {/* Key Metrics Cards */}
+              <div className="metrics-grid">
+                <div className={`metric-card ${results.gross_margin >= 0 ? 'success' : 'error'}`}>
+                  <div className="metric-label">{t('totalRevenue') || 'Total Revenue'}</div>
+                  <div className="metric-value">
+                    ${Number(results.total_revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div className="metric-card warning">
+                  <div className="metric-label">{t('totalCosts') || 'Total Costs'}</div>
+                  <div className="metric-value">
+                    ${Number(results.total_costs || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div className={`metric-card ${results.gross_margin >= 0 ? 'success' : 'error'}`}>
+                  <div className="metric-label">{t('grossMargin') || 'Gross Margin'}</div>
+                  <div className={`metric-value ${results.gross_margin >= 0 ? 'success' : 'error'}`}>
+                    ${Number(results.gross_margin || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className={`metric-change ${results.margin_percentage >= 0 ? 'positive' : 'negative'}`}>
+                    {results.margin_percentage >= 0 ? '+' : ''}{results.margin_percentage?.toFixed(2)}%
+                  </div>
+                </div>
+                <div className="metric-card info">
+                  <div className="metric-label">{t('totalProduction') || 'Total Production'}</div>
+                  <div className="metric-value">
+                    {Number(results.total_production_liters || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} L
+                  </div>
+                </div>
+              </div>
+
+              {/* Results Table Card */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <h2 className="chart-title">
+                      <span className="chart-title-icon">📊</span>
+                      {t('results')}
+                    </h2>
+                    <p className="chart-subtitle">{t('dashboardDescription') || 'Detailed breakdown of your production metrics'}</p>
+                  </div>
+                  <div className="chart-controls">
                     {selectedScenario?.results && (
-                      <div style={{ 
-                        padding: '10px 16px', 
-                        background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)', 
-                        borderRadius: '8px', 
-                        fontSize: '0.9em', 
-                        color: '#1b5e20',
-                        fontWeight: '600',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}>
-                        <span style={{ fontSize: '1.2em' }}>✓</span> {t('autoLoadedResults')}
-                      </div>
+                      <span className="chart-badge success">Auto-loaded</span>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <label style={{ fontWeight: 'bold' }}>{t('viewPeriod')}:</label>
+                    <div className="chart-control-group">
+                      <label className="chart-control-label">{t('viewPeriod')}:</label>
                       <select 
+                        className="chart-control-select"
                         value={viewPeriod} 
                         onChange={(e) => setViewPeriod(e.target.value)}
-                        style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc' }}
                       >
                         <option value="daily">{t('daily')}</option>
                         <option value="monthly">{t('monthly')}</option>
@@ -563,12 +588,7 @@ function Module1Production({ user }) {
                 {(() => {
                   const displayValues = getDisplayValues();
                   return (
-                    <>
-                      <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f7ff', borderRadius: '4px' }}>
-                        <p style={{ margin: 0, fontSize: '0.9em', color: '#0066cc' }}>
-                            <strong>{t('note')}:</strong> Mostrando valores para período: <strong>{displayValues.label}</strong>
-                        </p>
-                      </div>
+                    <div className="chart-container">
                       <div className="table-container" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                         <table className="table" style={{ minWidth: '400px' }}>
                         <tbody>
@@ -586,7 +606,9 @@ function Module1Production({ user }) {
                           </tr>
                           <tr>
                             <td><strong>{t('grossMargin')}</strong></td>
-                            <td>${displayValues.margin?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                            <td style={{ color: displayValues.margin >= 0 ? '#16a34a' : '#dc2626', fontWeight: '600' }}>
+                              ${displayValues.margin?.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </td>
                           </tr>
                           <tr>
                             <td><strong>{t('marginPercentage')}</strong></td>
@@ -603,208 +625,289 @@ function Module1Production({ user }) {
                         </tbody>
                       </table>
                       </div>
-                    </>
+                    </div>
                   );
                 })()}
               </div>
 
-              <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h2 style={{ margin: 0 }}>{t('visualization')}</h2>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <label style={{ fontWeight: 'bold', fontSize: '0.9em' }}>{t('marginViewMode')}:</label>
-                    <select
-                      value={marginViewMode}
-                      onChange={(e) => setMarginViewMode(e.target.value)}
-                      style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9em' }}
-                    >
-                      <option value="dollars">{t('viewInDollars')}</option>
-                      <option value="percent">{t('viewInPercent')}</option>
-                    </select>
+              {/* Financial Charts Card */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <h2 className="chart-title">
+                      <span className="chart-title-icon">📈</span>
+                      {t('visualization')}
+                    </h2>
+                    <p className="chart-subtitle">{t('financialOverview') || 'Visual breakdown of income, costs, and margins'}</p>
+                  </div>
+                  <div className="chart-controls">
+                    <div className="chart-control-group">
+                      <label className="chart-control-label">{t('marginViewMode')}:</label>
+                      <select
+                        className="chart-control-select"
+                        value={marginViewMode}
+                        onChange={(e) => setMarginViewMode(e.target.value)}
+                      >
+                        <option value="dollars">{t('viewInDollars')}</option>
+                        <option value="percent">{t('viewInPercent')}</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
-                <h3 style={{ marginBottom: '15px' }}>{t('income')} vs {t('totalCosts')} vs {t('grossMargin')}</h3>
-                {chartData.length > 0 ? (() => {
-                  // Transform data based on margin view mode
-                  const displayChartData = marginViewMode === 'percent' ? chartData.map(item => {
-                    const income = item.name === t('income') ? Number(item.value) : 0;
-                    const costs = item.name === t('totalCosts') ? Number(item.value) : 0;
-                    const margin = item.name === t('margin') ? Number(item.value) : 0;
-                    const totalRevenue = results?.total_revenue || 1;
-                    return {
+                
+                <div className="chart-container">
+                  <h3 className="chart-section-title">{t('income')} vs {t('totalCosts')} vs {t('grossMargin')}</h3>
+                  {chartData.length > 0 ? (() => {
+                    const displayChartData = marginViewMode === 'percent' ? chartData.map(item => {
+                      const costs = item.name === t('totalCosts') ? Number(item.value) : 0;
+                      const margin = item.name === t('margin') ? Number(item.value) : 0;
+                      const totalRevenue = results?.total_revenue || 1;
+                      return {
+                        ...item,
+                        value: totalRevenue > 0 
+                          ? (item.name === t('income') ? 100 : item.name === t('totalCosts') ? (costs / totalRevenue) * 100 : (margin / totalRevenue) * 100)
+                          : 0
+                      };
+                    }) : chartData;
+                    
+                    // Create enhanced chart data with semantic colors
+                    const enhancedChartData = displayChartData.map(item => ({
                       ...item,
-                      value: totalRevenue > 0 
-                        ? (item.name === t('income') ? 100 : item.name === t('totalCosts') ? (costs / totalRevenue) * 100 : (margin / totalRevenue) * 100)
-                        : 0
-                    };
-                  }) : chartData;
-                  
-                  return (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={displayChartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                        <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                        <YAxis stroke={chartColors.axis.tick} />
+                      fill: item.name === t('income') ? chartColors.revenue : 
+                            item.name === t('totalCosts') ? chartColors.costs : 
+                            chartColors.margin
+                    }));
+                    
+                    return (
+                      <ResponsiveContainer width="100%" height={320}>
+                        <BarChart data={enhancedChartData} barCategoryGap="20%">
+                          <defs>
+                            <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={chartColors.revenue} stopOpacity={1}/>
+                              <stop offset="100%" stopColor={chartColors.revenue} stopOpacity={0.7}/>
+                            </linearGradient>
+                            <linearGradient id="costsGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={chartColors.costs} stopOpacity={1}/>
+                              <stop offset="100%" stopColor={chartColors.costs} stopOpacity={0.7}/>
+                            </linearGradient>
+                            <linearGradient id="marginGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={chartColors.margin} stopOpacity={1}/>
+                              <stop offset="100%" stopColor={chartColors.margin} stopOpacity={0.7}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                          <XAxis 
+                            dataKey="name" 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.text.secondary, fontSize: 12, fontWeight: 500 }}
+                            axisLine={{ stroke: chartColors.grid }}
+                            tickLine={false}
+                          />
+                          <YAxis 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.text.secondary, fontSize: 12 }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(value) => marginViewMode === 'percent' ? `${value}%` : `$${(value/1000).toFixed(0)}k`}
+                          />
+                          <Tooltip 
+                            formatter={(value) => 
+                              marginViewMode === 'percent' 
+                                ? `${Number(value || 0).toFixed(1)}%`
+                                : `$${Number(value || 0).toLocaleString(undefined)}`
+                            }
+                            contentStyle={{ 
+                              backgroundColor: chartColors.tooltip.bg, 
+                              border: `1px solid ${chartColors.tooltip.border}`,
+                              borderRadius: '12px',
+                              boxShadow: chartColors.tooltip.shadow,
+                              padding: '12px 16px'
+                            }}
+                            labelStyle={{ color: chartColors.text.primary, fontWeight: 600, marginBottom: '4px' }}
+                            itemStyle={{ color: chartColors.text.secondary }}
+                            cursor={{ fill: chartColors.background.hover }}
+                          />
+                          <Legend 
+                            wrapperStyle={{ paddingTop: '20px' }}
+                            iconType="roundRect"
+                          />
+                          <Bar 
+                            dataKey="value" 
+                            radius={[8, 8, 0, 0]}
+                            fill={chartColors.primary}
+                          >
+                            {enhancedChartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    );
+                  })() : (
+                    <div className="chart-empty">
+                      <div className="chart-empty-icon">📊</div>
+                      <p className="chart-empty-text">{t('noDataToShow')}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="chart-container" style={{ marginTop: '24px' }}>
+                  <h3 className="chart-section-title">{t('costBreakdown')}</h3>
+                  {costBreakdown.length > 0 && costBreakdown.some(item => item.value > 0) ? (
+                    <ResponsiveContainer width="100%" height={320}>
+                      <BarChart data={costBreakdown} barCategoryGap="15%">
+                        <defs>
+                          <linearGradient id="costBarGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={chartColors.secondary} stopOpacity={1}/>
+                            <stop offset="100%" stopColor={chartColors.secondary} stopOpacity={0.7}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                        <XAxis 
+                          dataKey="name" 
+                          stroke={chartColors.axis.tick}
+                          tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                          axisLine={{ stroke: chartColors.grid }}
+                          tickLine={false}
+                          interval={0}
+                          angle={-20}
+                          textAnchor="end"
+                          height={60}
+                        />
+                        <YAxis 
+                          stroke={chartColors.axis.tick}
+                          tick={{ fill: chartColors.text.secondary, fontSize: 12 }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={(value) => `$${value.toFixed(2)}`}
+                        />
                         <Tooltip 
-                          formatter={(value) => 
-                            marginViewMode === 'percent' 
-                              ? `${Number(value || 0).toFixed(1)}%`
-                              : `$${Number(value || 0).toLocaleString(undefined)}`
-                          }
+                          formatter={(value) => `$${value.toFixed(4)} / L`}
                           contentStyle={{ 
                             backgroundColor: chartColors.tooltip.bg, 
                             border: `1px solid ${chartColors.tooltip.border}`,
-                            color: chartColors.tooltip.text
+                            borderRadius: '12px',
+                            boxShadow: chartColors.tooltip.shadow,
+                            padding: '12px 16px'
                           }}
+                          labelStyle={{ color: chartColors.text.primary, fontWeight: 600, marginBottom: '4px' }}
+                          itemStyle={{ color: chartColors.text.secondary }}
+                          cursor={{ fill: chartColors.background.hover }}
                         />
-                        <Legend />
-                        <Bar dataKey="value" fill={chartColors.primary} />
+                        <Legend 
+                          wrapperStyle={{ paddingTop: '20px' }}
+                          iconType="roundRect"
+                        />
+                        <Bar 
+                          dataKey="value" 
+                          fill="url(#costBarGradient)"
+                          radius={[8, 8, 0, 0]}
+                        >
+                          {costBreakdown.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
+                          ))}
+                        </Bar>
                       </BarChart>
                     </ResponsiveContainer>
-                  );
-                })() : (
-                  <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ color: '#666', margin: 0 }}>{t('noDataToShow')}</p>
-                  </div>
-                )}
-
-                <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('costBreakdown')}</h3>
-                {costBreakdown.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={costBreakdown}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                    <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                    <YAxis stroke={chartColors.axis.tick} />
-                    <Tooltip 
-                      formatter={(value) => `$${value.toFixed(2)}`}
-                      contentStyle={{ 
-                        backgroundColor: chartColors.tooltip.bg, 
-                        border: `1px solid ${chartColors.tooltip.border}`,
-                        color: chartColors.tooltip.text
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="value" fill={chartColors.secondary} />
-                  </BarChart>
-                </ResponsiveContainer>
-                ) : (
-                  <div style={{ padding: '40px', textAlign: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ color: '#666', margin: 0 }}>{t('noCostDataToShow')}</p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="chart-empty">
+                      <div className="chart-empty-icon">💰</div>
+                      <p className="chart-empty-text">{t('noCostDataToShow')}</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Integrated Dashboard View */}
-              <div className="card" style={{ marginTop: '2rem' }}>
-                <h2 className="card-section-title">{t('integratedDashboard') || 'Integrated Dashboard'}</h2>
-                <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>
-                  {t('dashboardDescription') || 'Comprehensive view of all metrics and charts for quick decision-making'}
-                </p>
-                
-                {/* Key Metrics Grid */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                  gap: '1rem', 
-                  marginBottom: '2rem' 
-                }}>
-                  <div style={{ 
-                    padding: '1.5rem', 
-                    background: 'var(--bg-secondary)', 
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                      {t('totalRevenue') || 'Total Revenue'}
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                      ${Number(results.total_revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                  </div>
-                  <div style={{ 
-                    padding: '1.5rem', 
-                    background: 'var(--bg-secondary)', 
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                      {t('totalCosts') || 'Total Costs'}
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                      ${Number(results.total_costs || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                  </div>
-                  <div style={{ 
-                    padding: '1.5rem', 
-                    background: 'var(--bg-secondary)', 
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                      {t('grossMargin') || 'Gross Margin'}
-                    </div>
-                    <div style={{ fontSize: '2rem', fontWeight: '700', color: results.gross_margin >= 0 ? 'var(--success-color)' : 'var(--error-color)' }}>
-                      ${Number(results.gross_margin || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                      {results.margin_percentage?.toFixed(2)}%
-                    </div>
+              {/* Integrated Dashboard - Comparison View */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div>
+                    <h2 className="chart-title">
+                      <span className="chart-title-icon">🎯</span>
+                      {t('integratedDashboard') || 'Integrated Dashboard'}
+                    </h2>
+                    <p className="chart-subtitle">{t('dashboardDescription') || 'Comprehensive view of all metrics and charts for quick decision-making'}</p>
                   </div>
                 </div>
 
-                {/* Charts Grid */}
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
-                  gap: '2rem' 
-                }}>
+                <div className="charts-comparison-grid">
                   {/* Income/Costs/Margin Chart */}
-                  <div>
-                    <h3 style={{ marginBottom: '1rem', fontSize: '1.125rem', fontWeight: '600' }}>
-                      {t('financialOverview') || 'Financial Overview'}
-                    </h3>
+                  <div className="chart-container">
+                    <h3 className="chart-section-title">{t('financialOverview') || 'Financial Overview'}</h3>
                     {chartData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                          <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                          <YAxis stroke={chartColors.axis.tick} />
+                      <ResponsiveContainer width="100%" height={280}>
+                        <BarChart data={chartData} barCategoryGap="20%">
+                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                          <XAxis 
+                            dataKey="name" 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                            tickLine={false}
+                          />
+                          <YAxis 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
                           <Tooltip 
                             formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`}
                             contentStyle={{ 
                               backgroundColor: chartColors.tooltip.bg, 
                               border: `1px solid ${chartColors.tooltip.border}`,
-                              color: chartColors.tooltip.text
+                              borderRadius: '12px',
+                              boxShadow: chartColors.tooltip.shadow
                             }}
                           />
-                          <Legend />
-                          <Bar dataKey="value" fill={chartColors.primary} />
+                          <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                            {chartData.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.name === t('income') ? chartColors.revenue : 
+                                      entry.name === t('totalCosts') ? chartColors.costs : 
+                                      chartColors.margin} 
+                              />
+                            ))}
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     ) : null}
                   </div>
 
                   {/* Cost Breakdown Chart */}
-                  <div>
-                    <h3 style={{ marginBottom: '1rem', fontSize: '1.125rem', fontWeight: '600' }}>
-                      {t('costBreakdown') || 'Cost Breakdown'}
-                    </h3>
+                  <div className="chart-container">
+                    <h3 className="chart-section-title">{t('costBreakdown') || 'Cost Breakdown'}</h3>
                     {costBreakdown.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={costBreakdown}>
-                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                          <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                          <YAxis stroke={chartColors.axis.tick} />
+                      <ResponsiveContainer width="100%" height={280}>
+                        <BarChart data={costBreakdown} barCategoryGap="15%">
+                          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                          <XAxis 
+                            dataKey="name" 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.text.secondary, fontSize: 10 }}
+                            tickLine={false}
+                            interval={0}
+                          />
+                          <YAxis 
+                            stroke={chartColors.axis.tick}
+                            tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
                           <Tooltip 
-                            formatter={(value) => `$${value.toFixed(2)}`}
+                            formatter={(value) => `$${value.toFixed(4)}`}
                             contentStyle={{ 
                               backgroundColor: chartColors.tooltip.bg, 
                               border: `1px solid ${chartColors.tooltip.border}`,
-                              color: chartColors.tooltip.text
+                              borderRadius: '12px',
+                              boxShadow: chartColors.tooltip.shadow
                             }}
                           />
-                          <Legend />
-                          <Bar dataKey="value" fill={chartColors.secondary} />
+                          <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                            {costBreakdown.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
+                            ))}
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     ) : null}

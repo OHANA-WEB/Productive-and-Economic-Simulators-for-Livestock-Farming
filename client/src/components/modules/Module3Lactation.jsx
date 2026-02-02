@@ -933,11 +933,16 @@ function Module3Lactation({ user }) {
 
           {/* Ranking View */}
           {viewMode === 'ranking' && rankingResults && (
-            <div className="card">
-              <h2>🏆 {t('breedRankingByEcmLifetime')}</h2>
-              <p style={{ color: 'var(--text-tertiary)', marginBottom: '20px' }}>
-                {t('breedRankingSubtitle')}
-              </p>
+            <div className="chart-card">
+              <div className="chart-header">
+                <div>
+                  <h2 className="chart-title">
+                    <span className="chart-title-icon">🏆</span>
+                    {t('breedRankingByEcmLifetime')}
+                  </h2>
+                  <p className="chart-subtitle">{t('breedRankingSubtitle')}</p>
+                </div>
+              </div>
 
               {/* Breed Ranking Panel with Images */}
               <div className="breed-ranking-panel" style={{ marginBottom: '2rem' }}>
@@ -1057,33 +1062,70 @@ function Module3Lactation({ user }) {
               </div>
 
               {/* Ranking Chart - Show ALL breeds */}
-              <ResponsiveContainer width="100%" height={Math.max(400, rankingResults.scenarios.length * 30)}>
-                <BarChart data={rankingResults.scenarios} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                  <XAxis type="number" stroke={chartColors.axis.tick} />
-                  <YAxis dataKey="breed_name" type="category" width={150} stroke={chartColors.axis.tick} />
-                  <Tooltip 
-                    formatter={(value) => `${formatNumber(value, 0)} kg`}
-                    contentStyle={{ 
-                      backgroundColor: chartColors.tooltip.bg, 
-                      border: `1px solid ${chartColors.tooltip.border}`,
-                      color: chartColors.tooltip.text
-                    }} 
-                  />
-                  <Legend />
-                  <Bar dataKey="ecm_kg_lifetime" fill={chartColors.primary} name="ECM Lifetime (kg)" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="chart-container">
+                <h3 className="chart-section-title">ECM Lifetime Production by Breed</h3>
+                <ResponsiveContainer width="100%" height={Math.max(450, rankingResults.scenarios.length * 35)}>
+                  <BarChart data={rankingResults.scenarios} layout="horizontal" barCategoryGap="15%">
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                    <XAxis 
+                      type="number" 
+                      stroke={chartColors.axis.tick}
+                      tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
+                    />
+                    <YAxis 
+                      dataKey="breed_name" 
+                      type="category" 
+                      width={150} 
+                      stroke={chartColors.axis.tick}
+                      tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      formatter={(value) => `${formatNumber(value, 0)} kg ECM`}
+                      contentStyle={{ 
+                        backgroundColor: chartColors.tooltip.bg, 
+                        border: `1px solid ${chartColors.tooltip.border}`,
+                        borderRadius: '12px',
+                        boxShadow: chartColors.tooltip.shadow,
+                        padding: '12px 16px'
+                      }}
+                      cursor={{ fill: chartColors.background.hover }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                    <Bar 
+                      dataKey="ecm_kg_lifetime" 
+                      fill={chartColors.primary} 
+                      name="ECM Lifetime (kg)"
+                      radius={[0, 8, 8, 0]}
+                    >
+                      {rankingResults.scenarios.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={index === 0 ? chartColors.margin : index < 3 ? chartColors.quaternary : chartColors.primary} 
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
 
           {/* Integrated Dashboard for Module 3 */}
           {(comparisonResult || rankingResults) && (
-            <div className="card" style={{ marginTop: '2rem' }}>
-              <h2 className="card-section-title">{t('integratedDashboard') || 'Integrated Dashboard'}</h2>
-              <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>
-                {t('dashboardDescription') || 'Comprehensive view of all metrics and charts for quick decision-making'}
-              </p>
+            <div className="chart-card">
+              <div className="chart-header">
+                <div>
+                  <h2 className="chart-title">
+                    <span className="chart-title-icon">🎯</span>
+                    {t('integratedDashboard') || 'Integrated Dashboard'}
+                  </h2>
+                  <p className="chart-subtitle">{t('dashboardDescription') || 'Comprehensive view of all metrics and charts for quick decision-making'}</p>
+                </div>
+              </div>
 
               {comparisonResult && (
                 <>

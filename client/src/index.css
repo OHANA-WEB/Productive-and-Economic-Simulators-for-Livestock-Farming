@@ -3274,3 +3274,498 @@ body {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
 }
+
+/* ========================================
+   ENHANCED CHART STYLES
+   ======================================== */
+
+/* Chart Container Card */
+.chart-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faf7 100%);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(45, 80, 22, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(45, 80, 22, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-card:hover {
+  box-shadow: 0 8px 32px rgba(45, 80, 22, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Chart Header */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(45, 80, 22, 0.08);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a3d0f;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.3px;
+}
+
+.chart-title-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: linear-gradient(135deg, rgba(45, 80, 22, 0.1) 0%, rgba(74, 124, 42, 0.15) 100%);
+}
+
+.chart-subtitle {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 6px 0 0 0;
+  font-weight: 400;
+}
+
+/* Chart Controls */
+.chart-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.chart-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-control-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+}
+
+.chart-control-select {
+  padding: 8px 32px 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #2d3748;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%232d5016' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.chart-control-select:hover {
+  border-color: #2d5016;
+  background-color: #f8faf7;
+}
+
+.chart-control-select:focus {
+  outline: none;
+  border-color: #2d5016;
+  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
+}
+
+/* Chart Container */
+.chart-container {
+  background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(248,250,247,0.5) 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(45, 80, 22, 0.06);
+}
+
+/* Chart Section Title */
+.chart-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 16px 0;
+  padding-left: 12px;
+  border-left: 3px solid #2d5016;
+}
+
+/* Chart Legend Enhancement */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(45, 80, 22, 0.08);
+  flex-wrap: wrap;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.chart-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+/* Chart Empty State */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #f8faf7 0%, #f0f5ec 100%);
+  border-radius: 16px;
+  border: 2px dashed rgba(45, 80, 22, 0.15);
+}
+
+.chart-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.chart-empty-text {
+  font-size: 1rem;
+  color: #718096;
+  text-align: center;
+  margin: 0;
+}
+
+/* KPI/Metric Cards */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fafcf9 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(45, 80, 22, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #2d5016 0%, #4a7c2a 100%);
+  border-radius: 4px 0 0 4px;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(45, 80, 22, 0.12);
+}
+
+.metric-card.success::before {
+  background: linear-gradient(180deg, #16a34a 0%, #22c55e 100%);
+}
+
+.metric-card.warning::before {
+  background: linear-gradient(180deg, #ca8a04 0%, #eab308 100%);
+}
+
+.metric-card.error::before {
+  background: linear-gradient(180deg, #dc2626 0%, #ef4444 100%);
+}
+
+.metric-card.info::before {
+  background: linear-gradient(180deg, #2563eb 0%, #3b82f6 100%);
+}
+
+.metric-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1a3d0f;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.metric-value.success {
+  color: #16a34a;
+}
+
+.metric-value.warning {
+  color: #ca8a04;
+}
+
+.metric-value.error {
+  color: #dc2626;
+}
+
+.metric-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.metric-change.positive {
+  color: #16a34a;
+}
+
+.metric-change.negative {
+  color: #dc2626;
+}
+
+/* Chart Tooltip Enhancement - Custom class for Recharts */
+.recharts-tooltip-wrapper {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+/* Comparison View Grid */
+.charts-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+/* Chart Badge */
+.chart-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.chart-badge.primary {
+  background: rgba(45, 80, 22, 0.1);
+  color: #2d5016;
+}
+
+.chart-badge.success {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+.chart-badge.warning {
+  background: rgba(202, 138, 4, 0.1);
+  color: #ca8a04;
+}
+
+.chart-badge.info {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+/* Chart View Toggle */
+.chart-view-toggle {
+  display: inline-flex;
+  border-radius: 10px;
+  padding: 4px;
+  background: #f1f5f0;
+  gap: 4px;
+}
+
+.chart-view-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chart-view-btn:hover {
+  color: #2d5016;
+  background: rgba(45, 80, 22, 0.05);
+}
+
+.chart-view-btn.active {
+  background: #fff;
+  color: #2d5016;
+  box-shadow: 0 2px 8px rgba(45, 80, 22, 0.15);
+}
+
+/* Responsive Charts */
+@media (max-width: 768px) {
+  .chart-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-controls {
+    width: 100%;
+  }
+
+  .chart-control-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    padding: 12px;
+  }
+}
+
+/* Dark Mode Chart Styles */
+.dark-mode .chart-card {
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(26, 31, 46, 0.95) 100%);
+  border-color: var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .chart-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .chart-title-icon {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(34, 197, 94, 0.15) 100%);
+}
+
+.dark-mode .chart-subtitle {
+  color: var(--text-secondary);
+}
+
+.dark-mode .chart-section-title {
+  color: var(--text-primary);
+  border-left-color: var(--chart-primary);
+}
+
+.dark-mode .chart-container {
+  background: linear-gradient(180deg, rgba(26, 31, 46, 0.5) 0%, rgba(26, 31, 46, 0.3) 100%);
+  border-color: var(--border-color);
+}
+
+.dark-mode .chart-control-label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .chart-control-select {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%233b82f6' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+}
+
+.dark-mode .chart-control-select:hover {
+  border-color: var(--chart-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.dark-mode .chart-empty {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border-color: var(--border-color);
+}
+
+.dark-mode .chart-empty-text {
+  color: var(--text-secondary);
+}
+
+.dark-mode .chart-legend-item {
+  color: var(--text-secondary);
+}
+
+.dark-mode .metric-card {
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(26, 31, 46, 0.95) 100%);
+  border-color: var(--border-color);
+}
+
+.dark-mode .metric-label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .metric-value {
+  color: var(--text-primary);
+}
+
+.dark-mode .chart-view-toggle {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .chart-view-btn {
+  color: var(--text-secondary);
+}
+
+.dark-mode .chart-view-btn:hover {
+  color: var(--chart-primary);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.dark-mode .chart-view-btn.active {
+  background: var(--bg-secondary);
+  color: var(--chart-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .chart-badge.primary {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.dark-mode .chart-badge.success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.dark-mode .chart-badge.warning {
+  background: rgba(234, 179, 8, 0.15);
+  color: #fcd34d;
+}
+
+.dark-mode .chart-badge.info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}

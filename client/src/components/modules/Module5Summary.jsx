@@ -133,17 +133,26 @@ function Module5Summary({ user }) {
           {t('selectMultipleScenarios')}
         </p>
 
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', marginBottom: '24px' }}>
           {scenarios.map(scenario => (
             <label
               key={scenario.id}
               style={{
-                display: 'block',
-                padding: '10px',
-                marginBottom: '10px',
-                background: selectedScenarios.includes(scenario.id) ? '#e3f2fd' : '#f5f5f5',
-                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '16px 20px',
+                background: selectedScenarios.includes(scenario.id) 
+                  ? 'linear-gradient(135deg, rgba(45, 80, 22, 0.08) 0%, rgba(74, 124, 42, 0.12) 100%)' 
+                  : 'linear-gradient(135deg, #f8faf7 0%, #f5f5f5 100%)',
+                borderRadius: '12px',
                 cursor: 'pointer',
+                border: selectedScenarios.includes(scenario.id) 
+                  ? '2px solid #2d5016' 
+                  : '2px solid transparent',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: selectedScenarios.includes(scenario.id) 
+                  ? '0 4px 12px rgba(45, 80, 22, 0.15)' 
+                  : '0 2px 6px rgba(0, 0, 0, 0.04)',
               }}
             >
               <input
@@ -156,9 +165,20 @@ function Module5Summary({ user }) {
                     setSelectedScenarios(selectedScenarios.filter(id => id !== scenario.id));
                   }
                 }}
-                style={{ marginRight: '10px' }}
+                style={{ 
+                  marginRight: '14px',
+                  width: '20px',
+                  height: '20px',
+                  accentColor: '#2d5016',
+                  cursor: 'pointer'
+                }}
               />
-              {scenario.name} ({t(`moduleTypes.${scenario.type}`) || scenario.type})
+              <div>
+                <div style={{ fontWeight: '600', color: '#1a3d0f', fontSize: '0.95rem' }}>{scenario.name}</div>
+                <div style={{ fontSize: '0.8rem', color: '#718096', marginTop: '2px' }}>
+                  {t(`moduleTypes.${scenario.type}`) || scenario.type}
+                </div>
+              </div>
             </label>
           ))}
         </div>
@@ -236,88 +256,168 @@ function Module5Summary({ user }) {
             </table>
           </div>
 
-          <div className="card">
-            <h2>{t('comparativeVisualization')}</h2>
-            <h3 style={{ marginBottom: '15px' }}>{t('incomeCostsAndMargins')}</h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                <XAxis dataKey="nameWithLabel" angle={-45} textAnchor="end" height={100} stroke={chartColors.axis.tick} />
-                <YAxis stroke={chartColors.axis.tick} />
-                <Tooltip 
-                  formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`}
-                  contentStyle={{ 
-                    backgroundColor: chartColors.tooltip.bg, 
-                    border: `1px solid ${chartColors.tooltip.border}`,
-                    color: chartColors.tooltip.text
-                  }}
-                />
-                <Legend />
-                <Bar dataKey={t('income')} fill={chartColors.primary} />
-                <Bar dataKey={t('totalCosts')} fill={chartColors.tertiary} />
-                <Bar dataKey={t('margin')} fill={chartColors.secondary} />
-              </BarChart>
-            </ResponsiveContainer>
+          {/* Comparative Visualization Chart Card */}
+          <div className="chart-card">
+            <div className="chart-header">
+              <div>
+                <h2 className="chart-title">
+                  <span className="chart-title-icon">📊</span>
+                  {t('comparativeVisualization')}
+                </h2>
+                <p className="chart-subtitle">Visual comparison of financial metrics across scenarios</p>
+              </div>
+            </div>
+            
+            <div className="chart-container">
+              <h3 className="chart-section-title">{t('incomeCostsAndMargins')}</h3>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={comparisonData} barCategoryGap="15%">
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={-20} 
+                    textAnchor="end" 
+                    height={80} 
+                    stroke={chartColors.axis.tick}
+                    tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    stroke={chartColors.axis.tick}
+                    tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`}
+                    contentStyle={{ 
+                      backgroundColor: chartColors.tooltip.bg, 
+                      border: `1px solid ${chartColors.tooltip.border}`,
+                      borderRadius: '12px',
+                      boxShadow: chartColors.tooltip.shadow,
+                      padding: '12px 16px'
+                    }}
+                    cursor={{ fill: chartColors.background.hover }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                  <Bar dataKey={t('income')} fill={chartColors.revenue} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey={t('totalCosts')} fill={chartColors.costs} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey={t('margin')} fill={chartColors.margin} radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('incomeComparison')}</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                <XAxis dataKey="name" stroke={chartColors.axis.tick} />
-                <YAxis stroke={chartColors.axis.tick} />
-                <Tooltip 
-                  formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`}
-                  contentStyle={{ 
-                    backgroundColor: chartColors.tooltip.bg, 
-                    border: `1px solid ${chartColors.tooltip.border}`,
-                    color: chartColors.tooltip.text
-                  }}
-                />
-                <Legend />
-                <Line type="monotone" dataKey={t('income')} stroke={chartColors.primary} strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="chart-container" style={{ marginTop: '24px' }}>
+              <h3 className="chart-section-title">{t('incomeComparison')}</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="incomeLineGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartColors.revenue} stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor={chartColors.revenue} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke={chartColors.axis.tick}
+                    tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    stroke={chartColors.axis.tick}
+                    tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip 
+                    formatter={(value) => `$${Number(value || 0).toLocaleString(undefined)}`}
+                    contentStyle={{ 
+                      backgroundColor: chartColors.tooltip.bg, 
+                      border: `1px solid ${chartColors.tooltip.border}`,
+                      borderRadius: '12px',
+                      boxShadow: chartColors.tooltip.shadow
+                    }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '16px' }} iconType="line" />
+                  <Line 
+                    type="monotone" 
+                    dataKey={t('income')} 
+                    stroke={chartColors.revenue} 
+                    strokeWidth={3}
+                    dot={{ fill: chartColors.revenue, strokeWidth: 2, r: 5 }}
+                    activeDot={{ r: 8, strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
 
-            <h3 style={{ marginTop: '30px', marginBottom: '15px' }}>{t('marginsByScenario')}</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                <XAxis dataKey="nameWithLabel" angle={-45} textAnchor="end" height={100} stroke={chartColors.axis.tick} />
-                <YAxis stroke={chartColors.axis.tick} />
-                <Tooltip 
-                  formatter={(value) => `${Number(value || 0).toFixed(2)}%`}
-                  contentStyle={{ 
-                    backgroundColor: chartColors.tooltip.bg, 
-                    border: `1px solid ${chartColors.tooltip.border}`,
-                    color: chartColors.tooltip.text
-                  }}
-                />
-                <Legend />
-                <Bar dataKey={t('marginPercentage')} fill={chartColors.secondary} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="chart-container" style={{ marginTop: '24px' }}>
+              <h3 className="chart-section-title">{t('marginsByScenario')}</h3>
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={comparisonData} barCategoryGap="25%">
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={-20} 
+                    textAnchor="end" 
+                    height={80} 
+                    stroke={chartColors.axis.tick}
+                    tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    stroke={chartColors.axis.tick}
+                    tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => `${value}%`}
+                  />
+                  <Tooltip 
+                    formatter={(value) => `${Number(value || 0).toFixed(2)}%`}
+                    contentStyle={{ 
+                      backgroundColor: chartColors.tooltip.bg, 
+                      border: `1px solid ${chartColors.tooltip.border}`,
+                      borderRadius: '12px',
+                      boxShadow: chartColors.tooltip.shadow
+                    }}
+                    cursor={{ fill: chartColors.background.hover }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="roundRect" />
+                  <Bar dataKey={t('marginPercentage')} fill={chartColors.margin} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           {/* Product Mix and Channel Mix Visualization */}
           {comparison && comparison.length > 0 && (
-            <div className="card">
-              <h2>Análisis de Mix</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px', marginTop: '20px' }}>
+            <div className="chart-card">
+              <div className="chart-header">
+                <div>
+                  <h2 className="chart-title">
+                    <span className="chart-title-icon">🥧</span>
+                    Análisis de Mix
+                  </h2>
+                  <p className="chart-subtitle">Product and channel distribution breakdown</p>
+                </div>
+              </div>
+              
+              <div className="charts-comparison-grid">
                 {/* Product Mix Visualization */}
                 {comparison.some(item => item.results.transformationMetrics?.productsBreakdown) && (
-                  <div>
-                    <h3 style={{ marginBottom: '15px' }}>Mix de Productos por Escenario</h3>
+                  <div className="chart-container">
+                    <h3 className="chart-section-title">Mix de Productos por Escenario</h3>
                     {comparison.filter(item => item.results.transformationMetrics?.productsBreakdown).map((item, idx) => {
                       const productsData = item.results.transformationMetrics.productsBreakdown.map(p => ({
                         name: p.product_type_custom || p.product_type || 'Producto',
                         value: p.distribution_percentage || 0,
                       }));
                       
-                      const COLORS = [chartColors.primary, chartColors.secondary, chartColors.tertiary, chartColors.quaternary, chartColors.quinary, chartColors.senary];
-                      
                       return (
-                        <div key={idx} style={{ marginBottom: '30px' }}>
-                          <h4 style={{ fontSize: '0.95em', marginBottom: '10px' }}>{item.scenario.name}</h4>
+                        <div key={idx} style={{ marginBottom: '24px' }}>
+                          <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '12px', color: chartColors.text.primary }}>{item.scenario.name}</h4>
                           <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
                               <Pie
@@ -326,19 +426,22 @@ function Module5Summary({ user }) {
                                 cy="50%"
                                 labelLine={false}
                                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
+                                outerRadius={85}
+                                innerRadius={45}
                                 fill={chartColors.primary}
                                 dataKey="value"
+                                paddingAngle={2}
                               >
                                 {productsData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                  <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
                                 ))}
                               </Pie>
                               <Tooltip 
                                 contentStyle={{ 
                                   backgroundColor: chartColors.tooltip.bg, 
                                   border: `1px solid ${chartColors.tooltip.border}`,
-                                  color: chartColors.tooltip.text
+                                  borderRadius: '12px',
+                                  boxShadow: chartColors.tooltip.shadow
                                 }}
                               />
                             </PieChart>
@@ -351,10 +454,9 @@ function Module5Summary({ user }) {
 
                 {/* Channel Mix Visualization */}
                 {comparison.some(item => item.results.transformationMetrics?.productsBreakdown) && (
-                  <div>
-                    <h3 style={{ marginBottom: '15px' }}>Mix de Canales por Escenario</h3>
+                  <div className="chart-container">
+                    <h3 className="chart-section-title">Mix de Canales por Escenario</h3>
                     {comparison.filter(item => item.results.transformationMetrics?.productsBreakdown).map((item, idx) => {
-                      // Aggregate channels across all products by kg
                       let totalKgDirect = 0;
                       let totalKgDistributors = 0;
                       let totalKgThird = 0;
@@ -369,7 +471,6 @@ function Module5Summary({ user }) {
                         }
                       });
                       
-                      // Calculate percentages based on total kg
                       const channelsData = [];
                       if (totalKg > 0) {
                         if (totalKgDirect > 0) {
@@ -383,11 +484,9 @@ function Module5Summary({ user }) {
                         }
                       }
                       
-                      const COLORS_CHANNELS = [chartColors.primary, chartColors.secondary, chartColors.tertiary];
-                      
                       return (
-                        <div key={idx} style={{ marginBottom: '30px' }}>
-                          <h4 style={{ fontSize: '0.95em', marginBottom: '10px' }}>{item.scenario.name}</h4>
+                        <div key={idx} style={{ marginBottom: '24px' }}>
+                          <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '12px', color: chartColors.text.primary }}>{item.scenario.name}</h4>
                           <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
                               <Pie
@@ -396,19 +495,22 @@ function Module5Summary({ user }) {
                                 cy="50%"
                                 labelLine={false}
                                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
+                                outerRadius={85}
+                                innerRadius={45}
                                 fill={chartColors.primary}
                                 dataKey="value"
+                                paddingAngle={2}
                               >
                                 {channelsData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={COLORS_CHANNELS[index % COLORS_CHANNELS.length]} />
+                                  <Cell key={`cell-${index}`} fill={chartColors.palette[index % chartColors.palette.length]} />
                                 ))}
                               </Pie>
                               <Tooltip 
                                 contentStyle={{ 
                                   backgroundColor: chartColors.tooltip.bg, 
                                   border: `1px solid ${chartColors.tooltip.border}`,
-                                  color: chartColors.tooltip.text
+                                  borderRadius: '12px',
+                                  boxShadow: chartColors.tooltip.shadow
                                 }}
                               />
                             </PieChart>
