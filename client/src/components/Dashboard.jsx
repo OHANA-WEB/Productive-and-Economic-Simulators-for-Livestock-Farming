@@ -308,7 +308,6 @@ function Dashboard({ user, onLogout }) {
               <option value="all">{t('allTypes')}</option>
               <option value="milk_sale">{t('moduleTypes.milk_sale')}</option>
               <option value="transformation">{t('moduleTypes.transformation')}</option>
-              <option value="lactation">{t('moduleTypes.lactation')}</option>
               <option value="yield">{t('moduleTypes.yield')}</option>
               <option value="summary">{t('moduleTypes.summary')}</option>
             </select>
@@ -441,7 +440,6 @@ function Dashboard({ user, onLogout }) {
             >
               <option value="milk_sale">{t('moduleTypes.milk_sale')}</option>
               <option value="transformation">{t('moduleTypes.transformation')}</option>
-              <option value="lactation">{t('moduleTypes.lactation')}</option>
               <option value="yield">{t('moduleTypes.yield')}</option>
               <option value="summary">{t('moduleTypes.summary')}</option>
             </select>

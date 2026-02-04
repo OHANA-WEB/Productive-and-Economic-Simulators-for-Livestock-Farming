@@ -7,17 +7,7 @@
   },
   "scripts": {
     "dev": "node --watch index.js",
-    "start": "node index.js",
-    "migrate": "node scripts/migrate.js",
-    "migrate:sales-channels": "node scripts/migrate-sales-channels.js",
-    "migrate:packaging-cost": "node scripts/migrate-packaging-cost.js",
-    "migrate:product-mix": "node scripts/migrate-product-mix.js",
-    "migrate:scientific-lactation": "node scripts/migrate-scientific-lactation.js",
-    "migrate:email-verification": "node scripts/migrate-email-verification.js",
-    "migrate:breed-nomenclature": "node scripts/migrate-breed-nomenclature.js",
-    "verify:email-verification": "node scripts/verify-email-verification-migration.js",
-    "seed:breeds": "node scripts/seed-breed-profiles.js",
-    "verify:product-mix": "node scripts/verify-product-mix-migration.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",

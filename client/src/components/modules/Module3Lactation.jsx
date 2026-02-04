@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ComposedChart, LineChart, Line, Area, Cell
@@ -24,9 +23,6 @@ import '../../styles/Module3.css';
  */
 function Module3Lactation({ user }) {
   const { t } = useI18n();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const scenarioId = location.state?.scenarioId;
   const chartColors = useChartColors();
 
   // Available breeds from database
@@ -72,8 +68,6 @@ function Module3Lactation({ user }) {
   const [rankingResults, setRankingResults] = useState(null);
   const [rankingMode, setRankingMode] = useState('per_head'); // 'per_head' or 'total'
   
-  const [scenarios, setScenarios] = useState([]);
-  const [selectedScenario, setSelectedScenario] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', type: 'success' });
   const [expandedBreed, setExpandedBreed] = useState({});
@@ -82,12 +76,8 @@ function Module3Lactation({ user }) {
   const [imageHover, setImageHover] = useState({ isHovering: false, x: 0, y: 0 });
 
   useEffect(() => {
-    loadScenarios();
     loadBreeds();
-    if (scenarioId) {
-      loadScenario(scenarioId);
-    }
-  }, [scenarioId]);
+  }, []);
 
   // Handle ESC key to close breed detail modal
   useEffect(() => {
@@ -264,56 +254,6 @@ function Module3Lactation({ user }) {
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedScenario) {
-      setAlertModal({
-        isOpen: true,
-        message: t('pleaseSelectScenario') || 'Por favor selecciona un escenario para guardar los resultados',
-        type: 'info'
-      });
-      return;
-    }
-
-    if (!selectedBreed) {
-      setAlertModal({
-        isOpen: true,
-        message: t('pleaseSelectBreed') || 'Por favor selecciona una raza',
-        type: 'info'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const cleanOverrides = {};
-      Object.keys(singleOverrides).forEach(key => {
-        const value = singleOverrides[key];
-        if (value !== '' && value !== null && value !== undefined) {
-          cleanOverrides[key] = Number(value);
-        }
-      });
-
-      await api.post(`/module3/scenario/${selectedScenario.id}/save`, {
-        breed_key: selectedBreed,
-        overrides: cleanOverrides
-      });
-      
-      setAlertModal({
-        isOpen: true,
-        message: t('dataSaved') || 'Data saved successfully',
-        type: 'success'
-      });
-    } catch (error) {
-      console.error('Error saving breed scenario:', error);
-      setAlertModal({
-        isOpen: true,
-        message: error.response?.data?.error || t('errorSaving') || 'Error saving',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOverrideChange = (field, value, target = 'single') => {
     if (target === 'single') {
@@ -356,36 +296,6 @@ function Module3Lactation({ user }) {
         </div>
       </header>
 
-      {/* Optional Scenario Selection - Only for saving results */}
-      <div className="card" style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-        <details>
-          <summary style={{ cursor: 'pointer', fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)', marginBottom: '8px' }}>
-            💾 {t('optionalSaveScenario') || 'Opcional: Guardar en un escenario'}
-          </summary>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-            {t('module3ScenarioNote') || 'El Módulo 3 funciona de forma independiente. Puedes guardar resultados en un escenario si lo deseas, pero no es necesario para usar el módulo.'}
-          </p>
-          <select
-            value={selectedScenario?.id || ''}
-            onChange={(e) => {
-              const id = parseInt(e.target.value);
-              if (id) {
-                navigate(`/module3`, { state: { scenarioId: id }, replace: true });
-                loadScenario(id);
-              } else {
-                setSelectedScenario(null);
-              }
-            }}
-            style={{ width: '100%', maxWidth: '400px' }}
-          >
-            <option value="">{t('selectScenarioPlaceholder') || 'Seleccionar escenario (opcional)'}</option>
-            {scenarios.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-        </details>
-      </div>
-
       {/* View Mode Selector */}
       <div className="card">
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -410,7 +320,7 @@ function Module3Lactation({ user }) {
         </div>
       </div>
 
-      {/* Main Content - No longer requires selectedScenario */}
+      {/* Main Content */}
       <>
 
         {/* Single Breed View */}
@@ -543,13 +453,6 @@ function Module3Lactation({ user }) {
                   disabled={loading}
                 >
                   {loading ? t('calculating') : t('calculate')}
-                </button>
-                <button 
-                  className="btn btn-secondary" 
-                  onClick={handleSave}
-                  disabled={loading || !singleResult}
-                >
-                  {t('save')}
                 </button>
               </div>
 
