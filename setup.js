@@ -114,8 +114,13 @@ async function seedBreedData() {
     
     for (const breed of breedData) {
       try {
+        // Map JSON fields to database fields
+        // JSON uses: milk_per_lactation_kg, lactations_per_life_avg, etc.
+        // Database expects: milk_kg_yr, lactations_lifetime_avg, etc.
+        const breedName = breed.breed || breed.breed_name;
+        
         // Generate breed_key (slug)
-        const breedKey = breed.breed_name
+        const breedKey = breedName
           .toLowerCase()
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
@@ -129,9 +134,26 @@ async function seedBreedData() {
           countryOrSystem = match[1];
         }
         
+        // Map JSON structure to database structure
+        // milk_per_lactation_kg -> milk_kg_yr (assuming one lactation per year)
+        const milkKgYr = breed.milk_per_lactation_kg || breed.milk_kg_yr;
+        const lactDaysAvg = breed.lactation_days_avg || breed.lact_days_avg;
+        const lactationsLifetimeAvg = breed.lactations_per_life_avg || breed.lactations_lifetime_avg;
+        const fatPct = breed.fat_pct;
+        const proteinPct = breed.protein_pct;
+        
+        // Calculate derived values
+        const fatKgYr = breed.fat_kg_per_lactation || (milkKgYr * (fatPct / 100));
+        const proteinKgYr = breed.protein_kg_per_lactation || (milkKgYr * (proteinPct / 100));
+        const fatPlusProteinPct = fatPct + proteinPct;
+        const fatPlusProteinKgYr = breed.fat_plus_protein_kg_per_lactation || (fatKgYr + proteinKgYr);
+        
         // ECM formula: ECM(kg) = Milk(kg) × (0.327 + 0.122×Fat% + 0.077×Protein%)
-        const ecmKgYr = breed.milk_kg_yr * (0.327 + 0.122 * breed.fat_pct + 0.077 * breed.protein_pct);
-        const ecmKgLifetime = ecmKgYr * breed.lactations_lifetime_avg;
+        const ecmKgYr = breed.ecm_per_lactation_kg || (milkKgYr * (0.327 + 0.122 * fatPct + 0.077 * proteinPct));
+        const ecmKgLifetime = breed.lifetime?.ecm_kg || (ecmKgYr * lactationsLifetimeAvg);
+        
+        // Approximate liters note
+        const approxLitersNote = breed.approx_liters_note || `≈ ${Math.round(milkKgYr / 1.03)} L/año`;
         
         await pool.query(`
           INSERT INTO public.breed_reference (
@@ -161,29 +183,29 @@ async function seedBreedData() {
             approx_liters_note = EXCLUDED.approx_liters_note,
             updated_at = now()
         `, [
-          breed.breed_name,
+          breedName,
           breedKey,
           countryOrSystem,
           breed.source_tags || [],
           breed.notes || null,
-          breed.milk_kg_yr,
-          breed.fat_pct,
-          breed.protein_pct,
-          breed.lact_days_avg,
-          breed.lactations_lifetime_avg,
-          breed.fat_kg_yr,
-          breed.protein_kg_yr,
-          breed.fat_plus_protein_pct,
-          breed.fat_plus_protein_kg_yr,
+          milkKgYr,
+          fatPct,
+          proteinPct,
+          lactDaysAvg,
+          lactationsLifetimeAvg,
+          fatKgYr,
+          proteinKgYr,
+          fatPlusProteinPct,
+          fatPlusProteinKgYr,
           ecmKgYr,
           ecmKgLifetime,
-          breed.approx_liters_note || `≈ ${Math.round(breed.milk_kg_yr / 1.03)} L/año`,
+          approxLitersNote,
           breed.image_asset_key || null
         ]);
         
         imported++;
       } catch (error) {
-        console.error(`   ⚠️  Failed to import breed "${breed.breed_name}":`, error.message);
+        console.error(`   ⚠️  Failed to import breed "${breed.breed || breed.breed_name}":`, error.message);
         skipped++;
       }
     }
