@@ -683,7 +683,7 @@ function Module3Lactation({ user }) {
                 {/* Comprehensive Comparison Chart - Key Metrics Side by Side */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
                   <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                    {t('comprehensiveComparison') || 'Comparación Completa: Producción por Lactancia, Grasa, Proteína y Vida Productiva'}
+                    {t('comprehensiveComparison') || 'Comparación Completa: Producción por Lactancia y ECM Vida Productiva'}
                   </h3>
                   <ResponsiveContainer width="100%" height={400}>
                     <ComposedChart data={[
@@ -691,16 +691,6 @@ function Module3Lactation({ user }) {
                         metric: t('milkPerLactation') || 'Leche/Lactancia',
                         [comparisonResult.aScenario.breed_name]: comparisonResult.aScenario.milk_kg_yr / (comparisonResult.aScenario.lact_days_avg / 365),
                         [comparisonResult.bScenario.breed_name]: comparisonResult.bScenario.milk_kg_yr / (comparisonResult.bScenario.lact_days_avg / 365)
-                      },
-                      {
-                        metric: t('fatPercent') || '% Grasa',
-                        [comparisonResult.aScenario.breed_name]: comparisonResult.aScenario.fat_pct,
-                        [comparisonResult.bScenario.breed_name]: comparisonResult.bScenario.fat_pct
-                      },
-                      {
-                        metric: t('proteinPercent') || '% Proteína',
-                        [comparisonResult.aScenario.breed_name]: comparisonResult.aScenario.protein_pct,
-                        [comparisonResult.bScenario.breed_name]: comparisonResult.bScenario.protein_pct
                       },
                       {
                         metric: t('ecmProductiveLife') || 'ECM Vida Productiva',
@@ -1100,26 +1090,120 @@ function Module3Lactation({ user }) {
               <div className="chart-container">
                 <h3 className="chart-section-title">ECM Lifetime Production by Breed</h3>
                 <ResponsiveContainer width="100%" height={Math.max(450, rankingResults.scenarios.length * 35)}>
-                  <BarChart data={rankingResults.scenarios} layout="horizontal" barCategoryGap="15%">
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={false} />
+                  <BarChart 
+                    data={(() => {
+                      // Process data: convert to numbers and ensure proper format
+                      const processedData = rankingResults.scenarios
+                        .map((breed, index) => {
+                          // PostgreSQL returns NUMERIC as strings, so we need to convert
+                          // Get ecm_kg_lifetime value (comes as string from DB)
+                          let ecmValue = breed.ecm_kg_lifetime;
+                          
+                          // Convert string to number - handle PostgreSQL numeric strings
+                          let ecmNumber = 0;
+                          if (ecmValue !== null && ecmValue !== undefined && ecmValue !== '') {
+                            // Direct conversion for strings - ensure it's treated as a number
+                            const strValue = String(ecmValue).trim();
+                            ecmNumber = parseFloat(strValue);
+                            
+                            // If parseFloat fails, try Number
+                            if (isNaN(ecmNumber) || !isFinite(ecmNumber)) {
+                              const cleaned = strValue.replace(/[^\d.-]/g, '');
+                              ecmNumber = parseFloat(cleaned) || 0;
+                            }
+                          }
+                          
+                          // Fallback: calculate if ecm_kg_lifetime is missing or 0
+                          if (ecmNumber === 0 || isNaN(ecmNumber) || !isFinite(ecmNumber)) {
+                            const ecmYr = parseFloat(breed.ecm_kg_yr) || 0;
+                            const lactations = parseFloat(breed.lactations_lifetime_avg) || 0;
+                            if (ecmYr > 0 && lactations > 0) {
+                              ecmNumber = ecmYr * lactations;
+                            }
+                          }
+                          
+                          // Ensure we have a valid number
+                          if (!isFinite(ecmNumber) || isNaN(ecmNumber)) {
+                            ecmNumber = 0;
+                          }
+                          
+                          return {
+                            ...breed,
+                            ecm_kg_lifetime: ecmNumber,
+                            breed_name: breed.breed_name || breed.breed_key || `Breed ${index + 1}`
+                          };
+                        })
+                        .filter(breed => breed.breed_name && breed.breed_name !== 'Unknown')
+                        .sort((a, b) => b.ecm_kg_lifetime - a.ecm_kg_lifetime); // Sort descending (highest first)
+                      
+                      // Calculate max value for domain
+                      const maxValue = processedData.length > 0 
+                        ? Math.max(...processedData.map(d => d.ecm_kg_lifetime || 0))
+                        : 10000;
+                      
+                      // Debug: log first few items to console
+                      if (processedData.length > 0 && process.env.NODE_ENV === 'development') {
+                        console.log('Chart data sample (first 3):', processedData.slice(0, 3).map(d => ({
+                          name: d.breed_name,
+                          ecm_kg_lifetime: d.ecm_kg_lifetime,
+                          type: typeof d.ecm_kg_lifetime
+                        })));
+                        console.log('Max ECM value:', maxValue);
+                      }
+                      
+                      // Store max value for use in domain
+                      processedData._maxValue = maxValue;
+                      
+                      return processedData;
+                    })()}
+                    barCategoryGap="15%"
+                    margin={{ top: 20, right: 30, left: 20, bottom: 100 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} vertical={true} />
                     <XAxis 
-                      type="number" 
-                      stroke={chartColors.axis.tick}
-                      tick={{ fill: chartColors.text.secondary, fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(value) => `${(value/1000).toFixed(0)}k`}
-                    />
-                    <YAxis 
                       dataKey="breed_name" 
-                      type="category" 
-                      width={150} 
+                      type="category"
                       stroke={chartColors.axis.tick}
                       tick={{ fill: chartColors.text.secondary, fontSize: 11, fontWeight: 500 }}
                       tickLine={false}
+                      axisLine={{ stroke: chartColors.axis.tick }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={100}
+                    />
+                    <YAxis 
+                      type="number"
+                      stroke={chartColors.axis.tick}
+                      tick={{ fill: chartColors.text.secondary, fontSize: 12 }}
+                      axisLine={{ stroke: chartColors.axis.tick }}
+                      tickLine={{ stroke: chartColors.axis.tick }}
+                      tickFormatter={(value) => {
+                        if (value >= 1000) {
+                          return `${(value/1000).toFixed(0)}k`;
+                        }
+                        return value.toString();
+                      }}
+                      domain={[0, 'auto']}
+                      allowDataOverflow={false}
+                      scale="linear"
+                      label={{ 
+                        value: 'ECM Lifetime Production (kg)', 
+                        angle: -90, 
+                        position: 'insideLeft', 
+                        style: { 
+                          textAnchor: 'middle', 
+                          fill: chartColors.text.primary, 
+                          fontSize: 14, 
+                          fontWeight: '600' 
+                        } 
+                      }}
                     />
                     <Tooltip 
-                      formatter={(value) => `${formatNumber(value, 0)} kg ECM`}
+                      formatter={(value, name, props) => {
+                        const numValue = Number(value) || 0;
+                        return [`${formatNumber(numValue, 0)} kg ECM`, 'ECM Lifetime'];
+                      }}
+                      labelFormatter={(label) => `Breed: ${label}`}
                       contentStyle={{ 
                         backgroundColor: chartColors.tooltip.bg, 
                         border: `1px solid ${chartColors.tooltip.border}`,
@@ -1134,14 +1218,54 @@ function Module3Lactation({ user }) {
                       dataKey="ecm_kg_lifetime" 
                       fill={chartColors.primary} 
                       name="ECM Lifetime (kg)"
-                      radius={[0, 8, 8, 0]}
+                      radius={[8, 8, 0, 0]}
                     >
-                      {rankingResults.scenarios.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={index === 0 ? chartColors.margin : index < 3 ? chartColors.quaternary : chartColors.primary} 
-                        />
-                      ))}
+                      {(() => {
+                        // Process data same way as chart data
+                        const processedData = rankingResults.scenarios
+                          .map((breed, index) => {
+                            // Convert PostgreSQL string to number
+                            let ecmValue = breed.ecm_kg_lifetime;
+                            let ecmNumber = 0;
+                            if (ecmValue !== null && ecmValue !== undefined && ecmValue !== '') {
+                              ecmNumber = parseFloat(ecmValue);
+                              if (isNaN(ecmNumber)) {
+                                ecmNumber = Number(String(ecmValue).replace(/[^\d.-]/g, '')) || 0;
+                              }
+                            }
+                            
+                            // Fallback calculation
+                            if (ecmNumber === 0 || isNaN(ecmNumber)) {
+                              const ecmYr = parseFloat(breed.ecm_kg_yr) || 0;
+                              const lactations = parseFloat(breed.lactations_lifetime_avg) || 0;
+                              if (ecmYr > 0 && lactations > 0) {
+                                ecmNumber = ecmYr * lactations;
+                              }
+                            }
+                            
+                            return {
+                              ...breed,
+                              ecm_kg_lifetime: ecmNumber,
+                              breed_name: breed.breed_name || breed.breed_key || `Breed ${index + 1}`
+                            };
+                          })
+                          .filter(breed => breed.breed_name && breed.breed_name !== 'Unknown')
+                          .sort((a, b) => b.ecm_kg_lifetime - a.ecm_kg_lifetime);
+                        
+                        return processedData.map((entry, index) => {
+                          // In vertical chart, index 0 is highest (first bar)
+                          return (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={
+                                index === 0 ? chartColors.margin : // Green for #1
+                                index < 3 ? chartColors.quaternary : // Purple for top 3
+                                chartColors.primary // Blue for rest
+                              } 
+                            />
+                          );
+                        });
+                      })()}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

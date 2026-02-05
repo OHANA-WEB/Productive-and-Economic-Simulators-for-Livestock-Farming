@@ -1519,7 +1519,29 @@ function Module2Transformation({ user }) {
                                   <td><strong>{channel.name}</strong></td>
                                   <td>{channel.percentage.toFixed(1)}%</td>
                                   <td>{channel.kg.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
-                                  <td colSpan="5" style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>
+                                  <td 
+                                    colSpan="5" 
+                                    style={{ 
+                                      fontStyle: 'italic', 
+                                      color: 'var(--text-secondary)',
+                                      cursor: productDetails.length > 0 ? 'pointer' : 'default',
+                                      textDecoration: productDetails.length > 0 ? 'underline' : 'none'
+                                    }}
+                                    onClick={productDetails.length > 0 ? () => setExpandedChannels(prev => ({
+                                      ...prev,
+                                      [channel.key]: !prev[channel.key]
+                                    })) : undefined}
+                                    onMouseEnter={(e) => {
+                                      if (productDetails.length > 0) {
+                                        e.target.style.color = 'var(--accent-primary)';
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (productDetails.length > 0) {
+                                        e.target.style.color = 'var(--text-secondary)';
+                                      }
+                                    }}
+                                  >
                                     {productDetails.length > 1 ? t('clickToSeeProductDetails') : t('seeProductDetailsBelow')}
                                   </td>
                                 </tr>
@@ -1952,22 +1974,22 @@ function Module2Transformation({ user }) {
                     <div className="metric-card">
                       <div className="metric-label">{t('totalRevenue') || 'Total Revenue'}</div>
                       <div className="metric-value">
-                        ${Number(results.total_income || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${Number(results.product_revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
                     <div className="metric-card warning">
                       <div className="metric-label">{t('totalCosts') || 'Total Costs'}</div>
                       <div className="metric-value">
-                        ${Number(results.total_costs || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${Number((results.product_revenue || 0) - (results.transformation_margin || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
-                    <div className={`metric-card ${results.total_margin >= 0 ? 'success' : 'error'}`}>
+                    <div className={`metric-card ${(results.transformation_margin || 0) >= 0 ? 'success' : 'error'}`}>
                       <div className="metric-label">{t('grossMargin') || 'Gross Margin'}</div>
-                      <div className={`metric-value ${results.total_margin >= 0 ? 'success' : 'error'}`}>
-                        ${Number(results.total_margin || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <div className={`metric-value ${(results.transformation_margin || 0) >= 0 ? 'success' : 'error'}`}>
+                        ${Number(results.transformation_margin || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
-                      <div className={`metric-change ${results.margin_percentage >= 0 ? 'positive' : 'negative'}`}>
-                        {results.margin_percentage >= 0 ? '+' : ''}{results.margin_percentage?.toFixed(2)}%
+                      <div className={`metric-change ${((results.product_revenue || 0) > 0 ? ((results.transformation_margin || 0) / (results.product_revenue || 1)) * 100 : 0) >= 0 ? 'positive' : 'negative'}`}>
+                        {((results.product_revenue || 0) > 0 ? ((results.transformation_margin || 0) / (results.product_revenue || 1)) * 100 : 0) >= 0 ? '+' : ''}{((results.product_revenue || 0) > 0 ? ((results.transformation_margin || 0) / (results.product_revenue || 1)) * 100 : 0).toFixed(2)}%
                       </div>
                     </div>
                   </div>

@@ -7,25 +7,29 @@ export function getBreedImage(breedName) {
   if (!breedName) return '/breeds/default.jpg';
   
   // Direct mapping of breed names to image files (case-insensitive)
+  // IMPORTANT: More specific matches must come before generic ones
   const breedMap = {
-    // Exact matches
+    // Exact matches - Most specific first
     'dutch': '/breeds/Dutch.png',
+    
+    // Saanen variants - specific images available
+    'saanen americana': '/breeds/SAANENAmericana.png',
+    'saanen francesa': '/breeds/SaanenFrancesa.png',
+    'saanen (genérica)': '/breeds/SaanenGenerica.png',
+    'saanen generica': '/breeds/SaanenGenerica.png',
+    'saanen genérica': '/breeds/SaanenGenerica.png',
+    'saanen': '/breeds/SaanenGenerica.png', // Default Saanen uses generic image
+    
+    // Alpina variants - specific images available
     'alpina (genérica)': '/breeds/AlpineGenerica.png',
     'alpina generica': '/breeds/AlpineGenerica.png',
     'alpina genérica': '/breeds/AlpineGenerica.png',
+    'alpina francesa': '/breeds/AlpineFrancesa.png',
     'alpina americana': '/breeds/ALPINE.png',
     'alpina británica': '/breeds/ALPINE.png',
     'alpina britanica': '/breeds/ALPINE.png',
-    'alpina francesa': '/breeds/ALPINE.png',
     'alpine': '/breeds/ALPINE.png',
     'alpina': '/breeds/ALPINE.png',
-    'saanen (genérica)': '/breeds/ALPINE.png', // Note: SAANEN.png not available, using ALPINE as placeholder
-    'saanen generica': '/breeds/ALPINE.png',
-    'saanen genérica': '/breeds/ALPINE.png',
-    'saanen': '/breeds/ALPINE.png',
-    'saanen americana': '/breeds/ALPINE.png',
-    'saanen francesa': '/breeds/ALPINE.png',
-    'saanen': '/breeds/ALPINE.png',
     'lamancha': '/breeds/LAMANCHA.png',
     'la-mancha': '/breeds/LAMANCHA.png',
     'la mancha': '/breeds/LAMANCHA.png',
@@ -68,32 +72,48 @@ export function getBreedImage(breedName) {
     .replace(/[()]/g, '')
     .replace(/\s+/g, ' ');
   
-  // Try exact match first
+  // Try exact match first (most specific)
   if (breedMap[normalized]) {
     return breedMap[normalized];
   }
   
-  // Try partial matches
-  for (const [key, value] of Object.entries(breedMap)) {
+  // Try partial matches - prioritize longer/more specific keys first
+  const sortedKeys = Object.keys(breedMap).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
     const keyNormalized = key.toLowerCase().trim();
+    // Check if normalized name contains the key or key contains normalized name
     if (normalized.includes(keyNormalized) || keyNormalized.includes(normalized)) {
-      return value;
+      return breedMap[key];
     }
   }
   
-  // Special cases for compound names
+  // Special cases for compound names - check most specific first
   if (normalized.includes('dutch') || normalized.includes('holandesa')) {
     return '/breeds/Dutch.png';
   }
+  
+  // Saanen variants - check specific variants first
+  if (normalized.includes('saanen')) {
+    if (normalized.includes('americana')) {
+      return '/breeds/SAANENAmericana.png';
+    }
+    if (normalized.includes('francesa')) {
+      return '/breeds/SaanenFrancesa.png';
+    }
+    if (normalized.includes('generica') || normalized.includes('genérica')) {
+      return '/breeds/SaanenGenerica.png';
+    }
+    return '/breeds/SaanenGenerica.png'; // Default Saanen
+  }
+  
+  // Alpina variants - check specific variants first
   if (normalized.includes('alpina') || normalized.includes('alpine')) {
+    if (normalized.includes('francesa')) {
+      return '/breeds/AlpineFrancesa.png';
+    }
     if (normalized.includes('generica') || normalized.includes('genérica')) {
       return '/breeds/AlpineGenerica.png';
     }
-    return '/breeds/ALPINE.png';
-  }
-  if (normalized.includes('saanen')) {
-    // Note: SAANEN.png image not available - using ALPINE as placeholder
-    // TODO: Add proper SAANEN.png image file
     return '/breeds/ALPINE.png';
   }
   if (normalized.includes('lamancha') || normalized.includes('la-mancha')) {
