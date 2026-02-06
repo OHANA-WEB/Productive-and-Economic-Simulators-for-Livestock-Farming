@@ -25,9 +25,9 @@ export function getBreedImage(breedName) {
     'alpina generica': '/breeds/AlpineGenerica.png',
     'alpina genérica': '/breeds/AlpineGenerica.png',
     'alpina francesa': '/breeds/AlpineFrancesa.png',
+    'alpina británica': '/breeds/BristishAlpine.png',
+    'alpina britanica': '/breeds/BristishAlpine.png',
     'alpina americana': '/breeds/ALPINE.png',
-    'alpina británica': '/breeds/ALPINE.png',
-    'alpina britanica': '/breeds/ALPINE.png',
     'alpine': '/breeds/ALPINE.png',
     'alpina': '/breeds/ALPINE.png',
     'lamancha': '/breeds/LAMANCHA.png',
@@ -50,19 +50,19 @@ export function getBreedImage(breedName) {
     'serrana': '/breeds/Serrana.png',
     'nigerian dwarf': '/breeds/NigerianDwarf.PNG',
     'nigerian': '/breeds/NigerianDwarf.PNG',
-    'mestiza (genérica)': '/breeds/ALPINE.png', // Using Alpine as generic placeholder
-    'mestiza generica': '/breeds/ALPINE.png',
-    'mestiza genérica': '/breeds/ALPINE.png',
-    'mestiza': '/breeds/ALPINE.png',
-    'criolla argentina': '/breeds/ALPINE.png', // Placeholder - no specific image
+    'mestiza (genérica)': '/breeds/Mestiza.png',
+    'mestiza generica': '/breeds/Mestiza.png',
+    'mestiza genérica': '/breeds/Mestiza.png',
+    'mestiza': '/breeds/Mestiza.png',
+    'criolla argentina': '/breeds/Criollaargentina.png',
     'criolla mexicana': '/breeds/CriollaMexicana.png',
-    'criolla (genérica)': '/breeds/ALPINE.png', // Placeholder
-    'criolla generica': '/breeds/ALPINE.png',
-    'criolla genérica': '/breeds/ALPINE.png',
+    'criolla (genérica)': '/breeds/Criollagenerica.png',
+    'criolla generica': '/breeds/Criollagenerica.png',
+    'criolla genérica': '/breeds/Criollagenerica.png',
     'criolla colombiana': '/breeds/Criollacolombiana.png',
     'criolla venezolana': '/breeds/CriollaVenezolana.png',
-    'criolla peruana': '/breeds/ALPINE.png', // Placeholder - no specific image
-    'criolla': '/breeds/ALPINE.png',
+    'criolla peruana': '/breeds/CriollaPeruana.png',
+    'criolla': '/breeds/Criollagenerica.png', // Default to generic criolla
   };
   
   // Normalize breed name for matching
@@ -111,6 +111,9 @@ export function getBreedImage(breedName) {
     if (normalized.includes('francesa')) {
       return '/breeds/AlpineFrancesa.png';
     }
+    if (normalized.includes('británica') || normalized.includes('britanica')) {
+      return '/breeds/BristishAlpine.png';
+    }
     if (normalized.includes('generica') || normalized.includes('genérica')) {
       return '/breeds/AlpineGenerica.png';
     }
@@ -129,6 +132,9 @@ export function getBreedImage(breedName) {
     return '/breeds/MALAGUENA.png';
   }
   if (normalized.includes('criolla')) {
+    if (normalized.includes('argentina')) {
+      return '/breeds/Criollaargentina.png';
+    }
     if (normalized.includes('mexicana')) {
       return '/breeds/CriollaMexicana.png';
     }
@@ -138,7 +144,18 @@ export function getBreedImage(breedName) {
     if (normalized.includes('venezolana')) {
       return '/breeds/CriollaVenezolana.png';
     }
-    return '/breeds/ALPINE.png'; // Generic Criolla placeholder
+    if (normalized.includes('peruana')) {
+      return '/breeds/CriollaPeruana.png';
+    }
+    if (normalized.includes('generica') || normalized.includes('genérica')) {
+      return '/breeds/Criollagenerica.png';
+    }
+    return '/breeds/Criollagenerica.png'; // Default to generic criolla
+  }
+  
+  // Mestiza variants
+  if (normalized.includes('mestiza')) {
+    return '/breeds/Mestiza.png';
   }
   
   // Default image
